@@ -1,0 +1,283 @@
+var express = require('express');
+//var app = express();
+var util = require('util');
+var mysql = require('mysql');
+var restify = require('restify');  
+var connection = mysql.createConnection({
+	host: 'localhost',
+	user: 'root',
+	password: 'kodokngorek1',
+	database: 'bazcorp_development'
+});
+
+/*app.use(function(req, res, next) {
+	res.header("Access-Control-Allow-Origin", "*");
+	res.header("Access-Control-Allow-Headers", "X-Requested-With");
+	res.header("Access-Control-Allow-Headers", "Content-Type");
+	res.header("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
+	next();
+});*/
+	
+//var http = require('http');
+//fs = require('fs'),
+// NEVER use a Sync function except at start-up!
+//index = fs.readFileSync(__dirname + '/index.html');
+
+// Send index.html to all requests
+//var app = http.createServer(function(req, res) {
+//    res.writeHead(200, {'Content-Type': 'text/html'});
+//    res.end(index);
+//});
+
+var server = restify.createServer();
+
+server.get('/', function indexHTML(req, res, next) {
+    fs.readFile(__dirname + '/index.html', function (err, data) {
+        if (err) {
+			console.log('error on get server restify');
+            next(err);
+            return;
+        }
+
+        res.setHeader('Content-Type', 'text/html');
+        res.writeHead(200);
+        res.end(data);
+        next();
+    });
+});
+
+//connect database
+connection.connect(function(err){
+	if(!err)
+	{
+		console.log('Database connected..');
+	}
+	else
+	{
+		console.log('Error connecting database..');
+		console.log(err.toString());
+	}
+});
+
+// Socket.io server listens to our app
+var io = require('socket.io').listen(server, { origins: '*:*' });
+var clients = [];
+var commands = [];
+
+// Send current time to all connected clients
+function sendTime() {
+	
+	console.log('this is clients array : ' + util.inspect(clients));
+	//console.log('this is commands array : ' + util.inspect(commands));
+    io.sockets.emit('time', { time: new Date().toJSON() } );
+}
+
+// Send current time every 10 secs
+setInterval(sendTime, 10000);
+
+// Emit welcome message on connection
+io.sockets.on('connection', function(socket) {
+    var client = {};
+	client['socket'] = socket;
+	clients.push(client);
+	
+	socket.emit('welcome', { message: 'Welcome to Fingerprint Device Sync Server!' });
+	
+	socket.on('regAppID', function(data){
+		//cek apakah appid yg sama ada pada array clients, jika ada maka delete yang lama
+		var indexAppID = getClientIndexByAppID(data.AppID);
+		if(indexAppID >= 0)
+		{
+			clients.splice(indexAppID, 1);
+            console.log('Same AppID found, removing the old one');
+		}
+		
+		console.log('Registering AppID : ' + data.AppID); 
+		var index = getClientIndexBySocketID(socket.id);
+		if(index >= 0)
+		{
+			clients[index]['AppID'] = data.AppID;
+			clients[index].socket.emit('dMessage', { message: 'Application ID : ' + data.AppID + ' has been successfully registered with socket ID : ' + socket.id});
+		}
+	});
+	
+	//ON SOCKET DISCONEECT
+	socket.on('disconnect', function(){
+		var index = getClientIndexBySocketID(socket.id);
+		if(index >= 0)
+		{
+			clients.splice(index, 1);
+            console.log('Client gone (id=' + socket.id + ').');
+		}
+	});
+	
+	//ON SOCKET ERROR
+	socket.on('error', function(){
+		var index = getClientIndexBySocketID(socket.id);
+		if(index >= 0)
+		{
+			clients.splice(index, 1);
+            console.log('Client gone (id=' + socket.id + ').');
+		}
+	});
+	
+    socket.on('receiveBroadcast', function(data){
+		var index = getClientIndexBySocketID(socket.id);
+		if(index >= 0)
+		{
+			console.log('Receive Broadcast from APPID[' + clients[index]['AppID'] + ']');
+			console.log('message : ' + data.message);
+			
+			io.sockets.emit('sendBroadcast', { message : data.message });
+		}
+		
+	});
+
+    socket.on('rte', function(data){
+		socket.emit('listenRte', { eventName: data.eventName, eventArgs: data.eventArgs, AppID: data.AppID });
+		var index = getClientIndexBySocketID(socket.id);
+		if(index >= 0)
+		{
+            console.log('AppID['+ clients[index].AppID +'] sending an RTEvent');
+			data['AppID'] = clients[index].AppID;
+		}
+		console.log(data.eventName);
+		for(i=0;i<data.eventArgs.length;i++)
+		{
+			for(var key in data.eventArgs[i])
+			{
+				console.log(key + " => " + data.eventArgs[i][key]);
+			}
+		}
+		
+		getSocketByAppID(data.AppID).emit('listenRte', { eventName: data.eventName, eventArgs: data.eventArgs, AppID: data.AppID });
+		//io.sockets.emit('listenRte', { eventName: data.eventName, eventArgs: data.eventArgs, AppID: data.AppID });
+		
+	});
+	
+	socket.on('fdCommand', function(data){
+		var command = { appID: data.appID, devID: data.devID, socket_master: socket.id, commandID: data.commandID ,command: data.command, parameter: data.parameter };
+		console.log(JSON.stringify(command));
+		addCommandList(data, socket);
+		
+		getSocketByAppID(data.appID).emit('fdCommand', command);
+	});
+	
+	socket.on('fdCommandRespons', function(data){
+		console.log(data.commandID);
+		console.log(data.respons);
+		
+		//io.sockets.emit('fdCommandRespons', {AppID: data.AppID, commandID: data.commandID, respons: data.respons});
+		changeCommandStatus(data.commandID, 'respon_sent');
+		getMasterSocketCommand(data.commandID).emit('fdCommandRespons', {AppID: data.AppID, commandID: data.commandID, command: data.command,respons: data.respons});
+		var index = getCommandIndexByCommandID(data.commandID);
+		if(index >= 0)
+		{
+			commands.splice(index, 1);
+            console.log('Command remove from list (commandID=' + data.commandID + ').');
+		}
+	});
+	
+	socket.on('fdCommandInProcMessage', function(data){
+		console.log(JSON.stringify(data));
+		getMasterSocketCommand(data.commandID).emit('fdCommandInProcMaster', data);
+	});
+	
+	socket.on('appCommand', function(data){
+		console.log(JSON.stringify(data));
+		switch(data.command)
+		{
+			case 'updateStatusDevice':
+			break;
+			case 'recTimesheetPerson':
+			break;
+		}
+	});
+});
+
+function addCommandList(data, socket)
+{
+	var command = {};
+	command['AppID'] = data.appID;
+	command['commandID'] = data.commandID;
+	command['socket_master'] = socket;
+	command['command'] = data.command;
+	command['status'] = 'wait_respon';
+	
+	commands.push(command);
+}
+
+function getMasterSocketCommand(commandID)
+{
+	for(i=0;i<commands.length;i++)
+	{
+		if(commands[i]['commandID'] == commandID)
+		{
+			return commands[i]['socket_master'];
+		}
+	}
+	
+	return -1;
+}
+function changeCommandStatus(commandID, status)
+{
+	for(i=0;i<commands.length;i++)
+	{
+		if(commands[i]['commandID'] == commandID)
+		{
+			commands[i]['status'] = status;
+		}
+	}
+}
+
+function getCommandIndexByCommandID(commandID)
+{
+	for(i=0;i<commands.length;i++)
+	{
+		if(commands[i]['commandID'] == commandID)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+function getClientIndexBySocketID(socketID)
+{
+	for(i=0;i<clients.length;i++)
+	{
+		if(clients[i]['socket'].id == socketID)
+		{
+			return i;
+		}
+	}
+	
+	return -1;
+}
+
+function getClientIndexByAppID(AppID)
+{
+	for(i=0;i<clients.length;i++)
+	{
+		if(clients[i]['AppID'] == AppID)
+		{
+			return i;
+		}
+	}
+	
+	return -1;
+}
+
+function getSocketByAppID(AppID)
+{
+	for(i=0;i<clients.length;i++)
+	{
+		if(clients[i]['AppID'] == AppID)
+		{
+			return clients[i].socket;
+		}
+	}
+	
+	return null;
+}
+
+server.listen(3000);
