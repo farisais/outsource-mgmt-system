@@ -78,6 +78,32 @@ class Timesheet extends MY_Controller
         $id=$this->input->get('id');
          echo "{\"data\" : " . json_encode($this->timesheet_model->get_detail_employee_on_edit($id)) . "}";
      }
-
+     
+     public function entry_timesheet_fingeprint_log()
+    {
+        $data = $this->input->post();
+        //echo json_encode($data);
+        switch($data['command'])
+        {
+            case "att_transaction":
+                //echo json_encode($data);
+                $this->timesheet_model->entry_timesheet_raw($data, 'fingerprint_att_rte');
+                echo 'successfully save timesheet raw data';
+            break;
+            case "request_transaction":
+                //echo json_encode($data);
+                $this->timesheet_model->entry_timesheet($data['data'],'fingerprint_sch');
+                echo 'successfully save timesheet data';
+            break;
+        }
+        
+    }
+    
+    public function entry_timesheet_data()
+    {
+        $data = $this->input->post();
+        $this->timesheet_model->entry_timesheet_raw($data, 'fingerprint_att_rte');
+        echo 'successfully save timesheet raw data';
+    }
 }
 ?>
