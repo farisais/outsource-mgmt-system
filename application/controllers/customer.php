@@ -50,6 +50,14 @@ class Customer extends MY_Controller
         return $data;
     }
     
+    public function init_view($id)
+    {
+        $data = $this->init_edit_customer($id);
+        $data['is_view'] = true;
+        
+        return $data;
+    }
+    
     public function init_create_customer()
     {
         $data = array(

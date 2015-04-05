@@ -1,8 +1,8 @@
 <script type="text/javascript" src="<?php echo base_url() ?>jqwidgets/globalization/globalize.js"></script>
 <script>
 $(document).ready(function(){
-    $("#inquiry-date").jqxDateTimeInput({width: '250px', height: '25px'});
-    $("#delivery-date").jqxDateTimeInput({width: '250px', height: '25px', value: null});
+    $("#inquiry-date").jqxDateTimeInput({width: '250px', height: '25px'<?php if(isset($is_view)){ echo ',disabled: true';} ?>});
+    $("#delivery-date").jqxDateTimeInput({width: '250px', height: '25px', value: null<?php if(isset($is_view)){ echo ',disabled: true';} ?>});
     <?php if(isset($is_edit)) :?>
     $("#inquiry-date").jqxDateTimeInput('val', <?php echo "'" . date( 'd/m/Y' , strtotime($data_edit[0]['inquiry_date'])) . "'" ?>);
     $("#delivery-date").jqxDateTimeInput('val', <?php echo "'" . date( 'd/m/Y' , strtotime($data_edit[0]['expected_delivery'])) . "'" ?>);
@@ -152,6 +152,7 @@ $(document).ready(function(){
         width: '100%',
         height: 450,
         selectionmode : 'singlerow',
+        <?php if(isset($is_view)){ echo 'disabled: true,';} ?>
         <?php echo (isset($is_edit) ? 'source: dataAdapter,' : ''); ?>
         editable: true,
         columnsresize: true,
@@ -160,11 +161,13 @@ $(document).ready(function(){
         autoshowfiltericon: true,
         rendertoolbar: function (toolbar) {
             $("#add-product").click(function(){
+                <?php if(isset($is_view)){ echo 'return;';} ?>
                 var offset = $("#remove-product").offset();
                 $("#select-product-popup").jqxWindow({ position: { x: parseInt(offset.left) + $("#remove-product").width() + 20, y: parseInt(offset.top)} });
                 $("#select-product-popup").jqxWindow('open');
             });
             $("#remove-product").click(function(){
+                <?php if(isset($is_view)){ echo 'return;';} ?>
                 var selectedrowindex = $("#product-grid").jqxGrid('getselectedrowindex');
                 if (selectedrowindex >= 0) {
                     var id = $("#product-grid").jqxGrid('getrowid', selectedrowindex);
@@ -315,6 +318,20 @@ function DiscardData()
     load_content_ajax(GetCurrentController(), 109 , null);
 }
 
+function EditData()
+{
+    <?php if(isset($is_view)){?>
+    var data_post = {};
+    var param = [];
+    var item = {};
+    item['paramName'] = 'id';
+    item['paramValue'] = <?php echo $data_edit[0]['id_inquiry'] ?>;
+    param.push(item);        
+    data_post['id_inquiry'] = <?php echo $data_edit[0]['id_inquiry'] ?>;
+    load_content_ajax(GetCurrentController(), 111 ,data_post, param);
+    <?php }?>
+}
+
 </script>
 <input type="hidden" id="prevent-interruption" value="true" />
 <input type="hidden" id="is_edit" value="<?php echo (isset($is_edit) ? 'true' : 'false') ?>" />
@@ -323,7 +340,7 @@ function DiscardData()
     <?php if (isset($is_edit) && $data_edit[0]['status'] == 'draft'): ?><button id="inquiry-validate">Validate</button><?php endif; ?>
     <ul class="document-status">
         <li <?php 
-            if(isset($is_edit))
+            if(isset($is_edit) || isset($is_view) )
             {
                 if($data_edit[0]['status'] == 'draft')
                 {
@@ -340,13 +357,13 @@ function DiscardData()
                 <span></span>
             </span>
         </li>
-        <li <?php echo (isset($is_edit) && $data_edit[0]['status'] == 'open' ? 'class="status-active"' : '') ?>>
+        <li <?php echo ((isset($is_edit) || isset($is_view)) && $data_edit[0]['status'] == 'open' ? 'class="status-active"' : '') ?>>
             <span class="label">Open</span>
             <span class="arrow">
                 <span></span>
             </span>
         </li>
-        <li <?php echo (isset($is_edit) && $data_edit[0]['status'] == 'close' ? 'class="status-active"' : '') ?>>
+        <li <?php echo ((isset($is_edit) || isset($is_view))  && $data_edit[0]['status'] == 'close' ? 'class="status-active"' : '') ?>>
             <span class="label">Close</span>
             <span class="arrow">
                 <span></span>
@@ -384,7 +401,7 @@ function DiscardData()
                         </div>
                         <div class="column-input" colspan="2">
                             <input style="display:inline; width: 70%; font: -webkit-small-control; padding-left: 5px;" class="field" type="text" id="customer-name" name="name" value=""/>
-                            <button id="customer-select">...</button>
+                            <button id="customer-select" <?php if(isset($is_view)){ echo 'disabled=disabled';} ?>>...</button>
                         </div>
                     </td>
                     <td></td>
@@ -408,7 +425,7 @@ function DiscardData()
                         <div class="label">
                             Notes
                         </div>
-                        <textarea id="notes" name="notes" class="field" cols="10" rows="20" style="height: 50px;"><?php echo (isset($is_edit) ? $data_edit[0]['notes'] : '') ?></textarea>
+                        <textarea id="notes" <?php if(isset($is_view)){ echo 'disabled=disabled';} ?> name="notes" class="field" cols="10" rows="20" style="height: 50px;"><?php echo (isset($is_edit) ? $data_edit[0]['notes'] : '') ?></textarea>
                     </td>
                 </tr>
             </table>

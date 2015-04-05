@@ -99,6 +99,13 @@ class Quotation extends MY_Controller
         echo $this->upload->display_errors();
     }
     
+    public function init_view($id)
+    {
+        $data = $this->init_edit_quotation($id);
+        $data['is_view'] = true;
+        
+        return $data;
+    }
     
 }
 ?>

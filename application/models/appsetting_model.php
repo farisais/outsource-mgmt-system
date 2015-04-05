@@ -565,11 +565,13 @@ class Appsetting_model extends CI_Model
     
     public function check_action_authorization($action_id)
     {
-        $this->db->select('*');
-        $this->db->from('detail_role');
-        $this->db->where('action', $action_id);
-        $this->db->where('role', $this->session->userdata('app_role_id'));
-        
+        //$query = "select dr.* from detail_role as dr inner join application_action as ac on ac.id_application_action=dr.action where (`dr`.`action`=". $action_id ." or ac.uname = '". $action_id ."') and dr.role = " . $this->session->userdata('app_role_id');
+        $this->db->select('dr.*');
+        $this->db->from('detail_role as dr');
+        $this->db->join('application_action as ac', 'ac.id_application_action=dr.action', 'inner');
+        $this->db->where('(`dr`.`action` = \''. $action_id .'\' or `ac`.`uname`=\''. $action_id .'\')');
+        $this->db->where('dr.role', $this->session->userdata('app_role_id'));
+        //$result = $this->db->query($query);
         return (count($this->db->get()->result_array()) > 0 ? true : false);
         
     }
@@ -877,6 +879,7 @@ class Appsetting_model extends CI_Model
         $last_id = $this->db->insert_id();
         $this->add_detail_role($last_id);
     }
+    
     public function add_detail_role($last_id){
         $data = array();
         $data['role'] = 1;

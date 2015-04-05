@@ -1,7 +1,7 @@
 <IfModule mod_rewrite.c>
 
     RewriteEngine On
-    RewriteBase /bazcorp_temp
+    RewriteBase /bazcorp
     ### Canonicalize codeigniter URLs
 
     # If your default controller is something other than

@@ -52,5 +52,13 @@ class Product_definition extends MY_Controller
         
         return $data;
     }
+    
+    public function init_view($id)
+    {
+        $data = $this->init_edit_product_definition($id);
+        $data['is_view'] = true;
+        
+        return $data;
+    }
 }
 ?>

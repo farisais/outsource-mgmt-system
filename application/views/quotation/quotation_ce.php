@@ -6,7 +6,7 @@ var linkrenderer = function (row, column, value) {
     
 $(document).ready(function(){
     $('#quotation-tabs').jqxTabs({ width: '100%', position: 'top', scrollPosition: 'right'});
-    $("#quote-date").jqxDateTimeInput({width: '250px', height: '25px'}); 
+    $("#quote-date").jqxDateTimeInput({width: '250px', height: '25px'<?php if(isset($is_view)){ echo ',disabled: true';} ?>}); 
     $("#select-product-popup").jqxWindow({
         width: 600, height: 500, resizable: false,  isModal: true, autoOpen: false, cancelButton: $("#Cancel"), modalOpacity: 0.01           
     });
@@ -100,6 +100,7 @@ $(document).ready(function(){
         theme: $("#theme").val(),
         width: '100%',
         height: 250,
+        <?php if(isset($is_view)){ echo 'disabled: true,';} ?>
         selectionmode : 'singlerow',
         source: dataAdapter,
         editable: true,
@@ -109,11 +110,13 @@ $(document).ready(function(){
         autoshowfiltericon: true,
         rendertoolbar: function (toolbar) {
             $("#add-product").click(function(){
+                <?php if(isset($is_view)){ echo 'return;';} ?>
                 var offset = $("#remove-product").offset();
                 $("#select-product-popup").jqxWindow({ position: { x: parseInt(offset.left) + $("#remove-product").width() + 20, y: parseInt(offset.top)} });
                 $("#select-product-popup").jqxWindow('open');
             });
             $("#remove-product").click(function(){
+                <?php if(isset($is_view)){ echo 'return;';} ?>
                 var selectedrowindex = $("#quotation-grid").jqxGrid('getselectedrowindex');
                 if (selectedrowindex >= 0) {
                     var id = $("#quotation-grid").jqxGrid('getrowid', selectedrowindex);
@@ -585,12 +588,27 @@ $(document).ready(function(){
 
 function SaveData()
 {
-    load_content_ajax(GetCurrentController(), 123, dataPost());
+    load_content_ajax(GetCurrentController(), 'save_edit_quotation', dataPost());
 }
 function DiscardData()
 {
     load_content_ajax(GetCurrentController(), 119, null);
 }
+
+function EditData()
+{
+    <?php if(isset($is_view)){?>
+    var data_post = {};
+    var param = [];
+    var item = {};
+    item['paramName'] = 'id';
+    item['paramValue'] = <?php echo $data_edit[0]['id_quotation'] ?>;
+    param.push(item);        
+    data_post['id_quotation'] = <?php echo $data_edit[0]['id_quotation'] ?>;
+    load_content_ajax(GetCurrentController(), 'edit_quotation',data_post, param);
+    <?php }?>
+}
+
 
 function dataPost()
 {
@@ -607,6 +625,7 @@ function dataPost()
     return data_post;
 }
 
+
 </script>
 <input type="hidden" id="prevent-interruption" value="true" />
 <input type="hidden" id="is_edit" value="<?php echo (isset($is_edit) ? 'true' : 'false') ?>" />
@@ -615,7 +634,7 @@ function dataPost()
     <?php if (isset($is_edit) && $data_edit[0]['status'] == 'draft'): ?><button id="quotation-validate">Validate</button><?php endif; ?>
     <ul class="document-status">
         <li <?php 
-            if(isset($is_edit))
+            if(isset($is_edit) || isset($is_view) )
             {
                 if($data_edit[0]['status'] == 'draft')
                 {
@@ -666,7 +685,7 @@ function dataPost()
                         </div>
                         <div class="column-input" colspan="2">
                             <input style="display:inline; width: 70%; font: -webkit-small-control; padding-left: 5px;" class="field" type="text" id="inquiry-name" name="name" value=""/>
-                            <button id="inquiry-select">...</button>
+                            <button id="inquiry-select" <?php if(isset($is_view)){ echo 'disabled=disabled';} ?>>...</button>
                         </div>
                     </td>
                 </tr>
@@ -735,7 +754,7 @@ function dataPost()
                                 <div class="label">
                                     Notes
                                 </div>
-                                <textarea class="field" cols="10" rows="20" style="height: 50px;" id="notes" name="notes"></textarea>
+                                <textarea class="field" cols="10" rows="20" style="height: 50px;" id="notes" name="notes" <?php if(isset($is_view)){ echo 'disabled=disabled';} ?>></textarea>
                             </td>
                         </tr>                        
                     </table>
@@ -745,11 +764,11 @@ function dataPost()
                         <tr>
                             <td colspan="2">                       
                                  <div class="row-color" style="width: 100%;">
-                                    <button style="width: 30px;" id="add-survey">+</button>
-                                    <button style="width: 30px;" id="remove-survey">-</button>
+                                    <button style="width: 30px;" id="add-survey" <?php if(isset($is_view)){ echo 'disabled=disabled';} ?>>+</button>
+                                    <button style="width: 30px;" id="remove-survey" <?php if(isset($is_view)){ echo 'disabled=disabled';} ?>>-</button>
                                     <div style="display: inline;"><span>Add / Remove Survey</span></div>
                                     <form id="contract-form" method="post" enctype="multipart/form-data" action="<?php echo base_url() ;?>quotation/upload_survey">
-                                        <input type="file" name="survey_file"  style="display:none;" id="survey-file">
+                                        <input type="file" name="survey_file"  style="display:none;" id="survey-file" <?php if(isset($is_view)){ echo 'disabled=disabled';} ?>>
                                     </form>
                                 </div>
                             </td>
@@ -768,7 +787,7 @@ function dataPost()
                                 Invoice Term
                             </td>
                             <td>
-                                <select class="field" id="invoice_period">
+                                <select class="field" id="invoice_period" <?php if(isset($is_view)){ echo 'disabled=disabled';} ?>>
                                     <option <?= isset($is_edit) && $data_edit[0]['invoice_period'] == 'Monthly' ? 'selected="selected"' : '' ?>>Monthly</option>
                                     <option <?= isset($is_edit) && $data_edit[0]['invoice_period'] == 'Every 3 Month' ? 'selected="selected"' : '' ?>>Every 3 Month</option>
                                     <option <?= isset($is_edit) && $data_edit[0]['invoice_period'] == 'Every 6 Month' ? 'selected="selected"' : '' ?>>Every 6 Month</option>
@@ -784,7 +803,7 @@ function dataPost()
                             <td colspan="2">                       
                                  <div class="row-color" style="width: 100%;">
                                     <span>Working Schedule</span> 
-                                    <?php if (isset($is_edit) && $data_edit[0]['status'] == 'draft' && !$data_edit[0]['id_work_schedule']): ?><button id="make-working-schedule">Make Working Schedule</button><?php endif; ?>
+                                    <?php if (isset($is_edit) && $data_edit[0]['status'] == 'draft' && !$data_edit[0]['id_work_schedule']): ?><button id="make-working-schedule" <?php if(isset($is_view)){ echo 'disabled=disabled';} ?>>Make Working Schedule</button><?php endif; ?>
                                 </div>
                             </td>
                         </tr>

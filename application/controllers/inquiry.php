@@ -61,5 +61,13 @@ class Inquiry extends MY_Controller
         $interfunction_param[0] = array("paramKey" => "id", "paramValue" => $id);
         return array('log_param' => $param, "interfunction_param" => $interfunction_param);
     }
+    
+    public function init_view($id)
+    {
+        $data = $this->init_edit_inquiry($id);
+        $data['is_view'] = true;
+        
+        return $data;
+    }
 }
 ?>

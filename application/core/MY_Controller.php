@@ -679,10 +679,5 @@ class MY_Controller extends CI_Controller
         
         return false;
     }
-    
-    public function test()
-    {
-        echo 'hahaha';
-    }
 }
 ?>

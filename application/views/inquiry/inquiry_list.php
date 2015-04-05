@@ -50,8 +50,26 @@
             { text: 'Status', dataField: 'status', width: 100, cellclassname: cellclass}
         ]
     });
+    
+    $("#jqxgrid").on('rowdoubleclick', function(event){
+        
+        var row = $('#jqxgrid').jqxGrid('getrowdata', event.args.rowindex);
+        
+        if(row != null)
+        {
+            var data_post = {};
+            var param = [];
+            var item = {};
+            item['paramName'] = 'id';
+            item['paramValue'] = row.id_inquiry;
+            param.push(item);        
+            load_content_ajax(GetCurrentController(), 'view_detail_inquiry' ,data_post, param);
+            
+        }
+
+    });
                 
-    });  
+ });  
 </script>
 <script>
 function CreateData()

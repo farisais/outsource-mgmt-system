@@ -303,5 +303,59 @@ class Product_model extends CI_Model
         
         return $pl_product;
     }
+    
+    //==========================================================================================
+    
+    public function get_product_definition_all()
+    {
+        $query = 'select pd.*, p.*, os.structure_name, pos.name as position_level_name from product_definition as pd inner join product as p on p.id_product=pd.product 
+                inner join organisation_structure as os on os.id_organisation_structure=pd.organisation_structure left join position_level as pos on pos.id_position_level=pd.position_level';
+                
+        $result = $this->db->query($query);
+        return $result->result_array();
+    }
+    
+    public function get_product_definition_by_id($id)
+    {
+         $query = 'select pd.*, p.*, os.structure_name, pos.name as position_level_name from product_definition as pd inner join product as p on p.id_product=pd.product 
+                inner join organisation_structure as os on os.id_organisation_structure=pd.organisation_structure left join position_level as pos on pos.id_position_level=pd.position_level 
+                where pd.id_product_definition=' . $id;
+                
+        $result = $this->db->query($query);
+        return $result->result_array();
+    }
+    
+    public function save_product_definition($data)
+    {
+        $data_input = array();
+        $data_input['product'] = $data['product'];
+        $data_input['organisation_structure'] = $data['position'];
+        $data_input['position_level'] = ($data['position_level'] == '' ? null : $data['position_level']);
+        
+        $this->db->insert('product_definition', $data_input);
+        
+        return $data_input;
+    }
+    
+    public function edit_product_definition($data)
+    {
+        $data_input = array();
+        $data_input['product'] = $data['product'];
+        $data_input['organisation_structure'] = $data['position'];
+        $data_input['position_level'] = ($data['position_level'] == '' ? null : $data['position_level']);
+        
+        $this->db->where('id_product_definition', $data['id_product_definition']);
+        $this->db->update('product_definition', $data_input);
+        
+        return $data_input;
+    }
+    
+    public function delete_product_definition($id)
+    {
+        $this->db->where('id_product_definition', $id);
+        $this->db->delete('product_definition');
+        
+        return $id;
+    }
 
 }
