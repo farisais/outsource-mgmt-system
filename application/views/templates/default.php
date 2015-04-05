@@ -84,6 +84,11 @@ $(document).ready(function(){
     });
 </script>
 <script>
+function formatDate(date) {
+        var foo = date;
+        var arr = foo.split("/");
+        return arr[2]+'-'+arr[1]+'-'+arr[0];
+}
 function printArea(area)
 {
         alert('haha');

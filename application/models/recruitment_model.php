@@ -8,8 +8,20 @@ class Recruitment_model extends CI_Model
 	
 	public function get_recruitment_all()
 	{                
-		return $this->db->get('recruitment')->result_array();
+		return $this->db->query("select *,(CASE WHEN (validation='0') THEN 'No Validate' ELSE 'Validate' END) as validasi  from recruitment order by id asc")->result_array();
 	}
+    
+    public function get_list_employment_type(){
+        return $this->db->get('employment_type')->result_array();
+    }
+    
+    public function get_list_employment_level(){
+        return $this->db->get('position_level')->result_array();
+    }
+    
+    public function get_list_organisation_structure(){
+        return $this->db->get('organisation_structure')->result_array();
+    }
     
     public function add_recruitment($data)
     {

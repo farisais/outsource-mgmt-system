@@ -156,8 +156,10 @@ class Work_order_model extends CI_Model
     }
     public function get_salary_type(){
         return $this->db->get('master_salary_type')->result_array();  
-    }
+    } 
     public function save_wo_salary_setting($data){
+        //var_dump($data);
+        //die();
         $data_input["id"] = $data["id"];
         $this->delete_detail_wo_salary_setting($data_input["id"], 'wo_salary_setting');
         $this->save_detail_wo_salary_setting($data_input["id"], $data['salary_setting']);
@@ -167,20 +169,23 @@ class Work_order_model extends CI_Model
        $this->db->delete($table);
     }
     public function save_detail_wo_salary_setting($id, $data)
-    {
+    {   
+        //var_dump($data);
+        //die();
         foreach($data as $d)
         {
-            if($d['value'] != '')
+            if($d['base_value'] != '')
             {
                 $data_input = array();
                 $data_input['work_order_id'] = $id;
-                $data_input['value'] = $d['value'];
+                $data_input['base_value'] = $d['base_value'];
                 $data_input['structure_org_id'] = $d['structure_org_id'];
                 $data_input['salary_type_id'] = $d['salary_type_id'];
                 $data_input['level_employee_id'] = $d['level_employee_id'];
                 $data_input['occurence'] = $d['occurence'];
                
                 $this->db->insert('wo_salary_setting', $data_input);
+                //die();
             }
         }
     }
@@ -240,13 +245,13 @@ class Work_order_model extends CI_Model
         //var_dump($data);die();
         $data_input["id"] = $data["id"];
         $this->delete_detail_wo_shift_rotation($data_input["id"], 'shift_rotation');
-        $this->save_detail_wo_shift_rotation($data_input["id"], $data['shift_rotation']);
+        $this->save_detail_wo_shift_rotation($data_input["id"], $data['shift_rotation'],'shift_rotation');
     }
     public function delete_detail_wo_shift_rotation($id,$table){
        $this->db->where('work_order_id', $id);
        $this->db->delete($table);
     }
-    public function save_detail_wo_shift_rotation($id, $data)
+    public function save_detail_wo_shift_rotation($id, $data,$nama_table)
     {
         foreach($data as $d)
         {
@@ -276,7 +281,8 @@ class Work_order_model extends CI_Model
                 $data_input['d28'] = $d['d28'];$data_input['d29'] = $d['d29'];
                 $data_input['d30'] = $d['d30'];$data_input['d31'] = $d['d31'];
                 
-                $this->db->insert('shift_rotation', $data_input);
+                $this->db->insert($nama_table, $data_input);
+                //die();                
             }
         }
     }
@@ -396,5 +402,78 @@ WHERE shift_rotation.work_order_id=$id");
      public function get_time_schedule($id){
         $this->db->where('work_order_id', $id);
         return $this->db->get('wo_time_schedule')->result_array();  
+    }
+    public function edit_work_order($data){
+        $this->db->trans_start();
+        $data_input = array(
+            'contract_startdate' => $data['contract_startdate'],
+            'contract_expdate' => $data['contract_expdate'],
+            'project_name' => $data['project_name']
+        );
+        $this->db->where('id_work_order', $data['id_work_order']);
+        $this->db->update('work_order', $data_input);
+        $this->db->trans_complete();
+    }
+    
+    public function get_work_order_area_rotation($id)
+    {
+		$query=$this->db->query("SELECT
+employee.id_employee,        
+employee.full_name,
+area_rotation.tahun,
+area_rotation.*,
+area_rotation.bulan,
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.01) as 'd01',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.02) as 'd02',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.03) as 'd03',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.04) as 'd04',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.05) as 'd05',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.06) as 'd06',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.07) as 'd07',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.08) as 'd08',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.09) as 'd09',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.d10) as 'dd10',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.d11) as 'dd11',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.d12) as 'dd12',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.d13) as 'dd13',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.d14) as 'dd14',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.d15) as 'dd15',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.d16) as 'dd16',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.d17) as 'dd17',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.d18) as 'dd18',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.d19) as 'dd19',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.d20) as 'dd20',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.d21) as 'dd21',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.d22) as 'dd22',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.d23) as 'dd23',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.d24) as 'dd24',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.d25) as 'dd25',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.d26) as 'dd26',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.d27) as 'dd27',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.d28) as 'dd28',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.d29) as 'dd29',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.d30) as 'dd30',
+(select kode_schedule from wo_area_schedule where wo_area_schedule.id=area_rotation.d31) as 'dd31'
+FROM area_rotation
+LEFT JOIN employee ON employee.id_employee=area_rotation.employee_id
+WHERE area_rotation.work_order_id=$id");
+	
+	//	$this->db->where('work_order_product.work_order', $id);
+
+		return $query->result();
+    }
+    public function save_wo_area_rotation($data){
+        $data_input["id"] = $data["id"];
+        $this->delete_detail_wo_shift_rotation($data_input["id"], 'area_rotation');
+        $this->save_detail_wo_shift_rotation($data_input["id"], $data['area_rotation'],'area_rotation');
+    }
+    public function get_work_order_area_schedulling($id)
+    {
+        $this->db->select('wo_area_schedule.*,customer_site.site_name');
+		$this->db->from('wo_area_schedule');
+		$this->db->join('customer_site', 'customer_site.id_customer_site=wo_area_schedule.customer_site_id');
+ 	    
+       	$this->db->where('wo_area_schedule.work_order_id', $id);
+        return $this->db->get()->result_array();        
     }
 }

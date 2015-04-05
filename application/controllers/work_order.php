@@ -145,5 +145,17 @@ class Work_order extends MY_Controller
     {
         echo "{\"data\" : " . json_encode($this->work_order_model->get_work_order_time_schedulling($this->input->get('id'))) . "}";
     }
+    public function get_area_rotation()
+    {
+        echo "{\"data\" : " . json_encode($this->work_order_model->get_work_order_area_rotation($this->input->get('id'))) . "}";
+    }
+    public function save_wo_area_rotation(){
+        $this->work_order_model->save_wo_area_rotation($this->input->post());
+    }
+     public function get_work_order_area_schedulling()
+    {
+        echo "{\"data\" : " . json_encode($this->work_order_model->get_work_order_area_schedulling($this->input->get('id'))) . "}";
+    }
+    
 }
 ?>

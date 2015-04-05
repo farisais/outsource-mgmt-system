@@ -65,10 +65,15 @@ $(document).ready(function(){
         
     $('#work-order-tabs').jqxTabs({ width: '100%', autoHeight: false,position: 'top', scrollPosition: 'right'});
     $("#work-order-date").jqxDateTimeInput({width: '250px', height: '25px'}); 
+    $("#contract_expdate").jqxDateTimeInput({width: '250px', height: '25px'}); 
+    $("#contract_startdate").jqxDateTimeInput({width: '250px', height: '25px'});
     $("#delivery-date").jqxDateTimeInput({width: '250px', height: '25px', value: null}); 
     
     <?php if(isset($is_edit)) :?>
     $("#work-order-date").jqxDateTimeInput('val', <?php echo "'" . date( 'd/m/Y' , strtotime($data_edit[0]['date'])) . "'" ?>);
+    $("#contract_expdate").jqxDateTimeInput('val', <?php echo "'" . date( 'd/m/Y' , strtotime($data_edit[0]['contract_expdate'])) . "'" ?>); 
+    $("#contract_startdate").jqxDateTimeInput('val', <?php echo "'" . date( 'd/m/Y' , strtotime($data_edit[0]['contract_startdate'])) . "'" ?>);
+   
     $("#delivery-date").jqxDateTimeInput('val', <?php echo "'" . date( 'd/m/Y' , strtotime($data_edit[0]['date_delivery'])) . "'" ?>);
     <?php endif; ?>
         
@@ -289,11 +294,13 @@ $(document).ready(function(){
     var shifts = [
         {label: '1', value: '1'},
         {label: '2', value: '2'},
-        {label: '3', value: '3'}        
+        {label: '3', value: '3'} ,
+        {label: 'off', value: 'off'}        
     ];
     var hours = [
         {label: '8 Hours', value: '8'},
-        {label: '12 Hours', value: '12'}
+        {label: '12 Hours', value: '12'},
+        {label: '24 Hours', value: '24'}
     ];
 
     var urlWS = "<?php if (isset($is_edit)):?><?php echo base_url() ;?>work_schedule/get_work_schedule_detail_list/<?=$data_edit[0]['work_schedule']?><?php endif; ?>";
@@ -339,7 +346,7 @@ $(document).ready(function(){
             { text: 'Shift', dataField: 'shift_no', width: 100},
             { text: 'Working Hour', datafield: 'working_hour', displayfield: 'working_hour_name', width: 100},
             { text: 'Qty', dataField: 'qty', width: 100},
-            { text: 'Title', dataField: 'structure', displayfield: 'structure_name', width: 200}
+            { text: 'Position', dataField: 'structure', displayfield: 'structure_name', width: 200}
         ]
     });
     
@@ -387,7 +394,7 @@ $(document).ready(function(){
     var unitAdapter_salary_type = new $.jqx.dataAdapter(unitSource, {
         autoBind: true
     });
-    
+     var list = ['Per Tahun', 'Per Bulan', 'Per Minggu',, 'Per Hari', 'Per Jam'];
     
     var urlSS = "<?php if (isset($is_edit)):?><?php echo base_url() ;?>work_order/get_work_order_salary_setting?id=<?php echo $data_edit[0]['id_work_order']; ?><?php endif; ?>";
     var sourceSS =
@@ -401,7 +408,7 @@ $(document).ready(function(){
             { name: 'structure_org_id'},
             { name: 'salary_type_id'},
             { name: 'level_employee_id'},
-            { name: 'value'},
+            { name: 'base_value'},
             { name: 'occurence'},
             { name: 'structure_name'},
             { name: 'salary_type'},
@@ -1440,8 +1447,445 @@ $(document).ready(function(){
             alert('Select employee you want to enroll first');
         }
     });
-}); 
-  
+     //=================================================================================
+    //
+    //   Ara Rotation Grid
+    //
+    //=================================================================================
+    //Source Kode Schedule
+    var area_sites = [
+        
+        
+        {label: 'A1', value: '4'},
+        {label: 'A2', value: '5'},
+        {label: 'N', value: '6'}
+    ];
+    
+    
+    var area_sitesSource = {
+        datatype: "array",
+        datafields: [
+            { name: 'label', type: 'string' },
+            { name: 'value', type: 'string' }
+        ],
+        localdata: area_sites
+    };
+    var AreaAdapter = new $.jqx.dataAdapter(area_sitesSource, {
+        autoBind: true
+    });
+    
+     var urlAR = "<?php if (isset($is_edit)):?><?php echo base_url() ;?>work_order/get_area_rotation?id=<?php echo $data_edit[0]['id_work_order']; ?><?php endif; ?>";
+   
+    var sourceAR=
+    {
+        datatype: "json",
+        url: urlAR ,
+        datafields:
+        [
+            { name: 'employee_id'},
+             { name: 'id'},
+            { name: 'tahun'},
+            { name: 'bulan'},
+            { name: 'full_name'},
+            { name: 'd01'},{ name: 'd02'},{ name: 'd03'},{ name: 'd04'},{ name: 'd05'},
+            { name: 'd06'},{ name: 'd07'},{ name: 'd08'},{ name: 'd09'},{ name: 'dd10'},
+            { name: 'dd11'},{ name: 'dd12'},{ name: 'dd13'},{ name: 'dd14'},{ name: 'dd15'},
+            { name: 'dd16'},{ name: 'dd17'},{ name: 'dd18'},{ name: 'dd19'},{ name: 'dd20'},
+            { name: 'dd21'},{ name: 'dd22'},{ name: 'dd23'},{ name: 'dd24'},{ name: 'dd25'},
+            { name: 'dd26'},{ name: 'dd27'},{ name: 'dd28'},{ name: 'dd29'},{ name: 'dd30'},
+            { name: 'dd31'},
+            { name: '01', value: '01', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: '02', value: '02', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: '03', value: '03', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: '04', value: '04', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: '05', value: '05', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: '06', value: '06', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: '07', value: '07', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: '08', value: '08', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: '09', value: '09', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: 'd10', value: 'd10', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: 'd11', value: 'd11', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: 'd12', value: 'd12', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: 'd13', value: 'd13', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: 'd14', value: 'd14', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: 'd15', value: 'd15', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: 'd16', value: 'd16', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: 'd17', value: 'd17', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: 'd18', value: 'd18', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: 'd19', value: 'd19', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: 'd20', value: 'd20', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: 'd21', value: 'd21', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: 'd22', value: 'd22', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: 'd23', value: 'd23', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: 'd24', value: 'd24', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: 'd25', value: 'd25', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: 'd26', value: 'd26', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: 'd27', value: 'd27', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: 'd28', value: 'd28', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: 'd29', value: 'd29', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: 'd30', value: 'd30', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+            { name: 'd31', value: 'd31', values: { source: AreaAdapter.records, value: 'value', name: 'label' }},
+           
+        ],
+       id: 'id',
+       root: 'data'
+    };
+    var dataAdapterAR = new $.jqx.dataAdapter(sourceAR);
+    $("#area_rotation_grid").jqxGrid(
+    {
+        theme: $("#theme").val(),
+        width: '100%',
+        height: 300,
+        selectionmode : 'singlerow',
+        source: dataAdapterAR,
+        columnsresize: true,
+        editable: true,
+        filterable: true,
+        autoshowloadelement: false,
+        sortable: true,
+        pageable: true,
+        autoshowfiltericon: true,
+        rendertoolbar: function (toolbar) {
+            $("#detail_area_rotation").click(function(){
+                //$("#area_rotation_grid").jqxGrid('addrow', 5, {});
+                    var data_post = {};
+                    var param = [];
+                    var item = {};
+                    item['paramName'] = 'id';
+                    item['paramValue'] = <?php echo $data_edit[0]['id_work_order'] ?>;
+                    param.push(item);        
+                    data_post['id_work_order'] = <?php echo $data_edit[0]['id_work_order'] ?>;
+                    load_content_ajax(GetCurrentController(), 400, data_post, param);
+               // alert('ok');
+            });
+            $("#add_area_rotation").click(function(){
+                $("#area_rotation_grid").jqxGrid('addrow', 5, {});
+                //alert('ok');
+            });
+            $("#area_shift_rotation").click(function(){
+               
+                var index_rows = $('#area_rotation_grid').jqxGrid('selectedrowindex');
+                var data = $('#area_rotation_grid').jqxGrid('getrowdata',index_rows);
+                $("#area_rotation_grid").jqxGrid('addrow', 5, data);
+              //   var args = event.args;
+        
+                //alert('ok');
+            });
+            $("#remove_area_rotation").click(function(){
+                var selectedrowindex = $("#area_rotation_grid").jqxGrid('getselectedrowindex');
+                if (selectedrowindex >= 0) {
+                    var id = $("#area_rotation_grid").jqxGrid('getrowid', selectedrowindex);
+                    var commit1 = $("#area_rotation_grid").jqxGrid('deleterow', id);
+                }
+            });
+            $("#save_area_rotation").click(function(){
+                var data_post = {};
+                data_post['area_rotation'] = $("#area_rotation_grid").jqxGrid('getrows');
+                data_post['id']=$("#id_work_order").val();
+                $.ajax({
+            		url: 'work_order/save_wo_area_rotation',
+            		type: "POST",
+            		data: data_post,
+                    dataType:'json',
+            		success:function(result){
+            		  
+        		}
+           	    })
+               location.reload();
+             });
+        },
+        columns: [
+
+            
+            { text: 'Employee Name', width: 160,dataField: 'employee_id', displayfield: 'full_name', columntype: 'dropdownlist',
+            createeditor: function (row, value, editor) {
+                editor.jqxDropDownList({ source: unitAdapter_employee_grid, displayMember: 'full_name', valueMember: 'id_employee' });
+            }},
+             { text: 'Tahun', dataField: 'tahun', columntype: 'TextBox',width: 60},
+            { text: 'Bulan', dataField: 'bulan', columntype: 'TextBox',width: 60},
+            { text: '01', dataField: '01', displayfield: 'd01', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value',autoDropDownHeight:true,autoOpen: true });
+                }
+            },
+            { text: '02', dataField: '02', displayfield: 'd02', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },
+            { text: '03', dataField: '03', displayfield: 'd03', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },
+            { text: '04', dataField: '04', displayfield: 'd04', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },
+            { text: '05', dataField: '05', displayfield: 'd05', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },
+            { text: '06', dataField: '06', displayfield: 'd06', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },
+            { text: '07', dataField: '07', displayfield: 'd07', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },
+            { text: '08', dataField: '08', displayfield: 'd08', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },
+            { text: '09', dataField: '09', displayfield: 'd09', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },
+            { text: '10', dataField: 'd10', displayfield: 'dd10', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },
+            { text: '11', dataField: 'd11', displayfield: 'dd11', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },
+            { text: '12', dataField: 'd12', displayfield: 'dd12', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },
+            { text: '13', dataField: 'd13', displayfield: 'dd13', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },{ text: '14', dataField: 'd14', displayfield: 'dd14', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },{ text: '15', dataField: 'd15', displayfield: 'dd15', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },{ text: '16', dataField: 'd16', displayfield: 'dd16', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },{ text: '17', dataField: 'd17', displayfield: 'dd17', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },{ text: '18', dataField: 'd18', displayfield: 'dd18', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },{ text: '19', dataField: 'd19', displayfield: 'dd19', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },{ text: '20', dataField: 'd20', displayfield: 'dd20', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },{ text: '21', dataField: 'd21', displayfield: 'dd21', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },{ text: '22', dataField: 'd22', displayfield: 'dd22', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },{ text: '23', dataField: 'd23', displayfield: 'dd23', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },{ text: '24', dataField: 'd24', displayfield: 'dd24', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },{ text: '25', dataField: 'd25', displayfield: 'dd25', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },{ text: '26', dataField: 'd26', displayfield: 'dd26', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },{ text: '27', dataField: 'd27', displayfield: 'dd27', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },{ text: '28', dataField: 'd28', displayfield: 'dd28', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },{ text: '29', dataField: 'd29', displayfield: 'dd29', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },{ text: '30', dataField: 'd30', displayfield: 'dd30', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },{ text: '31', dataField: 'd31', displayfield: 'dd31', columntype: 'dropdownlist', width: 30,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: AreaAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },
+            
+
+        ]
+    });
+    
+    
+     //=================================================================================
+    //
+    //   Area Schedulling Grid
+    //
+    //=================================================================================
+    var customer_sites = [
+        {label: 'Gedung A', value: '1'},
+        {label: 'Gedung B', value: '2'}
+    ];
+    
+    
+    var customer_sitesSource = {
+        datatype: "array",
+        datafields: [
+            { name: 'label', type: 'string' },
+            { name: 'value', type: 'string' }
+        ],
+        localdata: customer_sites
+    };
+    var CustomerAdapter = new $.jqx.dataAdapter(customer_sitesSource, {
+        autoBind: true
+    });
+    
+    
+    
+    var urlAS = "<?php if (isset($is_edit)):?><?php echo base_url() ;?>work_order/get_work_order_area_schedulling?id=<?php echo $data_edit[0]['id_work_order']; ?><?php endif; ?>";
+    var sourceAS =
+    {
+        datatype: "json",
+        url: urlAS ,
+        datafields:
+        [
+
+ 
+            { name: 'id'},
+            { name: 'kode_schedule'},
+            { name: 'nama_schedule'},
+            { name: 'customer_site_id'},
+            { name: 'site_name', value: 'customer_site_id', values: { source: CustomerAdapter.records, value: 'value', name: 'label' }},
+            
+            { name: 'description'},
+        ],
+       
+        id: 'id_employee',
+       
+
+        root: 'data'
+    };
+    var dataAdapterAS = new $.jqx.dataAdapter(sourceAS);
+    $("#area-schedulling-grid").jqxGrid(
+    {
+        theme: $("#theme").val(),
+        width: '100%',
+        height: 200,
+        selectionmode : 'singlerow',
+        source: dataAdapterAS,
+        columnsresize: true,
+        editable: true,
+        autoshowloadelement: false,
+        sortable: true,
+        autoshowfiltericon: true,
+        rendertoolbar: function (toolbar) {
+            $("#add_area_schedulling").click(function(){
+                $("#area-schedulling-grid").jqxGrid('addrow', 5, {});
+                //alert('ok');
+            });
+            $("#remove_area_schedulling").click(function(){
+                var selectedrowindex = $("#area-schedulling-grid").jqxGrid('getselectedrowindex');
+                if (selectedrowindex >= 0) {
+                    var id = $("#area-schedulling-grid").jqxGrid('getrowid', selectedrowindex);
+                    var commit1 = $("#area-schedulling-grid").jqxGrid('deleterow', id);
+                }
+            });
+            $("#save_area_schedulling").click(function(){
+                var data_post = {};
+                data_post['area_schedulling'] = $("#area-schedulling-grid").jqxGrid('getrows');
+                data_post['id']=$("#id_work_order").val();
+                $.ajax({
+            		url: 'work_order/save_wo_area_schedulling',
+            		type: "POST",
+            		data: data_post,
+                    dataType:'json',
+            		success:function(result){
+            		  
+        		}
+           	    })
+                location.reload();
+             });
+        },
+        columns: [ 
+
+            { text: 'Kode', dataField: 'kode_schedule', width: 100},
+            { text: 'Area Name', dataField: 'nama_schedule'},
+            { text: 'Customer Site', dataField: 'customer_site_id', displayfield: 'site_name', columntype: 'dropdownlist', width: 100,
+                createeditor: function (row, value, editor) {
+                    editor.jqxDropDownList({ source: CustomerAdapter, displayMember: 'label', valueMember: 'value' });
+                }
+            },
+            { text: 'Description', dataField: 'description'},
+        ]
+    });
+    
+    //=================================================================================
+    //
+    //   Area Schedulling  Grid
+    //
+    //=================================================================================
+    
+});
+function ValidateData(){
+    
+    //alert('ok');
+    //return false;
+    var data_post = {};
+    var param = [];
+    var item = {};
+    item['paramName'] = 'id';
+    item['paramValue'] = <?php echo $data_edit[0]['id_work_order'] ?>;
+    param.push(item);        
+    data_post['id_work_order'] = <?php echo $data_edit[0]['id_work_order'] ?>;
+    load_content_ajax(GetCurrentController(), 399, data_post, param);
+    e.preventDefault();
+       
+}
+function SaveData()
+{
+    var data_post = {};
+    data_post['is_edit'] = $("#is_edit").val(); 
+    data_post['id_work_order'] = $("#id_work_order").val();
+    data_post['contract_startdate'] = formatDate($("#contract_startdate").val());
+    data_post['contract_expdate'] = formatDate($("#contract_expdate").val());
+    data_post['project_name'] = $("#project_name").val();
+    
+    load_content_ajax(GetCurrentController(), 398, data_post);
+    
+}
+function DiscardData()
+{
+    load_content_ajax(GetCurrentController(), 129, null);
+}
 function InitFunction()
 {
     var mode = $("#console-mode").val();
@@ -1616,7 +2060,30 @@ function RefreshEmployeeAssignGrid()
                 <div>
                     <table class="table-form" style="margin: 20px; width: 90%;">
                         <tr>
-                            <td colspan="2">
+                        <td>Project Name
+                        </td>
+                            <td colspan="3">
+                            
+                                 <input style="display:inline; width: 95%; font: -webkit-small-control; padding-left: 5px;" class="field" type="text" id="project_name" name="project_name" value="<?php echo (isset($is_edit) ? $data_edit[0]['project_name'] : '') ?>"/>
+                             </td>
+                            
+                        </tr>
+                        <tr>
+                        <td>Start Project
+                        </td>
+                            <td>
+                            <div id="contract_startdate" style="display: inline-block;"></div>
+                                 
+                             </td>
+                             <td>
+                               End Project
+                             </td>
+                             <td >
+                             <div id="contract_expdate" style="display: inline-block;"></div>
+                            </td>
+                        </tr>
+                         <tr>
+                            <td colspan="4">
                                 <div id="work-order-grid"></div>
                             </td>
                         </tr>
@@ -1767,7 +2234,39 @@ function RefreshEmployeeAssignGrid()
                             </td>
                         </tr>
                     </table>
-                </div>                        
+                </div> 
+                 <div>
+                    <div class="row-color" style="width: 98%; margin: 5px;">
+                        <button style="width: 30px;" id="add_area_schedulling">+</button>
+                        <button style="width: 30px;" id="remove_area_schedulling">-</button>
+                        <button style="width: 60px;" id="save_area_schedulling">save</button>
+                        
+                    </div>
+                    <table class="table-form" style="margin: 5px; width: 98%;">
+                        <tr>
+                            <td colspan="2">
+                                <div id="area-schedulling-grid"></div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>   
+                <div>
+                    <div class="row-color" style="width: 98%; margin: 5px;">
+                        <button style="width: 30px;" id="add_area_rotation">+</button>
+                        <button style="width: 30px;" id="remove_area_rotation">-</button>
+                        <button style="width: 60px;" id="copy_area_rotation">copy</button>
+                        <button style="width: 60px;" id="save_area_rotation">save</button>
+                        <button style="width: 60px;" id="detail_area_rotation">detail</button>
+                    </div>
+                    <table class="table-form" style="margin: 5px; width: 98%;">
+                        <tr>
+                            <td colspan="2">
+                                <div id="area_rotation_grid"></div>
+                            </td>
+                        </tr>
+                    </table>
+                </div> 
+                                       
             </div>
         </div>
     </div>

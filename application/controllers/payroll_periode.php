@@ -96,13 +96,17 @@ class Payroll_periode extends MY_Controller {
     {
         $date_start=$this->uri->segment(3);
         $date_finish=$this->uri->segment(4);
-        echo "{\"data\" : " . json_encode($this->payroll_periode_model->get_work_order_all($date_start,$date_finish)) . "}";
+        $id_periode=$this->uri->segment(5);
+        
+        echo "{\"data\" : " . json_encode($this->payroll_periode_model->get_work_order_all($date_start,$date_finish,$id_periode)) . "}";
     }
     function init_view(){
 
         $data['date_start']=$this->input->post('date_start');
         $data['date_finished']=$this->input->post('date_finished');
         $data['id_work_order']=$this->input->post('id_work_order');
+        $data['id_payroll_periode']=$this->input->post('id_payroll_periode');
+        
         //$total_amount_salary=$this->payroll_periode_model->get_detail_salary_per_employee($date_start,$date_finish,$id_work_order);
         //$data['total_amount_salary']= "{\"data\" : " . json_encode($this->payroll_periode_model->get_detail_salary_per_employee($date_start,$date_finish,$id_work_order)) . "}";    
         return $data;
@@ -111,9 +115,28 @@ class Payroll_periode extends MY_Controller {
         $date_start=$this->uri->segment(3);
         $date_finished=$this->uri->segment(4);
         $id_work_order=$this->uri->segment(5);
+        $id_payroll_periode=$this->uri->segment(6);
+        //$id_work_order,$id_payroll_periode,$date_start,$date_finish
         //$total_amount_salary=$this->payroll_periode_model->get_detail_salary_per_employee($date_start,$date_finish,$id_work_order);
-        echo "{\"data\" : " . json_encode($this->payroll_periode_model->get_detail_salary_per_employee($date_start,$date_finished,$id_work_order)) . "}";    
+        echo "{\"data\" : " . json_encode($this->payroll_periode_model->total_salary_all_employee($id_work_order,$id_payroll_periode,$date_start,$date_finished)) . "}";    
         //return $data;
     }
-
+    function validate_payroll_po(){
+        
+        $id_payroll_periode=$this->input->post('id_wo_approve');
+        $this->payroll_periode_model->approve_payroll($id_payroll_periode);
+        echo $id_payroll_periode;
+    }
+    public function detail_pop_up_salary() {
+        $date_start=$this->uri->segment(3);
+        $date_finished=$this->uri->segment(4);
+        $id_payroll_periode=$this->uri->segment(5);
+        $organisation_structure_id=$this->uri->segment(6);
+        $level=$this->uri->segment(7);
+        $id_work_order=$this->uri->segment(8);
+       
+        $id_employee=$this->uri->segment(9);
+        
+        echo "{\"data\" : " . json_encode($this->payroll_periode_model->detail_pop_up_salary($id_employee,$date_start,$date_finished,$organisation_structure_id,$level,$id_work_order,$id_payroll_periode)) . "}";
+    }
 }

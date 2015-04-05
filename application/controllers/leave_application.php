@@ -17,5 +17,8 @@ class Leave_application extends MY_Controller
         return null;
     }
 
+    function get_employee_list (){
+        echo "{\"data\" : " . json_encode($this->leave_application_model->get_employee_list()) . "}";
+    }
 
 }
