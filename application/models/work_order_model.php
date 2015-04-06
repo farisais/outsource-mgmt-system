@@ -230,12 +230,16 @@ class Work_order_model extends CI_Model
                 $data_input = array();
                 $data_input['work_order_id'] = $id;
                 $data_input['kode_schedule'] = $d['kode_schedule'];
-                $data_input['nama_schedule'] = $d['nama_schedule'];
-                $data_input['from_time'] = $d['from_time'];
-                $data_input['to_time'] = $d['to_time'];
-                $data_input['late_in_tolerance']=$d['late_in_tolerance'];
-                $data_input['early_out_tolerance']=$d['early_out_tolerance'];
-                
+                $data_input['nama_schedule'] = (!isset($d['nama_schedule']) ? null: $d['nama_schedule']);
+                $data_input['from_time'] = (!isset($d['from_time']) ? null : $d['from_time']);
+                $data_input['to_time'] = (!isset($d['to_time']) ? null : $d['to_time']);
+                $data_input['late_in_tolerance']= (!isset($d['late_in_tolerance']) ? null : $d['late_in_tolerance']);
+                $data_input['early_out_tolerance']= (!isset($d['early_out_tolerance']) ? null : $d['early_out_tolerance']);
+                $data_input['begin_cin'] = (!isset($d['begin_cin']) ? null : $d['begin_cin']);
+                $data_input['end_cin'] = (!isset($d['end_cin']) ? null : $d['end_cin']);
+                $data_input['begin_cout'] = (!isset($d['begin_cout']) ? null : $d['begin_cout']);
+                $data_input['end_cout'] = (!isset($d['end_cout']) ? null : $d['end_cout']);
+                $data_input['schedule_type'] = (!isset($d['schedule_type']) ? null : $d['schedule_type']);
                 
                 $this->db->insert('wo_time_schedule', $data_input);
             }

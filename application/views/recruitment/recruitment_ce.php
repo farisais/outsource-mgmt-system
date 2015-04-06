@@ -160,10 +160,15 @@ select.field
                                 }else{
                                     $islam="";
                                 }
-                                if($data_edit[0]['religion']=="Kristen"){
-                                    $kristen="selected";
+                                if($data_edit[0]['religion']=="Protestan"){
+                                    $protestan="selected";
                                 }else{
-                                    $kristen="";
+                                    $protestan="";
+                                }
+                                if($data_edit[0]['religion']=="Khatolik"){
+                                    $khatolik="selected";
+                                }else{
+                                    $khatolik="";
                                 }
                                 if($data_edit[0]['religion']=="Budha"){
                                     $budha="selected";
@@ -175,7 +180,7 @@ select.field
                                 }else{
                                     $hindu="";
                                 }
-                                if($data_edit[0]['religion']=="Konghuchu"){
+                                if($data_edit[0]['religion']=="Konghucu"){
                                     $konghuchu="selected";
                                 }else{
                                     $konghuchu="";
@@ -190,10 +195,11 @@ select.field
                             }
                             ?>
                             <option value="Islam" <?php echo (isset($is_edit) ? $islam : '' );?>>Islam</option>
-                            <option value="Kristen" <?php echo (isset($is_edit) ? $kristen : '' );?>>Kristen</option>
+                            <option value="Protestan" <?php echo (isset($is_edit) ? $protestan : '' );?>>Protestan</option>
+                            <option value="Khatolik" <?php echo (isset($is_edit) ? $khatolik : '' );?>>Khatolik</option>
                             <option value="Budha" <?php echo (isset($is_edit) ? $budha : '' );?>>Budha</option>
                             <option value="Hindu" <?php echo (isset($is_edit) ? $hindu : '' );?>>Hindu</option>
-                            <option value="Konghuchu" <?php echo (isset($is_edit) ? $konghuchu : '' );?>>Konghuchu</option>
+                            <option value="Konghuchu" <?php echo (isset($is_edit) ? $konghuchu : '' );?>>Konghucu</option>
                             <option value="Lainnya" <?php echo (isset($is_edit) ? $lainnya : '' );?>>Lainnya</option>
                         </select>
                     </td>

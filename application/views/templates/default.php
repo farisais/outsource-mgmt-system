@@ -41,7 +41,7 @@ $(document).ready(function(){
        	    load_content_ajax(controller, val, data_post);
         });
         $("#error-notification-default").jqxWindow({
-            width: 600, height: 500, resizable: false,  isModal: true, autoOpen: false, cancelButton: $("#Cancel"), modalOpacity: 0.01           
+            width: 600, height: 300, resizable: false,  isModal: true, autoOpen: false, cancelButton: $("#Cancel"), modalOpacity: 0.01           
         });
         
         $("#export-grid").click(function(e){
@@ -167,7 +167,7 @@ function load_content_ajax(controller, action, data_post, param)
             }
             catch(err)
             {
-                alert('Fatal error is happening with message : ' + output + '=====> Please contact your system administrator.');
+                //alert('Fatal error is happening with message : ' + output + '=====> Please contact your system administrator.');
             }
             
             
@@ -193,15 +193,21 @@ function load_content_ajax(controller, action, data_post, param)
 			{
                 if(obj.result == null)
                 {
-                    alert(output);
+                    //alert(output);
+                    $("#error-content").html(output);
+                    $("#error-notification-default").jqxWindow("open");
                 }
                 else if(obj.result == 'failed')
                 {
-                    alert('Failed to load data');
+                    //alert('Failed to load data');
+                    $("#error-content").html('Failed to load data');
+                    $("#error-notification-default").jqxWindow("open");
                 }
                 else if(obj.result == 'permission_denied')
                 {
-                    alert(obj.ajax_message);
+                    //alert(obj.ajax_message);
+                    $("#error-content").html(obj.ajax_message);
+                    $("#error-notification-default").jqxWindow("open");
                 }
 			}
             jqUpdateSize();

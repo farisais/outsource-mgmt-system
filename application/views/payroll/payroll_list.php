@@ -7,6 +7,7 @@ function buttonclick(){
     data_post['id_work_order'] = data.id_work_order;
     data_post['date_start'] = data.date_start;
     data_post['date_finished'] = data.date_finish;
+    data_post['id_payroll_periode'] = data.id_payroll_periode;
     load_content_ajax(GetCurrentController(), 393, data_post);
 }
     $(document).ready(function () {
@@ -27,6 +28,7 @@ function buttonclick(){
                     { name: 'contract_expdate'},
                     { name: 'total_amount_salary'},
                     {name:'id_payroll_wo'},
+                    {name:'id_payroll_periode'},
                     {name:'date_start'},
                     {name:'date_finish'}
                 ],
@@ -60,7 +62,20 @@ function buttonclick(){
                     { text: 'Start Project', dataField: 'contract_startdate'},
                     { text: 'End Project', dataField: 'contract_expdate'},
                     { text: 'Amount', dataField: 'total_amount_salary',cellsformat: 'd',width:122},
-                    { text: 'Detail',width:58,cellsalign:'center', dataField: 'id_work_order', cellsrenderer: cellsrenderer }]
+                    { text: 'Detail', datafield: 'id_work_order', columntype: 'button', cellsrenderer: function () {
+                     return "Detail";
+                  }, buttonclick: function (row) {
+                     // open the popup window when the user clicks a button.
+                        var editrow = row
+                        var data = $('#jqxgrid').jqxGrid('getrowdata', editrow);
+                        var data_post = {};
+                        data_post['id_work_order'] = data.id_work_order;
+                        data_post['date_start'] = data.date_start;
+                        data_post['date_finished'] = data.date_finish;
+                        load_content_ajax(GetCurrentController(), 393, data_post);
+                 }
+                 }
+					]
             });
     });
 </script>

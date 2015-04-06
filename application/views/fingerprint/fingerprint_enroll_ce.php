@@ -1,17 +1,17 @@
-<script src="http://103.247.10.194:3000/socket.io/socket.io.js"></script>
+<script src="<?php echo $node_js_server ?>/socket.io/socket.io.js"></script>
 <script>
 try
 {
-     var socket = io.connect('http://103.247.10.194:3000');
+     var socket = io.connect('<?php echo $node_js_server ?>');
      socket.on('welcome', function(data){
-        ConsoleWriteLine("===== " + data.message + ' on http://103.247.10.194:3000' + " =====");
+        ConsoleWriteLine("===== " + data.message + ' on <?php echo $node_js_server ?>' + " =====");
         ConsoleWriteLine("");
         ConsoleWriteLine("Select the employee you want to enroll, select APPID, then click Start Enroll");
         ConsoleWriteLine("");
      });
      
      socket.on('error', function(){
-        ConsoleWriteLine("Unable to connect fingerprint sync server on http://103.247.10.194:3000");
+        ConsoleWriteLine("Unable to connect fingerprint sync server on <?php echo $node_js_server ?>");
      });
   
   socket.on('fdCommandRespons', function(data){

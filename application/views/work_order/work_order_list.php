@@ -19,6 +19,7 @@
             {name:'contract_expdate'},
             { name: 'so'},
             { name: 'customer_name'},
+            { name: 'project_name'},
             { name: 'status'}
         ],
         id: 'id_work_order',

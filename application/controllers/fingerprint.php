@@ -96,7 +96,16 @@ class fingerprint extends MY_Controller
     
     public function open_console()
     {
-        echo $this->load->view('console/console', null, true);
+        $data = array();
+        $data['node_js_server'] = $this->appsetting_model->get_app_config_by_name('node_js_server');
+        echo $this->load->view('console/console', $data, true);
+    }
+    
+    public function init_fingerprint_enroll()
+    {
+        $data = array();
+        $data['node_js_server'] = $this->appsetting_model->get_app_config_by_name('node_js_server');
+        return $data;
     }
 }
 ?>

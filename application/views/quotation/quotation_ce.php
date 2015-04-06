@@ -3,10 +3,143 @@
 var linkrenderer = function (row, column, value) {
     return '<div style="margin: 4px;" class="jqx-left-align"><a href="' + '<?php echo base_url() ?>survey_assessment/download_file/' + value + '" target="_blank" style="padding: 2px">' + value + '</a></div>';
 };
+function view_tab_cost_element(){
+    var url = "<?php if (isset($is_edit)):?><?php echo base_url() ;?>quotation/get_cost_element/<?=$data_edit[0]['id_work_schedule']?><?php endif; ?>";
+    //var url = "<?php echo base_url() ;?>quotation/get_cost_element";
+     var source =
+        {
+            datatype: "json",
+            datafields:
+            [
+                { name: 'quotation_cost_element_id'},
+                { name: 'structure_name'},
+                { name: 'name'},
+                { name: 'description'},
+                { name: 'notes'},
+                
+            ],
+            id: 'quotation_cost_element_id',
+            url: url,
+            root: 'data'
+        };
+        
+        var urlDetail = "<?php echo base_url() ;?>quotation/get_cost_element_detail";
+        var sourceDetail =
+        {
+            datatype: "json",
+            datafields:
+            [
+                { name: 'id'},
+                { name: 'quotation_cost_element_id'},
+                { name: 'item'},
+                { name: 'nominal'},
+                { name: 'persentase'},
+                { name: 'recipient'},
+                { name: 'remarks'}
+            ],
+            url: urlDetail,
+            root: 'data',
+            async: false
+        };
+        var dataAdapter = new $.jqx.dataAdapter(source);
+        var dataDetailAdapter = new $.jqx.dataAdapter(sourceDetail, {autoBind: true});
+        var orders = dataDetailAdapter.records;
+        //alert(JSON.stringify(orders.toString()));
+        var nestedGrids = new Array();
+        var initrowdetails = function(index, parentElement, gridElement, record)
+        {
+            var id = record.uid.toString();
+            var grid = $($(parentElement).children()[0]);
+            nestedGrids[index] = grid;
+            var filtergroup = new $.jqx.filter();
+            var filter_or_operator = 1;
+            var filtervalue = id;
+            var filtercondition = 'equal';
+            var filter = filtergroup.createfilter('stringfilter', filtervalue, filtercondition);
+            // fill the orders depending on the id.
+            var ordersbyid = [];
+            for (var m = 0; m < orders.length; m++) 
+            {
+                //alert(JSON.stringify(orders[m]));
+                var result = filter.evaluate(orders[m]["quotation_cost_element_id"]);
+                if (result)
+                {
+                    ordersbyid.push(orders[m]);
+                } 
+            }
+            var orderssource = {
+                datafields:
+                [
+                    { name: 'id'},
+                    { name: 'quotation_cost_element_id'},
+                    { name: 'item'},
+                    { name: 'nominal'},
+                    { name: 'persentase'},
+                    { name: 'recipient'},
+                    { name: 'remarks'}
+                ],
+                id: 'id',
+                localdata: ordersbyid
+            }
+            var nestedGridAdapter = new $.jqx.dataAdapter(orderssource);
+            if (grid != null) {
+                grid.jqxGrid({
+                    theme: $("#theme").val(),
+                    source: nestedGridAdapter, width: '90%', height: 150,
+                    columns: [
+                      { text: 'Item', datafield: 'item'},
+                      { text: 'Nominal', datafield: 'nominal', width: 150},
+                      { text: 'Persentase', datafield: 'persentase', width: 150},
+                      { text: 'Recipient', datafield: 'recipient' },
+                      { text: 'Remarks', datafield: 'remarks'},
+                   ]
+                });
+            }
+        }
+        
+        $("#cost_element_grid").jqxGrid(
+        {
+            theme: $("#theme").val(),
+            width: '100%',
+            height: '100%',
+            source: dataAdapter,
+            rowdetails: true,
+            groupable: true,
+            columnsresize: true,
+            autoshowloadelement: false,                                                                                
+            filterable: true,
+            showfilterrow: true,
+            sortable: true,
+            autoshowfiltericon: true,
+            initrowdetails: initrowdetails,
+            rowdetailstemplate: { rowdetails: "<div id='grid' style='margin: 10px;'></div>", rowdetailsheight: 200, rowdetailshidden: true },
+            ready: function () {
+               
+            },
+            columns: [
+                { text: 'Struktur Name', dataField: 'structure_name', width: 150},
+                { text: 'Level', dataField: 'name'},
+                { text: 'Description', dataField: 'description'}, 
+                
+            ],
+            rendertoolbar: function (toolbar) {
+            $("#add_cost_element").click(function(){
+                load_content_ajax(GetCurrentController(), 401, dataPost());
+            });
+            
+            }
+        });
+}    
+function dataPost()
+{
+    var data_post = {};
+    data_post['id_quotation'] = $("#id_quotation").val();    
     
+    return data_post;
+}
 $(document).ready(function(){
     $('#quotation-tabs').jqxTabs({ width: '100%', position: 'top', scrollPosition: 'right'});
-    $("#quote-date").jqxDateTimeInput({width: '250px', height: '25px'<?php if(isset($is_view)){ echo ',disabled: true';} ?>}); 
+    $("#quote-date").jqxDateTimeInput({width: '250px', height: '25px'}); 
     $("#select-product-popup").jqxWindow({
         width: 600, height: 500, resizable: false,  isModal: true, autoOpen: false, cancelButton: $("#Cancel"), modalOpacity: 0.01           
     });
@@ -507,11 +640,13 @@ $(document).ready(function(){
     var shifts = [
         {label: '1', value: '1'},
         {label: '2', value: '2'},
-        {label: '3', value: '3'}        
+        {label: '3', value: '3'},
+        {label: 'off', value: 'off'}          
     ];
     var hours = [
         {label: '8 Hours', value: '8'},
-        {label: '12 Hours', value: '12'}
+        {label: '12 Hours', value: '12'},
+        {label: '24 Hours', value: '24'}
     ];
     var urlWS = "<?php if (isset($is_edit)):?><?php echo base_url() ;?>work_schedule/get_work_schedule_detail_list/<?=$data_edit[0]['id_work_schedule']?><?php endif; ?>";
     var sourceWS =
@@ -584,6 +719,8 @@ $(document).ready(function(){
         e.preventDefault();
     });
     <?php endif; ?>
+    
+    view_tab_cost_element();
 });
 
 function SaveData()
@@ -708,7 +845,8 @@ function dataPost()
                     <li>Product & Services</li>
                     <li>Survey / Assessment</li>
                     <li>Payment Info</li>     
-                    <li>Working Schedule</li>                                      
+                    <li>Working Schedule</li>  
+                    <li>Cost Element</li>                                    
                 </ul>
                 <div>
                     <table class="table-form" style="margin: 20px; width: 90%;">
@@ -813,7 +951,26 @@ function dataPost()
                             </td>
                         </tr>
                     </table>
-                </div>                                
+                </div> 
+                <div>
+                    <table class="table-form" style="margin: 20px; width: 90%;">
+                        <tr>
+                            <td colspan="2">                       
+                                 <div class="row-color" style="width: 100%;">
+                                   
+                                    <?php if (isset($is_edit)): ?><button style="width: 60px;" id="add_cost_element">Add</button><?php endif; ?>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                            
+                            
+                                <div id="cost_element_grid"></div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>                                  
             </div>
         </div>
     </div>

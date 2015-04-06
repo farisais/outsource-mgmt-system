@@ -229,4 +229,45 @@ class Quotation_model extends CI_Model
         
         return array('id_quotation' => $id, 'status' => 'open');
     }
+	public function get_cost_element($status = null)
+	{
+		$this->db->select('quotation_cost_element.*,quotation_cost_element.id as quotation_cost_element_id,organisation_structure.structure_name,position_level.name');
+		$this->db->from('quotation_cost_element');
+        $this->db->join('organisation_structure', 'organisation_structure.id_organisation_structure=quotation_cost_element.structure_org_id');
+        $this->db->join('position_level', 'position_level.id_position_level=quotation_cost_element.level_employee_id');
+        
+        return $this->db->get()->result_array();
+	}
+    function get_cost_element_detail(){
+        return $this->db->get('quotation_cost_element_detail')->result_array();
+        
+    }
+    
+    function copy_cost_element($id_quotation){
+        $master=$this->db->get('quotation_cost_element_template')->result_array();
+        //var_dump($master);
+        //die();
+        $data_iput=array();
+        foreach($master as $value){
+            $data_input=array(
+                            'structure_org_id'=>$value['structure_org_id'],
+                            'level_employee_id'=>$value['level_employee_id'],
+                            'description'=>$value['description'],
+                            'notes'=>$value['notes'],
+                            'quotation_id'=>$id_quotation
+                            );
+            $this->db->insert('quotation_cost_element',$data_input);
+            $last_id=$this->db->insert_id();
+            $this->insert_detail_cost_element($last_id,$value['id']);    
+        }
+        
+    }
+    function insert_detail_cost_element($last_id,$id){
+        $this->db->trans_start();
+        $this->db->query("INSERT INTO quotation_cost_element_detail(quotation_cost_element_id,item,nominal,persentase,recipient,remarks)
+                          SELECT $last_id,item,nominal,persentase,recipient,remarks FROM quotation_cost_element_detail_template WHERE
+                          quotation_cost_element_id=$id
+                            ");
+        $this->db->trans_complete();
+    }
 }

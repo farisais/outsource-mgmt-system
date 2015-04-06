@@ -106,6 +106,24 @@ class Quotation extends MY_Controller
         
         return $data;
     }
+    public function get_cost_element()
+    {   $id_work_order=$this->uri->segment(3);
+        echo "{\"data\" : " . json_encode($this->quotation_model->get_cost_element()) . "}";
+    }
+    public function get_cost_element_detail()
+    {   $id_work_order=$this->uri->segment(3);
+        echo "{\"data\" : " . json_encode($this->quotation_model->get_cost_element_detail()) . "}";
+    }
+    function init_view_cost_element(){
+        $data['id_quotation']=$this->input->post('id_quotation');
+        return $data;
+        
+    }
+    function copy_cost_element(){
+        $id_quotation=$this->input->post('id_quotation');
+        $this->quotation_model->copy_cost_element($id_quotation);
+        echo 'success';
+    }
     
 }
 ?>

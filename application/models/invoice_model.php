@@ -20,12 +20,20 @@ class Invoice_model extends CI_Model {
     }
 
     public function get_invoice_all() {
-        $this->db->select('invoice.*, so.so_number');
-        $this->db->from('invoice');
-        $this->db->join('so', 'so.id_so=invoice.so', 'LEFT');
-        $this->db->join('bank', 'bank.id_bank=invoice.rekening', 'LEFT');
-
+        $this->db->select('invoice.*,work_order.project_name,ext_company.name');
+		$this->db->from('invoice');
+		$this->db->join('payroll_wo', 'payroll_wo.id=invoice.payroll_wo_id');
+		$this->db->join('work_order', 'work_order.id_work_order=payroll_wo.work_order_id');
+		$this->db->join('ext_company', 'ext_company.id_ext_company=work_order.customer');
+		
         return $this->db->get()->result_array();
+        
+       
+        //$this->db->from('invoice');
+       // $this->db->join('so', 'so.id_so=invoice.so', 'LEFT');
+        //$this->db->join('bank', 'bank.id_bank=invoice.rekening', 'LEFT');
+
+        //return $query->result_array();
     }
 
     /*
@@ -58,32 +66,30 @@ class Invoice_model extends CI_Model {
       }
      */
 
-    public function save_invoice($data) {
+    public function save_invoice($data,$invoice_number) {
         $this->db->trans_start();
-
-        $tglinvoice = explode("/", $data['invoice_date']);
-        $tglinvoice = $tglinvoice[2] . "-" . $tglinvoice[1] . "-" . $tglinvoice[0];
+       // var_dump($data);
+        //die();
+        //$tglinvoice = explode("/", $data['invoice_date']);
+        //$tglinvoice = $tglinvoice[2] . "-" . $tglinvoice[1] . "-" . $tglinvoice[0];
 
         $data_input = array(
-            "sub_total" => $data['sub_total'],
-            "tax" => $data['tax'],
-            "total_price" => $data['total_price'],
-            "total_payment" => $data['total_payment'],
-            "status" => $data['status'],
-            "invoice_receipt_number" => $data['invoice_receipt_number'],
-            "invoice_date" => $tglinvoice,
-            "invoice_method" => $data['invoice_method'],
-            "so" => $data['so'],
-            "rekening" => $data['rekening'],
-            "work_order" => $data['work_order'],
-            "email" => $data['email']
+            "payroll_wo_id" => $data['payroll_wo_id'],
+            "total_invoice" => $data['total_invoice'],
+            "total_tax" => $data['total_tax'],
+            "sub_total" => $data['sub-total'],
+            "no_rekening" => $data['no_rekening'],
+            "invoice_date" => $data['invoice_date'],
+            "email" => $data['email'],
+            "invoice_number" => $invoice_number
         );
 
-        $result = $this->db->insert('invoice', $data_input);
-
+        $this->db->insert('invoice', $data_input);
+        $invoice_id = $this->db->insert_id();
+        //$this->save_detail_invoice($invoice_id, $data['detail_invoice']);
         $this->db->trans_complete();
 
-        return $result;
+        return $invoice_id;
     }
 
     public function generate_invoice_number() {
@@ -313,6 +319,23 @@ class Invoice_model extends CI_Model {
         $so = $ci->so_model->get_so_by_id($inv[0]['so']);
         if ($so[0]['status'] == 'close') {
             $ci->so_model->change_so_status($inv[0]['so'], 'deliver');
+        }
+    }
+     public function save_detail_invoice($id, $data)
+    {
+        foreach($data as $d)
+        {
+            if($d['product_name'] != '')
+            {
+                $data_input = array();
+                $data_input['product_name'] = $d['product_name'];
+                $data_input['unit'] = $d['unit'];
+                $data_input['description'] = $d['description'];
+                $data_input['quantity'] = $d['quantity'];
+                $data_input['price']=$d['price'];
+                $data_input['invoice_id']=$id;
+                $this->db->insert('invoice_detail', $data_input);
+            }
         }
     }
 

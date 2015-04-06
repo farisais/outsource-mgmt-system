@@ -111,4 +111,11 @@ class So extends MY_Controller
         
         return $data;
     }
+    
+      
+    public function test_dis($id)
+    {
+        echo json_encode($this->so_model->get_distinct_shift_wo_schedule($id));
+    }
+    
 }

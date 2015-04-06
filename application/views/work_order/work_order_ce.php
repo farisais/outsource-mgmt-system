@@ -331,17 +331,19 @@ $(document).ready(function(){
     {
         theme: $("#theme").val(),
         width: '100%',
-        height: 200,
+        height: 300,
         selectionmode : 'singlerow',
         source: dataAdapterWS,
         columnsresize: true,
         autoshowloadelement: false,
         groupable: true,
-        groups: ['site_name'],
+        rowdetails:true,
+        groups: ['site_name','area','structure_name'],
         sortable: true,
+        closeablegroups:false,
         autoshowfiltericon: true,
         columns: [
-            { text: 'Site', dataField: 'site', displayfield: 'site_name', width: 100},
+            { text: 'Site', dataField: 'site', displayfield: 'site_name'},
             { text: 'Area', dataField: 'area', width: 100},
             { text: 'Shift', dataField: 'shift_no', width: 100},
             { text: 'Working Hour', datafield: 'working_hour', displayfield: 'working_hour_name', width: 100},
@@ -499,12 +501,12 @@ $(document).ready(function(){
             createeditor: function (row, value, editor) {
                 editor.jqxDropDownList({ source: unitAdapter_salary_type, displayMember: 'salary_type', valueMember: 'id' });
             }},
-            { text: 'Value', datafield: 'value', width: 100},
+            { text: 'Value', datafield: 'base_value', width: 100},
              {
                         text: 'Occurence', datafield: 'occurence', width: 150, columntype: 'dropdownlist',
                         createeditor: function (row, column, editor) {
                             // assign a new data source to the dropdownlist.
-                            var list = ['Per Tahun', 'Per Bulan', 'Per Minggu',, 'Per Hari', 'Per Jam'];
+                           
                             editor.jqxDropDownList({ autoDropDownHeight: true, source: list });
                         }
                     },
@@ -690,8 +692,14 @@ $(document).ready(function(){
             { name: 'nama_schedule'},
             { name: 'from_time'},
             { name: 'to_time'},
+            { name: 'begin_cin'},
+            { name: 'end_cin'},
+            { name: 'begin_cout'},
+            { name: 'end_cout'},
             { name: 'late_in_tolerance'},
-            { name: 'early_out_tolerance'}        ],
+            { name: 'early_out_tolerance'},
+            { name: 'schedule_type'}       
+        ],
        
         id: 'id_employee',
        
@@ -727,16 +735,35 @@ $(document).ready(function(){
                 var data_post = {};
                 data_post['time_schedulling'] = $("#time-schedulling-grid").jqxGrid('getrows');
                 data_post['id']=$("#id_work_order").val();
+                loadAjaxGif();
                 $.ajax({
             		url: 'work_order/save_wo_time_schedulling',
             		type: "POST",
             		data: data_post,
                     dataType:'json',
             		success:function(result){
-            		  
-        		}
-           	    })
-                location.reload();
+            		  //alert('Transaction success!');
+         		     unloadAjaxGif();
+                      dataAdapterTS.dataBind();
+                      $("#time-schedulling-grid").jqxGrid({source: dataAdapterTS});
+                      $("#time-schedulling-grid").jqxGrid('refresh');
+        		  },
+                  error: function( jqXhr ) 
+                  {
+                    //alert('Transaction failed!');
+                    if( jqXhr.status == 400 ) { //Validation error or other reason for Bad Request 400
+                        var json = $.parseJSON( jqXhr.responseText );
+                        alert(json);
+                    }
+                    //$("#error-content").html(JSON.stringify(jqXhr.responseText).replace("\r\n", ""));
+                    //$("#error-notification-default").jqxWindow("open");
+                        //alert(JSON.stringify(jqXhr));
+                        $("#time-schedulling-grid").jqxGrid({source: dataAdapterTS});
+                      $("#time-schedulling-grid").jqxGrid('refresh');
+                        unloadAjaxGif();
+                    }
+           	    });
+                //location.reload();
              });
         },
         columns: [ 
@@ -744,15 +771,25 @@ $(document).ready(function(){
             
             { text: 'Kode', dataField: 'kode_schedule', width: 100},
             { text: 'Schedule Description', dataField: 'nama_schedule'},
+            { text: 'Sch. Type', dataField: 'schedule_type', columntype: 'combobox', 
+                createeditor: function (row, value, editor) {
+                    editor.jqxComboBox({ source: [{value: 'on', label: 'ON'}, {value: 'off', label: 'OFF'}], displayMember: 'value', valueMember: 'value' });
+                }
+            }, 
             { text: 'From', dataField: 'from_time', width: 100, cellsformat: 't'},
             { text: 'To', dataField: 'to_time', width: 100, cellsformat: 't'},
+            { text: 'Begin CIN', dataField: 'begin_cin', width: 100, cellsformat: 't'},
+            { text: 'End CIN', dataField: 'end_cin', width: 100, cellsformat: 't'},
+            { text: 'Begin COUT', dataField: 'begin_cout', width: 100, cellsformat: 't'},
+            { text: 'End COUT', dataField: 'end_cout', width: 100, cellsformat: 't'},
             { text: 'Late Tolerance (minutes)', dataField: 'late_in_tolerance', width: 100},
-            { text: 'Early Tolerance (minutes)', dataField: 'early_out_tolerance', width: 100}
-          
-
+            { text: 'Early Tolerance (minutes)', dataField: 'early_out_tolerance', width: 100},
         ]
     });
     
+    $("#time-schedulling-grid").on('rowdoubleclick', function(event){
+        //alert(JSON.stringify($(this).jqxGrid('getrowdata', event.args.rowindex)));
+    });
     //=================================================================================
     //
     //   Time Schedulling  Grid
@@ -1980,7 +2017,7 @@ function RefreshEmployeeAssignGrid()
                 <span></span>
             </span>
         </li>
-        <li <?php echo (isset($is_edit) && $data_edit[0]['status'] == 'open' ? 'class="status-active"' : '') ?>>
+        <li <?php echo (isset($is_edit) && $data_edit[0]['status'] == 'running' ? 'class="status-active"' : '') ?>>
             <span class="label">Open</span>
             <span class="arrow">
                 <span></span>
@@ -2055,7 +2092,9 @@ function RefreshEmployeeAssignGrid()
                     <li>SO Assignment</li>
                     <li>Time Schedulling</li>
                      <li>Shift Rotation</li>
-                    <li>Fingerprint Device</li>                                    
+                    <li>Fingerprint Device</li>                    
+		    <li>List Area</li>
+		    <li>Area Rotation</li>                
                 </ul>
                 <div>
                     <table class="table-form" style="margin: 20px; width: 90%;">
@@ -2199,8 +2238,8 @@ function RefreshEmployeeAssignGrid()
                             </td>
                         </tr>
                     </table>
-                </div>                            
-                <div>
+                </div>
+		<div>
                     <table class="table-form" style="margin: 20px; width: 90%;">
                         <tr>
                             <td>

@@ -2,7 +2,7 @@
 class Timesheet extends MY_Controller
 {
     function __construct() {
-        parent::__construct("authorize", "timesheet", true);
+        parent::__construct("not_authorize", "timesheet", true);
         $this->load->model('timesheet_model');
           
     }
@@ -19,7 +19,10 @@ class Timesheet extends MY_Controller
         }
         else
         {
+
             $this->timesheet_model->save_timesheet($this->input->post());
+
+            
         }
         
         return null;
@@ -96,14 +99,25 @@ class Timesheet extends MY_Controller
                 echo 'successfully save timesheet data';
             break;
         }
-        
     }
     
     public function entry_timesheet_data()
     {
         $data = $this->input->post();
-        $this->timesheet_model->entry_timesheet_raw($data, 'fingerprint_att_rte');
-        echo 'successfully save timesheet raw data';
+        $data_time = $this->timesheet_model->entry_timesheet_raw($data, 'fingerprint_att_rte');
+        echo "data return from raw ====> " . json_encode($data_time);
+        $this->timesheet_model->entry_timesheet_data_fp($data_time);
+        echo 'successfully save timesheet data';
+    }
+    
+    public function monitoring_timesheet()
+    {
+        return null;
+    }
+    
+    public function get_monitoring_timesheet_data()
+    {
+        echo "{\"data\" : " . json_encode($this->timesheet_model->view_monitoring_timesheet()) . "}";
     }
 }
 ?>

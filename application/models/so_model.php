@@ -12,8 +12,6 @@ class So_model extends CI_Model
 		$this->db->from('so');
         $this->db->join('quotation', 'quotation.id_quotation = so.quotation', 'LEFT');
         $this->db->join('ext_company', 'ext_company.id_ext_company = so.customer');
-        if ($status)
-            $this->db->where('so.status', $status);
 
 		return $this->db->get()->result_array();
 	}
@@ -373,6 +371,19 @@ class So_model extends CI_Model
 				'work_order' => $last_id
 			);
             $this->db->insert('work_order_schedule', $data_input);
+            
+        }
+        
+        $data_distinct_sch = $this->get_distinct_shift_wo_schedule($id);
+        foreach($data_distinct_sch as $dd)
+        {
+            $dat = array();
+            $dat['kode_schedule'] = $dd['kode_jadwal'];
+            $dat['nama_schedule'] = $dd['nama_jadwal'];
+            $dat['schedule_type'] = $dd['tipe_jadwal'];
+            $dat['work_order_id'] = $last_id;
+            
+            $this->db->insert('wo_time_schedule', $dat);
         }
         
         $this->db->where('id_so', $id);
@@ -381,5 +392,19 @@ class So_model extends CI_Model
         $this->db->trans_complete();
         
         return array('id_so' => $id, 'id_work_order' => $last_id, 'status' => 'close');
+    }
+    
+    public function get_distinct_shift_wo_schedule($id)
+    {
+        $query = "select distinct if(dws.shift <> 'off',CONCAT('S', dws.shift,'(',dws.working_hour,')'), 'L') as kode_jadwal, if(dws.shift <> 'off', CONCAT('Shift ', dws.shift,'(',dws.working_hour,')') ,'Libur') as nama_jadwal, if(dws.shift<>'off','on','off') as tipe_jadwal from so_schedule as ss 
+        inner join work_schedule as ws on ws.id_work_schedule=ss.work_schedule 
+        inner join detail_work_schedule as dws on dws.work_schedule=ws.id_work_schedule 
+        where ss.so = " . $id;
+        
+        $result = $this->db->query($query);
+        
+        return $result->result_array();
+        
+                    
     }
 }

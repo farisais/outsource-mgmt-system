@@ -1,4 +1,4 @@
-<script src="http://103.247.10.194:3000/socket.io/socket.io.js"></script>
+<script src="<?php echo $node_js_server ?>/socket.io/socket.io.js"></script>
 <script>
 $.wait = function(ms) {
     var defer = $.Deferred();
@@ -10,11 +10,11 @@ function init_connect_socket()
 {
     try
     {
-         socket = io.connect('http://103.247.10.194:3000');
+         socket = io.connect('<?php echo $node_js_server ?>');
          socket.on('welcome', function(data){
             ClearConsole();
             
-            ConsoleWriteLine("===== " + data.message + ' on http://103.247.10.194:3000' + " =====");
+            ConsoleWriteLine("===== " + data.message + ' on <?php echo $node_js_server ?>' + " =====");
             ConsoleWriteLine("");
             ConsoleWriteLine("Waiting for command execution...");
             ConsoleWriteLine("");
@@ -32,7 +32,7 @@ function init_connect_socket()
         		data: data,
         		success: function(output)
                 {	
-                    //alert(output);
+                   // alert(JSON.stringify(output));
                     try
                     {
                         obj = JSON.parse(output);
@@ -58,11 +58,12 @@ function init_connect_socket()
                 error: function( jqXhr ) 
                 {
                     $(".table-right-bar").unblock();
+                     var json = '';
                     if( jqXhr.status == 400 ) { //Validation error or other reason for Bad Request 400
-                        var json = $.parseJSON( jqXhr.responseText );
+                    json = $.parseJSON( jqXhr.responseText );
                         //alert(json);
                     }
-                    //$("#error-content").html(JSON.stringify(jqXhr.responseText).replace("\r\n", ""));
+                    ConsoleWriteLine(JSON.stringify(jqXhr.responseText).replace("\r\n", ""));
                     //$("#error-notification-default").jqxWindow("open");
                     
                     ConsoleWriteLine('Failed to save fingerprint data EmployeeID('+ data.respons.employee_number +') to database');

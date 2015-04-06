@@ -100,6 +100,10 @@ class Work_order extends MY_Controller
     }
      public function get_level_list()
     {
+        echo json_encode($this->work_order_model->get_level_list());
+    }
+    public function get_level_listX()
+    {
         echo "{\"data\" : " . json_encode($this->work_order_model->get_level_list()) . "}";
     }
      public function get_salary_type()
@@ -114,6 +118,7 @@ class Work_order extends MY_Controller
     }
      public function save_wo_time_schedulling(){
         $this->work_order_model->save_wo_time_schedulling($this->input->post());
+        echo "success";
     }
     public function get_time_schedule()
     {

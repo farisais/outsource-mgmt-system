@@ -3,6 +3,68 @@
     $(document).ready(function(){
         $("#leave-date-from").jqxDateTimeInput({width: '250px', height: '25px'});
         $("#leave-date-to").jqxDateTimeInput({width: '250px', height: '25px'});
+        
+        $("#get_emp_code").on('click', function(e) { //button for employee master pop up 
+            $("#select-employee-popup").jqxWindow('open');
+        });
+        
+        ///// source master table employee/////
+        var urlsecurity = "<?php echo base_url(); ?>leave_application/get_employee_list";
+        var sourcesecurity =
+            {
+                datatype: "json",
+                datafields:
+                        [
+                            {name: 'id_employee'},
+                            {name: 'employee_number'},
+                            {name: 'full_name'},
+                            {name: 'name'}
+                        ],
+                id: 'id_employee',
+                url: urlsecurity,
+                root: 'data'
+            };
+        var dataAdaptersecurity = new $.jqx.dataAdapter(sourcesecurity);
+
+        $("#select-employee-popup").jqxWindow({
+            width: 600, height: 500, resizable: false, isModal: true, autoOpen: false, cancelButton: $("#Cancel"), modalOpacity: 0.01
+        });
+
+        $("#select-employee-grid").jqxGrid(
+                {
+                    theme: $("#theme").val(),
+                    width: '100%',
+                    height: 400,
+                    selectionmode: 'singlerow',
+                    source: dataAdaptersecurity,
+                    columnsresize: true,
+                    autoshowloadelement: false,
+                    sortable: true,
+                    filterable: true,
+                    showfilterrow: true,
+                    autoshowfiltericon: true,
+                    columns: [
+                        {text: 'Employee Number', dataField: 'employee_number', width: 150},
+                        {text: 'Name', dataField: 'full_name'},
+                        {text: 'Employment Type', dataField: 'name'}
+                    ]
+                });
+                
+            ///// end source master table employee/////
+            
+        $('#select-employee-grid').on('rowdoubleclick', function (event){
+            var args = event.args;
+            var data = $('#select-employee-grid').jqxGrid('getrowdata', args.rowindex);
+            //console.log(data);
+            //return false;
+            $('#employee_number').val(data.employee_number);
+            $('#fullname').val(data.full_name);
+            $("#employment_type").val(data.name);
+            
+            
+            //$('#id_security').jqxInput('val', {label: data.name, value: data.id_ext_company});
+            $("#select-employee-popup").jqxWindow('close');
+        });
     });
 
     function SaveData()
@@ -53,7 +115,7 @@
                         Employee Number
                     </td>
                     <td colspan="2">
-                        <input style="display: inline; width: 83%" class="field" type="text" id="product-code" value="" /><button style="margin-left: 2px;" id="auto-generate">></button>
+                        <input style="display: inline; width: 83%" class="field" type="text" id="employee_number" value="" /><button style="margin-left: 2px;" id="get_emp_code">></button>
                     </td>
                     <td>
 
@@ -72,7 +134,7 @@
                         Employment Type
                     </td>
                     <td colspan="2">
-                        <input style="display: inline;" class="field" type="text" id="fullname" value="" />
+                        <input style="display: inline;" class="field" type="text" id="employment_type" value="" />
                     </td>
                 </tr>
             </table>
@@ -138,4 +200,9 @@
             <textarea class="field" id="notes" cols="10" rows="20" style="height: 50px;"></textarea>
         </div>
     </div>
+</div>
+
+<div id="select-employee-popup">
+    <div>Select Employee</div>
+    <div id="select-employee-grid"></div>
 </div>

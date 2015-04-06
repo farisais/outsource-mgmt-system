@@ -66,8 +66,8 @@ $(document).ready(function(){
         ?>
     ];
         
-    $("#select-workorder").jqxComboBox({ source: workorders, displayMember: 'label', valueMember: 'value'});
-    
+    $("#select-workorder").jqxComboBox({ source: workorders, displayMember: 'label', valueMember: 'value'<?php if(isset($is_edit)){echo ',disabled:true';} ?>});
+   
         
     
     <?php if(isset($is_edit)){?>       
@@ -91,7 +91,12 @@ $(document).ready(function(){
             { name: 'overtime'},
             { name: 'full_name'},
             { name: 'nama_supervisor'},
-            {name:'timesheet_group_id'}
+            { name: 'timesheet_group_id'},
+            { name: 'input_by'},
+            { name: 'output_by'},
+            { name: 'input_by'},
+            { name: 'late_in' },
+            { name: 'early_out' }
         ],
         id: 'id',
         url: url ,
@@ -118,7 +123,9 @@ $(document).ready(function(){
             { text: 'Out', dataField: 'out',cellsformat: 't', width: 100},
             
         ]
-    });    
+    });
+     $("#employee-so-grid").jqxGrid('setcolumnproperty', 'id_employee', 'editable', false);
+    $("#employee-so-grid").jqxGrid('setcolumnproperty', 'full_name', 'editable', false);
     <?php 
         }else{
     ?>       
@@ -155,9 +162,12 @@ $(document).ready(function(){
             { text: 'Full Name', dataField: 'full_name'},
             { text: 'In', dataField: 'in', cellsformat: 't', width: 100}, 
             { text: 'Out', dataField: 'out',cellsformat: 't', width: 100},
-          
+
+            
         ]
-    });   
+    });
+    $("#employee-so-grid").jqxGrid('setcolumnproperty', 'id_employee', 'editable', false);
+    $("#employee-so-grid").jqxGrid('setcolumnproperty', 'full_name', 'editable', false);
     <?php         
         }
     ?>
@@ -172,7 +182,7 @@ function SaveData()
     data_post['project_name'] = $("#select-workorder").val();
     data_post['id_timesheet_group'] = $("#id_timesheet_group").val();
     data_post['is_edit'] = $("#is_edit").val();
-    
+    //alert(JSON.stringify(data_post));
     //console.log(data_post);
     //return false;
      <?php if(!isset($is_edit)){?>       
@@ -215,14 +225,14 @@ function DiscardData()
         <div>
            <table class="table-form">
                 <tr>
-                    <td>
+                    <!--<td>
                         <div class="label">
                            
                         </div>
                         <div class="column-input" colspan="2">
                             <div id="quote-date" style="display: inline-block;"></div>
                         </div>
-                    </td>
+                    </td>-->
                     <td>
                         <div class="label">
                             Project Name
@@ -235,9 +245,9 @@ function DiscardData()
                     </td>
                 </tr>
                 <tr>
-                    <td>
+                    <!--<td>
 
-                    </td>
+                    </td>-->
                     <td>
                         <div class="label">
                             Date Input
@@ -249,12 +259,14 @@ function DiscardData()
                 </tr>                
             </table>
             
-            <table class="table-form" style="margin: 20px; width: 90%;">
-                        <tr>
-                            <td colspan="2">                       
-                            
-                            </td>
-                        </tr>
+            <table class="table-form" style="width: 90%;">
+                <tr>
+                    <td colspan="3">                       
+                         <div class="row-color" style="width: 100%;padding-top:4px;padding-left: 5px;height: 20px;">
+                            <span>Detail Timesheet</span>
+                        </div>
+                    </td>
+                </tr>
                         <tr>
                             <td colspan="2">
                                 <div id="employee-so-grid"></div>

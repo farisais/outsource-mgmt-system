@@ -5,10 +5,10 @@ var mysql = require('mysql');
 var needle = require('needle');
 var rest = require('restler');
 var connection = mysql.createConnection({
-	host: 'dev1.wahanausaha.co.id',
-	user: 'development',
-	password: 'development12',
-	database: 'roy_db'
+	host: '192.168.1.102',
+	user: 'roy',
+	password: '',
+	database: 'hanan_db'
 });
 
 //connect database

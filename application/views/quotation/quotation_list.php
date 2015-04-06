@@ -47,25 +47,7 @@
             { text: 'Customer', dataField: 'customer_name'},
             { text: 'Status', dataField: 'status', width: 100, cellclassname: cellclass}
         ]
-    });
-    
-     $("#jqxgrid").on('rowdoubleclick', function(event){
-        
-        var row = $('#jqxgrid').jqxGrid('getrowdata', event.args.rowindex);
-        
-        if(row != null)
-        {
-            var data_post = {};
-            var param = [];
-            var item = {};
-            item['paramName'] = 'id';
-            item['paramValue'] = row.id_quotation;
-            param.push(item);        
-            load_content_ajax(GetCurrentController(), 'view_detail_quotation' ,data_post, param);
-            
-        }
-
-    });               
+    })               
  });  
 </script>
 <script>

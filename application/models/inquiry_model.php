@@ -13,7 +13,7 @@ class Inquiry_model extends CI_Model
 		$this->db->join('ext_company', 'ext_company.id_ext_company = inquiry.customer');
         if ($status)
             $this->db->where('inquiry.status', $status);
-
+        $this->db->order_by('id_inquiry', 'DESC');
 		return $this->db->get()->result_array();
 	}
 

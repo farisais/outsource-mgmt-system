@@ -82,7 +82,7 @@ class Payroll_periode extends MY_Controller {
         $date_start=$this->uri->segment(3);
         $date_finish=$this->uri->segment(4);
         $id_periode=$this->uri->segment(5);
-       echo "{\"data\" : " . json_encode($this->payroll_periode_model->get_wo_list($id_periode,$date_start,$date_finish)) . "}";
+       echo "{\"data\" : " . json_encode($this->payroll_periode_model->get_wo_list($date_start,$date_finish,$id_periode)) . "}";
     }
     
     public function delete_payroll_po(){

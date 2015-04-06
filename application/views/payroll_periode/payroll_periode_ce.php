@@ -21,6 +21,7 @@ function buttonclick(){
         //alert(formatDate(date_finished));
         //return false;
         data_post['date_finished'] = formatDate(date_finished);
+        data_post['id_payroll_periode'] = $('#id_payroll_periode').val();
         load_content_ajax(GetCurrentController(), 393, data_post);
     // alert(data.customer_name + " " + data.id_work_order);
 }
@@ -39,6 +40,7 @@ function buttonclick_aprove(){
         date_finished = $("#date_finish").val();
         //alert(formatDate(date_finished));
         //return false;
+        data_post['id_payroll_periode'] = $('#id_payroll_periode').val();
         data_post['date_finished'] = formatDate(date_finished)
         //alert(data_post['date_finished']);
       //return false;    ;
@@ -46,6 +48,30 @@ function buttonclick_aprove(){
     // alert(data.customer_name + " " + data.id_work_order);
 }
     $(document).ready(function () {
+        var QueryString = function () {
+          // This function is anonymous, is executed immediately and 
+          // the return value is assigned to QueryString!
+          var query_string = {};
+          var query = window.location.search.substring(1);
+          var vars = query.split("&");
+          for (var i=0;i<vars.length;i++) {
+            var pair = vars[i].split("=");
+                // If first entry with this name
+            if (typeof query_string[pair[0]] === "undefined") {
+              query_string[pair[0]] = pair[1];
+                // If second entry with this name
+            } else if (typeof query_string[pair[0]] === "string") {
+              var arr = [ query_string[pair[0]], pair[1] ];
+              query_string[pair[0]] = arr;
+                // If third or later entry with this name
+            } else {
+              query_string[pair[0]].push(pair[1]);
+            }
+          } 
+            return query_string;
+        } ();//var second = getUrlVars()["id_payroll_periode"];
+        
+        //alert(QueryString.id_payroll_periode);
         $('#generate-payroll').on('click', function(e) {  
             
         });
@@ -90,7 +116,7 @@ if (isset($is_edit)) : ?>
      $("#date_start").jqxDateTimeInput('val', <?php echo "'" . date('m/d/Y', strtotime($data_edit->date_start)) . "'"; ?>);
      $("#date_finish").jqxDateTimeInput('val', <?php echo "'" . date('m/d/Y', strtotime($data_edit->date_finish)) . "'"; ?>);
      
-        var urlproject = "<?php echo base_url().'payroll_periode/get_work_order_list/'.$data_edit->date_start.'/'.$data_edit->date_finish ; ?>";
+        var urlproject = "<?php echo base_url().'payroll_periode/get_work_order_list/'.$data_edit->date_start.'/'.$data_edit->date_finish.'/' ; ?>"+$('#id_payroll_periode').val();;
         var sourceproject =
                 {
                     datatype: "json",
@@ -200,6 +226,7 @@ if (isset($is_edit)) : ?>
                                         { name: 'contract_expdate'},
                                         { name: 'total_amount_salary'},
                                         {name:'id_payroll_wo'},
+                                        {name:'status_po'},
                                         {name:'id_work_order'}
                                     ],
                             id: 'id_work_order',
@@ -259,6 +286,7 @@ if (isset($is_edit)) : ?>
                                 { text: 'Start Project', dataField: 'contract_startdate'},
                                 { text: 'End Project', dataField: 'contract_expdate'},
                                 { text: 'Amount', dataField: 'total_amount_salary',cellsformat: 'd',width:122},
+                                { text: 'Status', dataField: 'status_po'},
                                 { text: 'Detail',width:52,cellsalign:'center', dataField: 'id_work_order', cellsrenderer: cellsrenderer_approve }
                             ]
                 });
@@ -300,7 +328,19 @@ if (isset($is_edit)) : ?>
     {
         load_content_ajax('payroll_periode', 356, null);
     }
-
+    function GenerateData(){
+        var row = $('#payroll-wo-grid').jqxGrid('getrows');
+        var id_wo_approve=$('#id_payroll_periode').val();
+        $.ajax({
+            type : "POST",
+            url: "<?php echo base_url(); ?>payroll_periode/validate_payroll_po",
+            data : "id_wo_approve="+id_wo_approve,
+            success: function(data){
+                 $("#payroll-wo-grid").jqxGrid('updatebounddata');
+            }
+        });
+    }
+        
 </script>
 
 <style>
@@ -352,12 +392,11 @@ if (isset($is_edit)) : ?>
 
 
 </style>
+
 <input type="hidden" id="prevent-interruption" value="true" />
 <input type="hidden" id="is_edit" value="<?php echo (isset($is_edit) ? 'true' : 'false') ?>" />
 <input type="hidden" id="id_payroll_periode" value="<?php echo (isset($is_edit) ? $data_edit->id_payroll_periode : '') ?>" />
 <div class="document-action" style="display: none;">
-    <?php if (isset($is_edit) && $data_edit->status == 'draft'): ?><button id="generate-payroll">Generate</button><?php endif; ?>
-    
     <ul class="document-status">
         
         <li <?php echo (isset($is_edit) && $data_edit->status == 'draft' ? 'class="status-active"' : '') ?>>
@@ -381,13 +420,14 @@ if (isset($is_edit)) : ?>
     </ul>
 </div>
 
-<div id='form-container' style="font-size: 13px; font-family: Arial, Helvetica, Tahoma">
+<div  style="font-size: 13px; font-family: Arial, Helvetica, Tahoma">
     <div class="form-center">
         <div style="padding: 15px; padding-bottom: 50px;">
             <table class="table-form">
                 <tr>
                     <td class="label">
                         Periode Name
+                      
                     </td>
                     <td>
                         <input class="field" type="text" id="periode_name" name="periode_name" value="<?php echo (isset($is_edit) ? $data_edit->periode_name : '') ?>"/>
