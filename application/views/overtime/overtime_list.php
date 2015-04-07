@@ -52,7 +52,7 @@
 <script>
     function CreateData()
     {
-        load_content_ajax('overtime', 381, null);
+        load_content_ajax('overtime', 'create_overtime', null);
     }
 
     function EditData()
@@ -63,13 +63,13 @@
             var data_post = {};
             var param = [];
             var item = {};
-            item['paramName'] = 'id_overtime';
+            item['paramName'] = 'id';
             item['paramValue'] = row.id_overtime;
             param.push(item);
             data_post['id_overtime'] = row.id_overtime;
             //console.log(row);
             //alert(row.id_payroll_periode);
-            load_content_ajax(GetCurrentController(), 384, data_post, param);
+            load_content_ajax(GetCurrentController(), 'edit_overtime', data_post, param);
         }
         else
         {

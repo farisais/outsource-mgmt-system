@@ -1,24 +1,28 @@
 <script type="text/javascript" src="<?php echo base_url() ?>jqwidgets/globalization/globalize.js"></script>
 <script>
 $(document).ready(function () {
-    
-    
-   
         
     $("#date_overtime").jqxDateTimeInput({width: '250px', height: '25px', value: null});
     $("#from_overtime,#to_overtime").jqxDateTimeInput({ width: '250px', height: '25px', formatString: 'HH:mm:ss', showCalendarButton: false});
 
     <?php if (isset($is_edit)) : ?>
-        $("#overtime-validate").on('click', function(e) {  
-            var data_post = {};
-            var param = [];
-            var item = {};
-            item['paramName'] = 'id';
-            item['paramValue'] = <?php echo $data_edit->id_overtime ?>;
-            param.push(item);        
-            data_post['is_edit'] = $("#is_edit").val();
-            data_post['id_overtime'] = $("#id_overtime").val();
-            load_content_ajax(GetCurrentController(), 385, data_post, param);
+        $("#overtime-validate").on('click', function(e) { 
+            if($("#status-timesheet").val() == "Timesheet Match")
+            {
+                var data_post = {};
+                var param = [];
+                var item = {};
+                item['paramName'] = 'id';
+                item['paramValue'] = <?php echo $data_edit->id_overtime ?>;
+                param.push(item);        
+                data_post['is_edit'] = $("#is_edit").val();
+                data_post['id_overtime'] = $("#id_overtime").val();
+                load_content_ajax(GetCurrentController(), 385, data_post, param);
+            }
+            else
+            {
+                alert("Overtime data is not match with timesheet. Cannot Validate");
+            }
             e.preventDefault();
         });    
         $("#date_overtime").jqxDateTimeInput('val', <?php echo "'" . date('m/d/Y', strtotime($data_edit->date_overtime)) . "'"; ?>);
@@ -98,8 +102,81 @@ $(document).ready(function () {
             //$('#id_security').jqxInput('val', {label: data.name, value: data.id_ext_company});
             $("#select-security-popup").jqxWindow('close');
         });
+        
+        $("#description").val("<?php echo (isset($is_edit) ? $data_edit->description : '') ?>");
+    //=================================================================================
+    //
+    //   Timesheet Check
+    //
+    //=================================================================================
+    
+    $("#timesheet-check-grid").on('bindingcomplete', function(){
+        var rowdata = $(this).jqxGrid('getrows');
+        //alert(rowdata[0].ot_status);
+        $("#status-timesheet").css('color', 'red');
+        if(rowdata.length == 0)
+        {
+            $("#status-timesheet").val("Timesheet Not Found");
+        }
+        else if(rowdata[0].working_hour == null)
+        {
+             $("#status-timesheet").val("Timesheet Not Complete");
+        }
+        else if(rowdata[0]['ot_status'] == 'not_match')
+        {
+            $("#status-timesheet").val("Timesheet Not Match");
+        }
+        else
+        {
+            $("#status-timesheet").val("Timesheet Match");
+            $("#status-timesheet").css('color', 'green');
+        }
+    });
+    
+    var url = "<?php echo base_url()?>overtime/get_timesheet_for_overtime/<?php echo (isset($is_edit) ? $data_edit->id_overtime : '') ?>"; 
+    var source =
+    {
+        datatype: "json",
+        datafields:
+        [
+            { name: 'id_overtime'},
+            { name: 'id_security'},
+            { name: 'timesheet_date', type: 'date'},
+            { name: 'in'},
+            { name: 'out'},
+            { name: 'working_hour'},
+            { name: 'project_name'},
+            { name: 'ot_status'}
+        ],
+        id: 'id_overtime',
+        url: url ,
+        root: 'data'
+    };
+    var dataAdapter = new $.jqx.dataAdapter(source);
+    $("#timesheet-check-grid").jqxGrid(
+    {
+        theme: $("#theme").val(),
+        width: '95%',
+        height: 250,
+        selectionmode : 'singlerow',
+        source: dataAdapter,
+        editable: false,
+        columnsresize: true,
+        autoshowloadelement: false,                                                                                
+        sortable: true,
+        autoshowfiltericon: true,        
+        columns: [
+            { text: 'Project Name', dataField: 'project_name'},
+            { text: 'Date', dataField: 'timesheet_date', cellsformat: 'dd/MM/yyyy'},
+            { text: 'In', dataField: 'in', cellsformat: 't', width: 100}, 
+            { text: 'Out', dataField: 'out',cellsformat: 't', width: 100},
+            { text: 'Working Hour', dataField: 'working_hour', width: 100},
+        ]
+    });
 
     });
+    
+    
 
     function SaveData() {
         var data_post = {};
@@ -198,7 +275,9 @@ $(document).ready(function () {
 </div>
 
 <div id='form-container' style="font-size: 13px; font-family: Arial, Helvetica, Tahoma">
-    <div class="form-center">
+    <div class="form-center" style="padding: 30px;">
+    <div><h1 style="font-size: 18pt; font-weight: bold;">Overtime / <?php echo (isset($is_edit) ? $data_edit->id_overtime : ''); ?></span></h1></div>
+    <div><h1 style="font-size: 18pt; font-weight: bold;"></span></h1></div>
         <div>
             <table class="table-form" >
                 <tr>
@@ -266,11 +345,33 @@ $(document).ready(function () {
                         Description
                     </td>
                     <td>
-                        <textarea class="field" id="description" name="description" style="height: 50px;" rows="6" cols="40">
-                            <?php echo (isset($is_edit) ? $data_edit->description : '') ?>
-                        </textarea>
+                        <textarea class="field" id="description" name="description" style="height: 50px;" rows="6" cols="40"></textarea>
                     </td>
                     <td></td>
+                </tr>
+                <tr>
+                    <td class="label">
+                        Status
+                    </td>
+                    <td>
+                        <input type="text" class="field" id="status-timesheet" value="" readonly="true"/>
+                    </td>
+                    <td>
+                    
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3">                       
+                         <div class="row-color" style="width: 95%;padding-top:4px;padding-left: 5px;height: 20px;">
+                            <span>Cross Check Timesheet</span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3">                       
+                        <div id="timesheet-check-grid">
+                        </div>
+                    </td>
                 </tr>
             </table>
         </div>

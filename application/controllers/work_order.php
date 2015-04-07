@@ -162,5 +162,12 @@ class Work_order extends MY_Controller
         echo "{\"data\" : " . json_encode($this->work_order_model->get_work_order_area_schedulling($this->input->get('id'))) . "}";
     }
     
+    public function unassign_so_assignment()
+    {
+        $this->work_order_model->unassign_so_assignment($this->input->post('so_assignment_number'), $this->input->post('wo'));
+        
+        echo 'success';
+    }
+    
 }
 ?>

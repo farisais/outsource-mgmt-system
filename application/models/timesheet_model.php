@@ -337,6 +337,48 @@ class Timesheet_model extends CI_Model
         }
     }
     
+    public function entry_timesheet_device_log($data, $source)
+    {
+        $ci =& get_instance();
+        $ci->load->model('employee_model');   
+        switch($source)
+        {
+            case "fingerprint_sch":
+                foreach($data[0]['transaction'] as $tr)
+                {
+                    $data_input = array();
+                    $id = $ci->employee_model->get_employee_id_by_number($tr['employee_number']);                   
+                    $timesheet = $this->get_timesheet_device_log_detail($id[0]['id_employee'], $tr['date'], $tr['time']);
+                    if(count($id) > 0)
+                    {
+                        if(count($timesheet) == 0)
+                        {
+                                $wo = $this->get_so_assignment($id[0]['id_employee']);
+                                $data_input['employee'] = $id[0]['id_employee'];
+                                $data_input['date'] = $tr['date'];
+                                $data_input['time'] = $tr['time'];
+                                $data_input['source'] = 'fingerprint_sch';
+                                $data_input['app_id'] = $tr['AppID'];
+                                $data_input['serial_number'] = $tr['serial_number'];
+                                $data_input['work_order'] = $wo[0]['work_order_id'];
+                                $this->db->insert('timesheet_device_log', $data_input);
+                        }
+                    }
+                }
+            break;
+        }
+    }
+
+    public function get_so_assignment($id)
+    {
+        $this->db->select('*');
+        $this->db->from('so_assignment');
+        $this->db->where('so_assignment_number', $id);
+        $this->db->where('status', 'assign');
+        
+        return $this->db->get()->result_array();    
+    }
+    
     public function entry_timesheet_raw($data, $source)
     {
         
@@ -644,9 +686,20 @@ class Timesheet_model extends CI_Model
         return $this->db->get()->result_array();
     }
     
+    public function get_timesheet_device_log_detail($employee, $date, $time)
+    {
+        $this->db->select('*');
+        $this->db->from('timesheet_device_log');
+        $this->db->where('employee', $employee);
+        $this->db->where('date', $date);
+        $this->db->where('time', $time);
+        
+        return $this->db->get()->result_array();
+    }
+    
     public function get_so_assignment_from_employee($id)
     {
-        $query = "select sa.* from so_assignment as sa where so_assignment_number = " . $id;
+        $query = "select sa.* from so_assignment as sa where so_assignment_number = " . $id . ' and status=\'assign\'';
         $result = $this->db->query($query);
         return $result->result_array();
     }
@@ -692,7 +745,7 @@ class Timesheet_model extends CI_Model
     
     public function view_monitoring_timesheet()
     {
-        $query = "select t.*, tg.date, tg.work_order_id,e.employee_number, e.id_employee, e.full_name, os.structure_name, wo.work_order_number, wo.project_name,
+        $query = "select t.*, tg.id as tg_id,tg.date, tg.work_order_id,e.employee_number, e.id_employee, e.full_name, os.structure_name, wo.work_order_number, wo.project_name,
         if((t.in is not NULL) and (t.out is not NULL), if((TIME_TO_SEC(TIMEDIFF(t.out, t.in)) / 3600) < 0 , 24 + (TIME_TO_SEC(TIMEDIFF(t.out, t.in)) / 3600) , (TIME_TO_SEC(TIMEDIFF(t.out, t.in)) / 3600)), NULL) as working_hour 
         from timesheet as t 
         inner join employee as e on e.id_employee = t.employee_number 
@@ -726,6 +779,17 @@ class Timesheet_model extends CI_Model
         
         return $ts;
         
+    }
+    
+    public function get_timesheet_device_log()
+    {
+        $this->db->select('tdl.*, wo.work_order_number as wo_number, wo.project_name, e.employee_number, e.full_name, os.structure_name');
+        $this->db->from('timesheet_device_log as tdl');
+        $this->db->join('employee as e', 'e.id_employee=tdl.employee', 'inner');
+        $this->db->join('work_order as wo', 'wo.id_work_order=tdl.work_order', 'left');
+        $this->db->join('organisation_structure as os', 'os.id_organisation_structure=e.organisation_structure_id', 'inner');
+
+        return $this->db->get()->result_array();
     }
     
 }

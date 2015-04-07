@@ -529,7 +529,8 @@ $(document).ready(function(){
             { name: 'full_name'},
             { name: 'structure_name'},
             { name: 'level_posisi'},
-            { name: 'fingerprint_assign_status'}
+            { name: 'fingerprint_assign_status'},
+            { name: 'status'}
         ],
         id: 'id_so_assignmnent',
         url: urlSO ,
@@ -567,6 +568,7 @@ $(document).ready(function(){
             $("#save_so_assignment").click(function(){
                 var data_post = {};
                 data_post['so_assignment'] = $("#so-assignment-grid").jqxGrid('getrows');
+                loadAjaxGif();
                 data_post['id']=$("#id_work_order").val();
                 $.ajax({
             		url: 'work_order/save_wo_so_assignment',
@@ -574,19 +576,69 @@ $(document).ready(function(){
             		data: data_post,
                     dataType:'json',
             		success:function(result){
-            		  
-        		}
-           	    })
+            		      //unloadAjaxGif();
+      		        }
+                    /*error:function(jqXhr){
+                        if( jqXhr.status == 400 ) { //Validation error or other reason for Bad Request 400
+                            var json = $.parseJSON( jqXhr.responseText );
+                            alert(json);
+                        }
+                        $("#error-content").html(JSON.stringify(jqXhr.responseText).replace("\r\n", ""));
+                        $("#error-notification-default").jqxWindow("open");
+                        
+                        unloadAjaxGif();
+                    }*/
+           	    });
                location.reload();
                 //$('#so-assignment-grid').jqxGrid('updatebounddata');
+             });
+             
+             $("#unassign_so_assignment").click(function(){
+                
+                var row = $('#so-assignment-grid').jqxGrid('getrowdata', parseInt($('#so-assignment-grid').jqxGrid('getselectedrowindexes')));
+        
+                if(row != null)
+                {
+                   if(confirm("Are you sure you want to unassign employee : " + row.full_name))
+                    {
+                        var data_post = {};
+                        data_post['so_assignment_number'] = row.so_assignment_number;
+                        data_post['wo'] = $("#id_work_order").val();
+                        loadAjaxGif();
+                        $.ajax({
+                    		url: 'work_order/unassign_so_assignment',
+                    		type: "POST",
+                    		data: data_post,
+                            dataType:'json',
+                    		success:function(result){
+                    		      //unloadAjaxGif();
+              		        }
+                            /*error:function(jqXhr){
+                                if( jqXhr.status == 400 ) { //Validation error or other reason for Bad Request 400
+                                    var json = $.parseJSON( jqXhr.responseText );
+                                    alert(json);
+                                }
+                                $("#error-content").html(JSON.stringify(jqXhr.responseText).replace("\r\n", ""));
+                                $("#error-notification-default").jqxWindow("open");
+                                
+                                unloadAjaxGif();
+                            }*/
+                   	    });
+                        location.reload();
+                    }
+                }
+                else
+                {
+                    alert('Select employee to unassign');
+                }
              });
         },
         columns: [
             { text: 'ID', dataField: 'so_assignment_number', width: 50},
             { text: 'Name', dataField: 'full_name'},
             { text: 'Position', dataField: 'structure_name', width: 150},
-            { text: 'Level', dataField: 'level_posisi', width: 150}
-            
+            { text: 'Level', dataField: 'level_posisi', width: 150},
+            { text: 'status', dataField: 'status'}
         ]
     });
     
@@ -790,11 +842,6 @@ $(document).ready(function(){
     $("#time-schedulling-grid").on('rowdoubleclick', function(event){
         //alert(JSON.stringify($(this).jqxGrid('getrowdata', event.args.rowindex)));
     });
-    //=================================================================================
-    //
-    //   Time Schedulling  Grid
-    //
-    //=================================================================================
     
     
     //=================================================================================
@@ -2200,7 +2247,8 @@ function RefreshEmployeeAssignGrid()
                     <div class="row-color" style="width: 98%; margin: 5px;">
                         <button style="width: 30px;" id="add_so_assignment">+</button>
                         <button style="width: 30px;" id="remove_so_assignment">-</button>
-                        <button style="width: 60px;" id="save_so_assignment">save</button>
+                        <button style="width: 60px;" id="save_so_assignment">Save</button>
+                        <button style="width: 70px; float: right; margin-right: 5px;" id="unassign_so_assignment">Unassign</button>
                     </div>
                     <table class="table-form" style="margin: 5px; width: 98%;">
                         <tr>

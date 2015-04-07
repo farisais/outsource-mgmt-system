@@ -323,6 +323,7 @@ class Work_order_model extends CI_Model
         $this->db->join('organisation_structure', 'organisation_structure.id_organisation_structure=employee.organisation_structure_id');
  	    $this->db->join('position_level', 'position_level.id_position_level=employee.position_level');
 		$this->db->where('so_assignment.work_order_id', $id);
+        $this->db->where('so_assignment.status', 'assign');
         return $this->db->get()->result_array();        
     }
 	
@@ -338,6 +339,7 @@ class Work_order_model extends CI_Model
  	    $this->db->join('position_level', 'position_level.id_position_level=employee.position_level');
         $this->db->join('fingerprint_template as fp', 'fp.employee=employee.id_employee', 'LEFT');
 		$this->db->where('so_assignment.work_order_id', $id);
+        $this->db->where('so_assignment.status', 'assign');
         return $this->db->get()->result_array();        
     }
 	
@@ -396,7 +398,24 @@ WHERE shift_rotation.work_order_id=$id");
 		$this->db->from('employee');
 		$this->db->join('organisation_structure', 'organisation_structure.id_organisation_structure=employee.organisation_structure_id');
  	    $this->db->join('position_level', 'position_level.id_position_level=employee.position_level');
-		return $this->db->get()->result_array();        
+        
+        $employee = $this->db->get()->result_array();
+        $e_return = array();
+        for($i=0;$i<count($employee);$i++)
+        {
+            $this->db->select('*');
+            $this->db->from('so_assignment');
+            $this->db->where('so_assignment_number', $employee[$i]['id_employee']);
+            $this->db->where('status', 'assign');
+            
+            $emp_check = $this->db->get()->result_array();
+            
+            if(count($emp_check) == 0 )
+            {
+                array_push($e_return, $employee[$i]);
+            }
+        }
+		return $e_return;        
     }
     public function get_work_order_time_schedulling($id)
     {
@@ -479,5 +498,15 @@ WHERE area_rotation.work_order_id=$id");
  	    
        	$this->db->where('wo_area_schedule.work_order_id', $id);
         return $this->db->get()->result_array();        
+    }
+    
+    public function unassign_so_assignment($id, $wo)
+    {
+        $this->db->trans_start();
+        $this->db->where('so_assignment_number', $id);
+        $this->db->where('work_order_id', $wo);
+        //$this->db->update('so_assignment', array("status" => "unassign"));
+        $this->db->delete('so_assignment');
+        $this->db->trans_complete();
     }
 }

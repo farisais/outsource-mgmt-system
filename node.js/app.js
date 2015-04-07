@@ -5,8 +5,8 @@ var mysql = require('mysql');
 var needle = require('needle');
 var rest = require('restler');
 var connection = mysql.createConnection({
-	host: '192.168.1.102',
-	user: 'roy',
+	host: '127.0.0.1',
+	user: 'root',
 	password: '',
 	database: 'hanan_db'
 });
@@ -283,14 +283,14 @@ io.sockets.on('connection', function(socket) {
 			case 'att_transaction':
 				var data_post = {};
 				data_post['data'] = data;
-				rest.post('http://103.247.10.194/bazcorp/timesheet/entry_timesheet_data', data_post).on('complete', function(data, response){
+				rest.post('http://127.0.0.1/bazcorp/timesheet/entry_timesheet_data', data_post).on('complete', function(data, response){
 					console.log(data);
 				});
 			break;
 			case 'request_transaction':
 				var data_post = {};
 				data_post['data'] = data;
-				rest.post('http://103.247.10.194/bazcorp/timesheet/entry_timesheet_fingeprint_log', data_post).on('complete', function(data, response){
+				rest.post('http://127.0.0.1/bazcorp/timesheet/entry_timesheet_fingeprint_log', data_post).on('complete', function(data, response){
 					console.log(data);
 				});
 				//io.sockets.emit('listenRte', { eventName: 'request_transaction', eventArgs: data.data, AppID: null } );

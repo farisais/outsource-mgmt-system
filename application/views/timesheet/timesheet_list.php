@@ -8,7 +8,7 @@
         datafields:
         [
             { name: 'id'},
-            { name: 'date'},
+            { name: 'date', type: 'date'},
             { name: 'create_time'},
             { name: 'project_name'},
             { name: 'input_method'}
@@ -33,7 +33,7 @@
         autoshowfiltericon: true,
         columns: [
             { text: 'Project Name', dataField: 'project_name'},
-            { text: 'Date', dataField: 'date', width: 170},
+            { text: 'Date', dataField: 'date', cellsformat: 'dd/MM/yyyy',width: 170},
             { text: 'Create Time', dataField: 'create_time', width: 170},
             { text: 'Input Method', dataField: 'input_method', width: 170},
         ]

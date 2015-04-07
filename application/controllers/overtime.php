@@ -42,9 +42,9 @@ class Overtime extends MY_Controller {
         return null;
     }
 
-    public function init_edit_overtime() {        
+    public function init_edit_overtime($id) {        
         $data = array(
-            'data_edit' => $this->overtime_model->get_edit_overtime(),
+            'data_edit' => $this->overtime_model->get_edit_overtime($id),
             'is_edit' => true
         );
         
@@ -60,9 +60,15 @@ class Overtime extends MY_Controller {
     {
         echo "{\"data\" : " . json_encode($this->overtime_model->get_security_all()) . "}";
     }
+    
     public function validate_overtime()
     {
         $this->overtime_model->validate_overtime($this->input->post());
-        
+         return null;
+    }
+    
+    public function get_timesheet_for_overtime($id)
+    {
+        echo "{\"data\" : " . json_encode($this->overtime_model->get_timesheet_for_overtime($id)) . "}";
     }
 }

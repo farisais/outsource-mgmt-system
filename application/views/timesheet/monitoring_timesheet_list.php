@@ -8,6 +8,7 @@
         datafields:
         [
             { name: 'id'},
+            { name: 'tg_id'},
             { name: 'in'},
             { name: 'out'},
             { name: 'input_by'},
@@ -73,6 +74,7 @@
         columns: [
             { width: 150, text: 'Employee No.',dataField: 'employee_number',cellclassname: cellclass},
             { width: 150, text: 'Name',dataField: 'full_name', displayfield: 'full_name', cellclassname: cellclass},
+            { width: 150, text: 'Date',dataField: 'date', cellsformat: 'dd/MM/yyyy',cellclassname: cellclass},
             { width: 150, text: 'Position',dataField: 'structure_name',cellclassname: cellclass},
             { width: 150, text: 'WO',dataField: 'work_order_number',cellclassname: cellclass},
             { width: 150, text: 'Project',dataField: 'project_name',cellclassname: cellclass},
@@ -84,7 +86,6 @@
             { width: 150, text: 'OT',dataField: 'overtime',cellclassname: cellclass},
             { width: 150, text: 'Late In (Mins)',dataField: 'late_in',cellclassname: cellclass2},
             { width: 150, text: 'Early Out (Mins)',dataField: 'early_out',cellclassname: cellclass2},
-            { width: 150, text: 'Date',dataField: 'date', cellsformat: 'dd/MM/yyyy',cellclassname: cellclass},
             { width: 150, text: 'Shift ID',dataField: 'shift_id', displayfield: 'shift_code',cellclassname: cellclass},
             { width: 150, text: 'Shift',dataField: 'nama_shift',cellclassname: cellclass},
             { width: 150, text: 'Shift Start',dataField: 'shift_start',cellclassname: cellclass},
@@ -94,20 +95,26 @@
  });  
 </script>
 <script>
-function CreateData()
+function ViewDetail()
 {
-    
+    var row = $('#jqxgrid').jqxGrid('getrowdata', parseInt($('#jqxgrid').jqxGrid('getselectedrowindexes')));
+    if(row != null)
+    {
+        var data_post = {};
+        var param = [];
+        var item = {};
+        item['paramName'] = 'id';
+        item['paramValue'] = row.tg_id;
+        param.push(item);        
+        data_post['id_timesheet'] = row.tg_id;
+        load_content_ajax(GetCurrentController(), 'edit_timesheet' ,data_post, param);
+    }
+    else
+    {
+        alert('Select data you want to edit first');
+    }       
 }
 
-function EditData()
-{
-                     
-}
-
-function DeleteData()
-{
-    
-}
 
 </script>
 <style>

@@ -19,10 +19,7 @@ class Timesheet extends MY_Controller
         }
         else
         {
-
             $this->timesheet_model->save_timesheet($this->input->post());
-
-            
         }
         
         return null;
@@ -95,7 +92,7 @@ class Timesheet extends MY_Controller
             break;
             case "request_transaction":
                 //echo json_encode($data);
-                $this->timesheet_model->entry_timesheet($data['data'],'fingerprint_sch');
+                $this->timesheet_model->entry_timesheet_device_log($data['data'],'fingerprint_sch');
                 echo 'successfully save timesheet data';
             break;
         }
@@ -118,6 +115,11 @@ class Timesheet extends MY_Controller
     public function get_monitoring_timesheet_data()
     {
         echo "{\"data\" : " . json_encode($this->timesheet_model->view_monitoring_timesheet()) . "}";
+    }
+    
+    public function get_timesheet_device_log()
+    {
+        echo "{\"data\" : " . json_encode($this->timesheet_model->get_timesheet_device_log()) . "}";
     }
 }
 ?>
