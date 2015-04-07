@@ -185,12 +185,12 @@ class Timesheet_model extends CI_Model
     public function get_detail_employee_on_edit($id)
     {
    	    $query =$this->db->query("SELECT t.*,
-                            e.id_employee,
-                            e.full_name,ee.full_name as nama_supervisor
-                            FROM timesheet t
-                            JOIN employee e ON e.id_employee=t.employee_number
-                            LEFT JOIN employee ee ON ee.employee_number=t.supervisor_id
-                            WHERE t.timesheet_group_id=$id");
+        e.id_employee,
+        e.full_name,ee.full_name as nama_supervisor, if((t.in is not NULL) and (t.out is not NULL), if((TIME_TO_SEC(TIMEDIFF(t.out, t.in)) / 3600) < 0 , 24 + (TIME_TO_SEC(TIMEDIFF(t.out, t.in)) / 3600) , (TIME_TO_SEC(TIMEDIFF(t.out, t.in)) / 3600)), NULL) as working_hour 
+        FROM timesheet t
+        JOIN employee e ON e.id_employee=t.employee_number
+        LEFT JOIN employee ee ON ee.employee_number=t.supervisor_id
+        WHERE t.timesheet_group_id=$id");
                 
 		return $query->result_array();
     }
@@ -692,7 +692,9 @@ class Timesheet_model extends CI_Model
     
     public function view_monitoring_timesheet()
     {
-        $query = "select t.*, tg.date, tg.work_order_id,e.employee_number, e.id_employee, e.full_name, os.structure_name, wo.work_order_number, wo.project_name from timesheet as t 
+        $query = "select t.*, tg.date, tg.work_order_id,e.employee_number, e.id_employee, e.full_name, os.structure_name, wo.work_order_number, wo.project_name,
+        if((t.in is not NULL) and (t.out is not NULL), if((TIME_TO_SEC(TIMEDIFF(t.out, t.in)) / 3600) < 0 , 24 + (TIME_TO_SEC(TIMEDIFF(t.out, t.in)) / 3600) , (TIME_TO_SEC(TIMEDIFF(t.out, t.in)) / 3600)), NULL) as working_hour 
+        from timesheet as t 
         inner join employee as e on e.id_employee = t.employee_number 
         inner join timesheet_group as tg on t.timesheet_group_id=tg.id 
         inner join work_order as wo on wo.id_work_order=tg.work_order_id 

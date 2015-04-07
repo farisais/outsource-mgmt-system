@@ -96,7 +96,8 @@ $(document).ready(function(){
             { name: 'output_by'},
             { name: 'input_by'},
             { name: 'late_in' },
-            { name: 'early_out' }
+            { name: 'early_out' },
+            { name: 'working_hour'},
         ],
         id: 'id',
         url: url ,
@@ -121,6 +122,7 @@ $(document).ready(function(){
             { text: 'Full Name', dataField: 'full_name'},
             { text: 'In', dataField: 'in', cellsformat: 't', width: 100}, 
             { text: 'Out', dataField: 'out',cellsformat: 't', width: 100},
+            { text: 'Working Hour', dataField: 'working_hour', width: 100},
             
         ]
     });
@@ -162,7 +164,7 @@ $(document).ready(function(){
             { text: 'Full Name', dataField: 'full_name'},
             { text: 'In', dataField: 'in', cellsformat: 't', width: 100}, 
             { text: 'Out', dataField: 'out',cellsformat: 't', width: 100},
-
+            { text: 'Working Hour', dataField: 'working_hour', width: 100},
             
         ]
     });
