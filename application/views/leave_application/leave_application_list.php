@@ -6,16 +6,17 @@
             datatype: "json",
             datafields:
                 [
-                    { name: 'id_leave_application'},
-                    { name: 'employee'},
-                    { name: 'leave_date_from', type: 'date'},
-                    { name: 'leave_date_to', type: 'date'},
-                    { name: 'days_of_leave'},
-                    { name: 'type'},
-                    { name: 'status'},
-                    { name: 'reason'}
+                    { name: 'id'},
+                    { name: 'employee_id'},
+                    { name: 'full_name'},
+                    { name: 'start_date', type: 'date'},
+                    { name: 'end_date', type: 'date'},
+                    { name: 'total_day'},
+                    { name: 'leave_type'},
+                    { name: 'reason'},
+                    { name: 'validasi'}
                 ],
-            id: 'id_leave_application',
+            id: 'id',
             url: url,
             root: 'data'
         };
@@ -34,12 +35,13 @@
                 sortable: true,
                 autoshowfiltericon: true,
                 columns: [
-                    { text: 'Employee', dataField: 'employee', width: 150},
-                    { text: 'Date From', dataField: 'leave_date_from', width: 125, cellsformat: 'dd/MM/yyyy',filtertype: 'date'},
-                    { text: 'Date To', dataField: 'leave_date_to', width: 125, cellsformat: 'dd/MM/yyyy',filtertype: 'date'},
-                    { text: 'Type', dataField: 'type', width: 100},
+                    { text: 'Employee', dataField: 'full_name', width: 150},
+                    { text: 'Date From', dataField: 'start_date', width: 125, cellsformat: 'dd/MM/yyyy',filtertype: 'date'},
+                    { text: 'Date To', dataField: 'end_date', width: 125, cellsformat: 'dd/MM/yyyy',filtertype: 'date'},
+                    { text: 'Type', dataField: 'leave_type', width: 100},
+                    { text: 'Leave Day', dataField: 'total_day'},
                     { text: 'Reason', dataField: 'reason'},
-                    { text: 'Status', dataField: 'status', width: 100}
+                    { text: 'Status', dataField: 'validasi', width: 100}
                 ]
             });
 
@@ -49,6 +51,43 @@
     function CreateData()
     {
         load_content_ajax(GetCurrentController(), 160, null, null);
+    }
+    function EditData()
+    {
+        var row = $('#jqxgrid').jqxGrid('getrowdata', parseInt($('#jqxgrid').jqxGrid('getselectedrowindexes')));
+        if(row != null)
+        {
+            var data_post = {};
+            var param = [];
+            var item = {};
+            item['paramName'] = 'id';
+            item['paramValue'] = row.id;
+            param.push(item);        
+            data_post['id'] = row.id;
+            load_content_ajax(GetCurrentController(), 161 ,data_post, param);
+        }
+        else
+        {
+            alert('Select data you want to edit first');
+        }                            
+    }
+    function DeleteData()
+    {
+        var row = $('#jqxgrid').jqxGrid('getrowdata', parseInt($('#jqxgrid').jqxGrid('getselectedrowindexes')));
+            
+        if(row != null)
+        {
+           if(confirm("Are you sure you want to delete recruitment : " + row.full_name))
+            {
+                var data_post = {};
+                data_post['id'] = row.id;
+                load_content_ajax(GetCurrentController(), 162 ,data_post);
+            }
+        }
+        else
+        {
+            alert('Select recruitment you want to delete first');
+        }
     }
 </script>
 <style>

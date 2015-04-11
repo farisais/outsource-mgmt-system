@@ -1,18 +1,17 @@
 <script>
     $(document).ready(function () {
-        var url = "<?php echo base_url() ;?>incident_report/get_incident_report_list";
+        var url = "<?php echo base_url() ;?>cost_element/get_cost_element_list";
         var source =
         {
             datatype: "json",
             datafields:
                 [
-                    { name: 'id'},
-                    { name: 'employee_id'},
-                    { name: 'full_name'},
-                    { name: 'incident_time'},
-                    { name: 'location'}
+                    { name: 'id_cost_element'},
+                    { name: 'name'},
+                    { name: 'description'},
+                    { name: 'date_create', type: 'date'}
                 ],
-            id: 'id',
+            id: 'id_cost_element',
             url: url,
             root: 'data'
         };
@@ -21,7 +20,7 @@
             {
                 theme: $("#theme").val(),
                 width: '100%',
-                height: 450,
+                height: '100%',
                 source: dataAdapter,
                 groupable: true,
                 columnsresize: true,
@@ -31,9 +30,9 @@
                 sortable: true,
                 autoshowfiltericon: true,
                 columns: [
-                    { text: 'Employee', dataField: 'full_name', width: 150},
-                    { text: 'Incident Time', dataField: 'incident_time'},
-                    { text: 'Location', dataField: 'location'}
+                    { text: 'Name', dataField: 'name'},
+                    { text: 'Description', dataField: 'description'},
+                    { text: 'Date Create', dataField: 'date_create', cellsformat: 'dd/MM/yyyy', width: 100},
                 ]
             });
 
@@ -42,8 +41,9 @@
 <script>
     function CreateData()
     {
-        load_content_ajax(GetCurrentController(), 175, null, null);
+        load_content_ajax(GetCurrentController(), 'create_cost_element_2', null, null);
     }
+
     function EditData()
     {
         var row = $('#jqxgrid').jqxGrid('getrowdata', parseInt($('#jqxgrid').jqxGrid('getselectedrowindexes')));
@@ -53,51 +53,40 @@
             var param = [];
             var item = {};
             item['paramName'] = 'id';
-            item['paramValue'] = row.id;
-            param.push(item);        
-            data_post['id'] = row.id;
-            load_content_ajax(GetCurrentController(), 176 ,data_post, param);
+            item['paramValue'] = row.id_cost_element;
+            param.push(item);
+            data_post['id_cost_element'] = row.id_cost_element;
+            load_content_ajax(GetCurrentController(), 'edit_cost_element' ,data_post, param);
         }
         else
         {
             alert('Select data you want to edit first');
-        }                            
+        }
     }
+
     function DeleteData()
     {
         var row = $('#jqxgrid').jqxGrid('getrowdata', parseInt($('#jqxgrid').jqxGrid('getselectedrowindexes')));
-            
+
         if(row != null)
         {
-           if(confirm("Are you sure you want to delete recruitment : " + row.full_name))
+            if(confirm("Are you sure you want to delete cost_element : " + row.name + ' WARNING: ALL REFERENCE DATA TO THIS COST ELEMENT WILL BE ALSO DELETED.'))
             {
                 var data_post = {};
-                data_post['id'] = row.id;
-                load_content_ajax(GetCurrentController(), 177 ,data_post);
+                data_post['id_cost_element'] = row.id_cost_element;
+                load_content_ajax(GetCurrentController(), 'delete_cost_element' ,data_post);
             }
         }
         else
         {
-            alert('Select recruitment you want to delete first');
+            alert('Select Cost Element you want to delete first');
         }
     }
+
 </script>
-<style>
-    .green {
-        color: green;
-    }
-    .red {
-        color: red;
-    }
-    .blue {
-        color: blue;
-    }
-</style>
 <div id='form-container' style="font-size: 13px; font-family: Arial, Helvetica, Tahoma">
     <div class="form-full">
         <div id="jqxgrid">
         </div>
     </div>
 </div>
-
-<div></div>

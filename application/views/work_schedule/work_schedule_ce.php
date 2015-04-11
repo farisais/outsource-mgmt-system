@@ -144,7 +144,8 @@ $(document).ready(function(){
     var shifts = [
         {label: '1', value: '1'},
         {label: '2', value: '2'},
-        {label: '3', value: '3'}        
+        {label: '3', value: '3'},
+         {label: 'off', value: 'off'}         
     ];
     var shiftsSource = {
         datatype: "array",
@@ -159,7 +160,8 @@ $(document).ready(function(){
     });
     var hours = [
         {label: '8 Hours', value: '8'},
-        {label: '12 Hours', value: '12'}
+        {label: '12 Hours', value: '12'},
+        {label: '24 Hours', value: '24'}
     ];
     var hoursSource = {
         datatype: "array",
@@ -307,6 +309,7 @@ $(document).ready(function(){
     function setWorkScheduleColumn(adapter)
     {
         return [
+       
             { text: 'Site', dataField: 'id_customer_site', displayfield: 'site_name', columntype: 'dropdownlist', width: 100,
                 createeditor: function (row, value, editor) {
                     editor.jqxDropDownList({ source: adapter, displayMember: 'site_name', valueMember: 'id_customer_site' });

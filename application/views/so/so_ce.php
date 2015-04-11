@@ -6,7 +6,137 @@ var linkrenderer_survey = function (row, column, value) {
 var linkrenderer_contract = function (row, column, value) {
     return '<div style="margin: 4px;" class="jqx-left-align"><a href="' + '<?php echo base_url() ?>contract/download_file/' + value + '" target="_blank" style="padding: 2px">' + value + '</a></div>';
 };
+function view_tab_cost_element(id){
+    //alert(id);
+    var url = "<?php echo base_url() ;?>quotation/get_cost_element/"+id;
+     var source =
+        {
+            datatype: "json",
+            datafields:
+            [
+                { name: 'quotation_cost_element_id'},
+                { name: 'structure_name'},
+                { name: 'name'},
+                { name: 'description'},
+                { name: 'notes'},
+                { name:'total'}
+                
+            ],
+            id: 'quotation_cost_element_id',
+            url: url,
+            root: 'data'
+        };
+        
+        var urlDetail = "<?php echo base_url() ;?>quotation/get_cost_element_detail";
+        var sourceDetail =
+        {
+            datatype: "json",
+            datafields:
+            [
+                { name: 'id'},
+                { name: 'quotation_cost_element_id'},
+                { name: 'item'},
+                { name: 'nominal'},
+                { name: 'persentase'},
+                { name: 'recipient'},
+                { name: 'remarks'}
+            ],
+            url: urlDetail,
+            root: 'data',
+            async: false
+        };
+        var dataAdapter = new $.jqx.dataAdapter(source);
+        var dataDetailAdapter = new $.jqx.dataAdapter(sourceDetail, {autoBind: true});
+        var orders = dataDetailAdapter.records;
+        //alert(JSON.stringify(orders.toString()));
+        var nestedGrids = new Array();
+        var initrowdetails = function(index, parentElement, gridElement, record)
+        {
+            var id = record.uid.toString();
+            var grid = $($(parentElement).children()[0]);
+            nestedGrids[index] = grid;
+            var filtergroup = new $.jqx.filter();
+            var filter_or_operator = 1;
+            var filtervalue = id;
+            var filtercondition = 'equal';
+            var filter = filtergroup.createfilter('stringfilter', filtervalue, filtercondition);
+            // fill the orders depending on the id.
+            var ordersbyid = [];
+            for (var m = 0; m < orders.length; m++) 
+            {
+                //alert(JSON.stringify(orders[m]));
+                var result = filter.evaluate(orders[m]["quotation_cost_element_id"]);
+                if (result)
+                {
+                    ordersbyid.push(orders[m]);
+                }
+            }
+            var orderssource = {
+                datafields:
+                [
+                    { name: 'id'},
+                    { name: 'quotation_cost_element_id'},
+                    { name: 'item'},
+                    { name: 'nominal'},
+                    { name: 'persentase'},
+                    { name: 'recipient'},
+                    { name: 'remarks'}
+                ],
+                id: 'id',
+                localdata: ordersbyid
+            }
+            var nestedGridAdapter = new $.jqx.dataAdapter(orderssource);
+            if (grid != null) {
+                grid.jqxGrid({
+                    theme: $("#theme").val(),
+                    source: nestedGridAdapter, width: '90%', height: 150,
+                    columns: [
+                      { text: 'Item', datafield: 'item'},
+                      { text: 'Nominal', datafield: 'nominal', width: 150},
+                      { text: 'Persentase', datafield: 'persentase', width: 150},
+                      { text: 'Recipient', datafield: 'recipient' },
+                      { text: 'Remarks', datafield: 'remarks'},
+                   ]
+                });
+            }
+        }
+        
+        $("#cost_element_grid").jqxGrid(
+        {
+            theme: $("#theme").val(),
+            width: '100%',
+            height: '100%',
+            source: dataAdapter,
+            rowdetails: true,
+            groupable: true,
+            columnsresize: true,
+            autoshowloadelement: false,                                                                                
+            filterable: true,
+            showfilterrow: true,
+            sortable: true,
+            autoshowfiltericon: true,
+            initrowdetails: initrowdetails,
+            rowdetailstemplate: { rowdetails: "<div id='grid' style='margin: 10px;'></div>", rowdetailsheight: 200, rowdetailshidden: true },
+            ready: function () {
+               
+            },
+            columns: [
+                { text: 'Struktur Name', dataField: 'structure_name', width: 150},
+                { text: 'Level', dataField: 'name'},
+                { text: 'Description', dataField: 'description'}, 
+                { text: 'total', dataField: 'total'},
+                
+            ],
+            rendertoolbar: function (toolbar) {
+            $("#add_cost_element").click(function(){
+                load_content_ajax(GetCurrentController(), 401, dataPost());
+            });
+            
+            }
+        });
+}  
 $(document).ready(function(){
+    
     $('#so-tabs').jqxTabs({ width: '100%', position: 'top', scrollPosition: 'right'});
     $("#so-date").jqxDateTimeInput({width: '250px', height: '25px'}); 
     $("#delivery-date").jqxDateTimeInput({width: '250px', height: '25px', value: null}); 
@@ -199,7 +329,9 @@ $(document).ready(function(){
     //   Survey Grid
     //
     //=================================================================================
-    <?php if ($is_edit): ?>
+    <?php if (isset($is_edit)): ?>
+    id_quot="<?=$data_edit[0]['quotation'];?>";
+    view_tab_cost_element(id_quot);
     var urlSurvey = "<?=base_url()?>so/get_so_survey_list?id=<?=$data_edit[0]['id_so']?>";
     var sourceSurvey =
     {
@@ -224,7 +356,7 @@ $(document).ready(function(){
         theme: $("#theme").val(),
         width: '100%',
         height: 200,
-        <?php if ($is_edit): ?>source: dataAdapterSurvey,<?php endif; ?>
+        <?php if (isset($is_edit)): ?>source: dataAdapterSurvey,<?php endif; ?>
         selectionmode : 'singlerow',
         editable: false,
         columnsresize: true,
@@ -484,8 +616,10 @@ $(document).ready(function(){
     
     $('#select-quotation-grid').on('rowdoubleclick', function (event) 
     {
+        
         var args = event.args;
         var data = $('#select-quotation-grid').jqxGrid('getrowdata', args.rowindex);
+        view_tab_cost_element(data.id_quotation);
         $('#quote-number').jqxInput('val', {label: data.quote_number, value: data.id_quotation});
         $('#customer-name').val(data.customer_name);
         $('#customer-id').val(data.customer);
@@ -680,6 +814,9 @@ $(document).ready(function(){
     <div class="form-center" style="padding: 30px;">
         <div><h1 style="font-size: 18pt; font-weight: bold;">Sales Order / <span><?php echo (isset($is_edit) ? $data_edit[0]['so_number'] : ''); ?></span></h1></div>
         <div>
+        <?php
+            //var_dump($data_edit);
+        ?>
             <table class="table-form">
                 <tr>
                     <td>
@@ -725,7 +862,8 @@ $(document).ready(function(){
                     <li>Product & Services</li>
                     <li>Survey / Assessment</li>
                     <li>Contract</li>   
-                    <li>Working Schedule</li>                                     
+                    <li>Working Schedule</li>
+                    <li>Cost Element</li>                                     
                 </ul>
                 <div>
                     <table class="table-form" style="margin: 20px; width: 90%;">
@@ -751,7 +889,7 @@ $(document).ready(function(){
                                 <div class="label">
                                     Notes
                                 </div>
-                                <textarea class="field" cols="10" rows="20" style="height: 50px;"></textarea>
+                                <textarea id="notes" class="field" cols="10" rows="20" style="height: 50px;"></textarea>
                             </td>
                         </tr>                        
                     </table>
@@ -772,7 +910,7 @@ $(document).ready(function(){
                                  <div class="row-color" style="width: 100%;">
                                     <button style="width: 30px;" id="add-contract">+</button>
                                     <button style="width: 30px;" id="remove-contract">-</button>
-                                    <div style="display: inline;"><span>Add / Remove Survey</span></div>
+                                    <div style="display: inline;"><span>Add / Remove Contract</span></div>
                                     <form id="contract-form" method="post" enctype="multipart/form-data" action="<?php echo base_url() ;?>so/upload_contract">
                                         <input type="file" name="contract_file" style="display:none;" id="contract-file">
                                     </form>
@@ -801,7 +939,23 @@ $(document).ready(function(){
                             </td>
                         </tr>
                     </table>
-                </div>                               
+                </div> 
+                <div>
+                    <table class="table-form" style="margin: 20px; width: 90%;">
+                        <tr>
+                            <td colspan="2">                       
+                                 <div class="row-color" style="width: 100%;">
+                                    <span>Cost Elemen</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div id="cost_element_grid"></div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>                                  
             </div>
         </div>
     </div>

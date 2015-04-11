@@ -500,6 +500,12 @@ WHERE area_rotation.work_order_id=$id");
         return $this->db->get()->result_array();        
     }
     
+    public function get_customer_site(){
+        $this->db->from("customer_site");
+        $query = $this->db->get();
+        return $query->result();
+    }
+    
     public function unassign_so_assignment($id, $wo)
     {
         $this->db->trans_start();

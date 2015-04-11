@@ -9,14 +9,17 @@
                     datafields:
                             [
                                 {name: 'id_invoice'},
-                                {name: 'so'},
-                                {name: 'so_number'},
-                                {name: 'invoice_date', type: 'date'},
-                                {name: 'invoice_receipt_number'},
-                                {name: 'status'},
-                                {name: 'total_price', type: 'number'},
-                                {name: 'total_payment', type: 'number'},
-                                {name: 'link_invoice_pdf',},
+                                {name: 'invoice_number'},
+                                {name: 'sub_total', type: 'number'},
+                                {name: 'total_tax',type:'number'},
+                                {name: 'total_invoice',type:'number'},
+                                {name: 'no_rekening'},
+                                {name: 'invoice_date',type:'date'},
+                                {name: 'status_invoice'},
+                                {name: 'payroll_wo_id'},
+                                {name: 'link_invoice_pdf'},
+                                {name: 'project_name'},
+                                {name: 'name'},
                                 {name: 'email'}
                             ],
                     id: 'id_invoice',
@@ -49,7 +52,7 @@
         $('#jqxgrid').jqxGrid(
                 {
                     theme: $("#theme").val(),
-                    width: '100%',
+                    width: '99.8%',
                     height: '100%',
                     source: dataAdapter,
                     groupable: true,
@@ -60,41 +63,34 @@
                     sortable: true,
                     autoshowfiltericon: true,
                     columns: [
-                        {text: 'Invoice', dataField: 'invoice_receipt_number', width: 200},
-                        {text: 'Sales Order', dataField: 'so_number', width: 200},
-                        {text: 'Date', dataField: 'invoice_date', cellsformat: 'dd/MM/yyyy', filtertype: 'date'},
-                        {text: 'Total Price', dataField: 'total_price', width: 200, cellsformat: 'c2'},
-                        {text: 'Total Payment', dataField: 'total_payment', width: 200, cellsformat: 'c2'},
-                        {text: 'Status', dataField: 'status', width: 100, cellclassname: cellclass},
-                        {text: 'Invoice Document', datafield: 'link_invoice_pdf', columntype: 'button', cellsrenderer: function () {
+                        {text: 'Invoice', dataField: 'invoice_number', width: 100},
+                        {text: 'Date', width: 100, dataField: 'invoice_date', cellsformat: 'dd/MM/yyyy', filtertype: 'date'},
+                        {text: 'Sub Total', dataField: 'sub_total', cellsalign: 'right',cellsformat: 'f'},
+                        {text: 'Customer', dataField: 'name'},
+                        {text: 'Project Name', dataField: 'project_name'},
+                        {text: 'Tax', dataField: 'total_tax', cellsalign: 'right',cellsformat: 'f'},
+                        {text: 'Total Payment', dataField: 'total_invoice', width: 200, cellsalign: 'right',cellsformat: 'f'},
+                        {text: 'Status', dataField: 'status_invoice', width: 100, cellclassname: cellclass},
+                        {text: 'Invoice Document', width: 100, datafield: 'link_invoice_pdf', columntype: 'button', cellsrenderer: function () {
                                 return "PDF";
                             }, buttonclick: function (row) {
                                 var datarow = $("#jqxgrid").jqxGrid('getrowdata', row);
-                                var dt = {id:datarow.id_invoice,email: datarow.email};
-                                $.ajax({
-                                    type: "post",
-                                    url: "invoice/kirim_invoice_email",
-                                    data: dt,
-                                    dataType: "json",
-                                    success: function (hsl) {
-                                        if(hsl.success==true){
-                                            alert("Successed send Email !");
-                                        }
-                                    }
-                                })
+                                var dt = datarow.invoice_number;
+                                window.open('images/upload/' + dt + '.pdf');
                             }},
                             {text: 'Email', datafield: 'email', columntype: 'button', cellsrenderer: function () {
                                 return "Email";
                             }, buttonclick: function (row) {
                                 var datarow = $("#jqxgrid").jqxGrid('getrowdata', row);
-                                var dt = {id:datarow.id_invoice,email: datarow.email};
+                                var noInv = datarow.invoice_number;
+                                var dt = {id: datarow.id_invoice, email: datarow.email, invNo: noInv};
                                 $.ajax({
                                     type: "post",
                                     url: "invoice/kirim_invoice_email",
                                     data: dt,
                                     dataType: "json",
                                     success: function (hsl) {
-                                        if(hsl.success==true){
+                                        if (hsl.success == true) {
                                             alert("Successed send Email !");
                                         }
                                     }
@@ -128,7 +124,7 @@
     }
     function CreateData()
     {
-        load_content_ajax(GetCurrentController(), 395, null, null);
+        load_content_ajax(GetCurrentController(), 'create_invoice', null, null);
     }
 
     function EditData()
@@ -143,7 +139,7 @@
             item['paramValue'] = row.id_invoice;
             param.push(item);
             data_post['id_invoice'] = row.id_invoice;
-            load_content_ajax(GetCurrentController(), 317, data_post, param);
+            load_content_ajax(GetCurrentController(), 'edit_invoice', data_post, param);
         }
         else
         {
@@ -161,7 +157,7 @@
             {
                 var data_post = {};
                 data_post['id_invoice'] = row.id_invoice;
-                load_content_ajax(GetCurrentController(), 318, data_post);
+                load_content_ajax(GetCurrentController(), 'delete_invoice', data_post);
             }
         }
         else

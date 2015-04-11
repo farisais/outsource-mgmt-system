@@ -316,7 +316,7 @@ function DiscardData()
                         </div>
                     </td>
                 </tr>
-                 <tr>
+                <tr>
                     <td style="width: 80%;" colspan="2">
                         <div id="bom-product-grid"></div>
                     </td>

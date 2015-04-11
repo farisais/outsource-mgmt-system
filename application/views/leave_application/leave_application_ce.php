@@ -1,12 +1,42 @@
 <script type="text/javascript" src="<?php echo base_url() ?>jqwidgets/globalization/globalize.js"></script>
 <script>
     $(document).ready(function(){
-        $("#leave-date-from").jqxDateTimeInput({width: '250px', height: '25px'});
-        $("#leave-date-to").jqxDateTimeInput({width: '250px', height: '25px'});
+        $("#leave-date-from").jqxDateTimeInput({width: '250px', height: '25px', readonly: true, formatString: 'yyyy-MM-dd'});
+        $("#leave-date-to").jqxDateTimeInput({width: '250px', height: '25px', readonly: true, formatString: 'yyyy-MM-dd'});
         
         $("#get_emp_code").on('click', function(e) { //button for employee master pop up 
             $("#select-employee-popup").jqxWindow('open');
         });
+		
+		$("#leave-validate").click(function(){
+			var id = $("#id_leave_application").val();
+			if(confirm('Are You Sure To Validate This Data ?')){
+				$.ajax({
+				url:"<?=base_url();?>leave_application/leave_validate",
+				type:"post",
+				datatype:"json",
+				data: {id:id},
+				success: function(e){
+					console.log(e);  
+					window.location.replace('<?php echo base_url();?>ops?menu=124&action=159');
+				},
+				error: function(e){
+					alert(e);
+				}
+				});
+			}
+		});
+		
+        <?php 
+            if(isset($is_edit)){
+        ?>
+            var sisa= "<?=($leave_caculation['leave_duration'] - $leave_count['jumlah_hari']);?>";
+            $("#sisa-cuti").val(sisa);
+            $("#leave-date-from").val('<?php echo $data_edit->start_date; ?>');   
+            $("#leave-date-to").val('<?php echo $data_edit->end_date; ?>');   
+        <?php 
+        }
+        ?>
         
         ///// source master table employee/////
         var urlsecurity = "<?php echo base_url(); ?>leave_application/get_employee_list";
@@ -57,23 +87,55 @@
             var data = $('#select-employee-grid').jqxGrid('getrowdata', args.rowindex);
             //console.log(data);
             //return false;
+            $('#employee_id').val(data.id_employee);
             $('#employee_number').val(data.employee_number);
             $('#fullname').val(data.full_name);
             $("#employment_type").val(data.name);
-            
-            
+                cek_cuti(data.id_employee);            
             //$('#id_security').jqxInput('val', {label: data.name, value: data.id_ext_company});
             $("#select-employee-popup").jqxWindow('close');
         });
     });
-
+    
+    function cek_cuti(id){
+        $.ajax({
+            url:"<?=base_url();?>leave_application/cek_cuti",
+            type:"post",
+            datatype:"json",
+            data: {id_employee:id},
+            success: function(e){
+                console.log(e);
+                var result=e.split('|');        
+                console.log(result[0]);   
+                $("#leave-duration").text(result[1]);    
+                $("#jumlah-hari").text(result[0]);    
+                $("#sisa-cuti").text(result[2]);    
+            },
+            error: function(e){
+                alert(e);
+            }
+        });
+    }
+    
     function SaveData()
     {
-        var data_post = {};
+            var sisa_cuti=eval($("#sisa-cuti").val());
+            var leave_day=eval($("#leave-day").val());
+            if(leave_day >= sisa_cuti){
+                alert($("#sisa-cuti").val()+"-"+$("#leave-day").val());
+            }else{
+            var data_post = {};
+            data_post['is_edit']=$("#is_edit").val();
+            data_post['emloyee_id'] = $("#employee_id").val();
+            data_post['leave_type'] = $("#leave-type").val();
+            data_post['leave_date_from'] = $("#leave-date-from").val();
+            data_post['leave_date_to'] = $("#leave-date-to").val();
+            data_post['leave_day'] = $("#leave-day").val();
+            data_post['notes'] = $("#notes").val();
+            data_post['id'] = $("#id_leave_application").val();
 
-        // data_post[''] = $("#").val();
-
-        load_content_ajax(GetCurrentController(), 203, data_post);
+        load_content_ajax(GetCurrentController(), 163, data_post);
+        }
 
     }
     function DiscardData()
@@ -85,18 +147,17 @@
 
 <input type="hidden" id="prevent-interruption" value="true" />
 <input type="hidden" id="is_edit" value="<?php echo (isset($is_edit) ? 'true' : 'false') ?>" />
-<input type="hidden" id="id_leave_application" value="<?php echo (isset($is_edit) ? $data_edit[0]['id_leave_application'] : '') ?>" />
+<input type="hidden" id="id_leave_application" value="<?php echo (isset($is_edit) ? $data_edit->id : '') ?>" />
 <div class="document-action">
     <button id="leave-validate">Submit for approval</button>
-    <button id="leave-cancel">Cancel</button>
     <ul class="document-status">
-        <li class="status-active">
+        <li class="<?php echo ($data_edit->approval=="0" ? "status-active" : "");?>">
             <span class="label">Draft</span>
             <span class="arrow">
                 <span></span>
             </span>
         </li>
-        <li>
+        <li class="<?php echo ($data_edit->approval=="1" ? "status-active" : "");?>">
             <span class="label">Approved</span>
         </li>
     </ul>
@@ -112,10 +173,13 @@
                         </div>
                     </td>
                     <td class="label">
-                        Employee Number
+                        Employee Number<?php
+						//print_r($data_edit);
+						?>
                     </td>
                     <td colspan="2">
-                        <input style="display: inline; width: 83%" class="field" type="text" id="employee_number" value="" /><button style="margin-left: 2px;" id="get_emp_code">></button>
+                        <input type="hidden" id="employee_id"  value="<?php echo (isset($is_edit) ? $data_employee[0]['id_employee'] : '') ?>"/>
+                        <input style="display: inline; width: 83%" class="field" type="text" id="employee_number" value="<?php echo (isset($is_edit) ? $data_employee[0]['employee_number'] : '') ?>" /><button style="margin-left: 2px;" id="get_emp_code">...</button>
                     </td>
                     <td>
 
@@ -126,7 +190,7 @@
                         Full Name
                     </td>
                     <td colspan="2">
-                        <input style="display: inline;" class="field" type="text" id="fullname" value="" />
+                        <input style="display: inline;" class="field" type="text" id="fullname"  value="<?php echo (isset($is_edit) ? $data_employee[0]['full_name'] : '') ?>" />
                     </td>
                 </tr>
                 <tr>
@@ -134,7 +198,7 @@
                         Employment Type
                     </td>
                     <td colspan="2">
-                        <input style="display: inline;" class="field" type="text" id="employment_type" value="" />
+                        <input style="display: inline;" class="field" type="text" id="employment_type"  value="<?php echo (isset($is_edit) ? $data_employee[0]['name'] : '') ?>" />
                     </td>
                 </tr>
             </table>
@@ -146,10 +210,36 @@
                         <div class="label">Type</div>
                         <div class="column-input">
                             <select id="leave-type" class="field">
-                                <option value="Vacation">Vacation</option>
-                                <option value="Sick Leave">Sick Leave</option>
-                                <option value="Maternity">Maternity</option>
-                            <select>
+                            <?php	
+								
+                                if(isset($is_edit)){
+									switch($data_edit->leave_type){
+										case "Vacation":
+											$vacation="selected";
+											$sick="";
+											$maternity="";
+										break;
+										case "Sick Leave":
+											$sick="selected";
+											$vacation="";
+											$maternity="";
+										break;
+										case "Maternity":
+											$maternity="selected";
+											$vacation="";
+											$sick="";
+										break;
+									}
+                                }else{
+                                    $vacation="";
+                                    $sick="";
+                                    $maternity="";
+                                }
+                            ?>
+                                <option value="Vacation" <?php echo $vacation;?> >Vacation</option>
+                                <option value="Sick Leave" <?php echo $sick;?>>Sick Leave</option>
+                                <option value="Maternity" <?php echo $maternity;?>>Maternity</option>
+                            </ select>
                         </div>
                     </td>
                     <td rowspan="4">
@@ -161,9 +251,12 @@
                                 <td>Balance Leave <?=date('Y')?></td>
                             </tr>
                             <tr style="text-align: center">
-                                <td>13</td>
-                                <td>0</td>
-                                <td>11</td>
+                                <td id="leave-duration"><?=(isset($is_edit) ? $leave_caculation['leave_duration'] : '');?></td>
+                                <td id="jumlah-hari"><?=(isset($is_edit) ? $leave_count['jumlah_hari'] : '0');?></td>
+                                <td id="sisa-cuti">
+                                    <?=(isset($is_edit) ? ($leave_caculation['leave_duration'] - $leave_count['jumlah_hari']) : '0');?>
+                                    <input type="hidden" id="sisa-cuti"/>
+                                </td>
                             </tr>
                         </table>
                     </td>
@@ -188,7 +281,7 @@
                     <td>
                         <div class="label">No. of Days Applied</div>
                         <div class="column-input">
-                            <input class="field" id="leave-day" name="leave_day" type="text" value="">
+                            <input class="field" id="leave-day" name="leave_day" type="text" value="<?php echo (isset($is_edit) ? $data_edit->total_day : '') ?>">
                         </div>
                     </td>
                 </tr>
@@ -197,7 +290,7 @@
             <div class="label">
                 Reason
             </div>
-            <textarea class="field" id="notes" cols="10" rows="20" style="height: 50px;"></textarea>
+            <textarea class="field" id="notes" cols="10" rows="20" style="height: 50px;"><?php echo (isset($is_edit) ? $data_edit->reason : '') ?></textarea>
         </div>
     </div>
 </div>

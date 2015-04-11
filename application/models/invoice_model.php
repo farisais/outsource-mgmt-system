@@ -1,20 +1,5 @@
 <?php
-
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/**
- * Description of invoice_model
- *
- * @author Sapta
- */
 class Invoice_model extends CI_Model {
-
-    //put your code here
-
     public function __construct() {
         parent::__construct();
     }
@@ -338,5 +323,40 @@ class Invoice_model extends CI_Model {
             }
         }
     }
+    function invoice_detail($id_payroll_wo){
+        $query=$this->db->query("SELECT so.id_so,quotation.id_quotation,payroll_wo.work_order_id
+FROM payroll_wo
+JOIN work_order ON work_order.id_work_order=payroll_wo.work_order_id
+JOIN so ON so.id_so=work_order.so
+JOIN quotation ON quotation.id_quotation=so.quotation
+WHERE payroll_wo.id=$id_payroll_wo");
+        $array=$query->result_array();
+        $hasil=$this->get_cost_element($array[0]['id_quotation'],$array[0]['work_order_id']);
+        return $hasil;
+    }
+    public function get_cost_element($id_quotation,$id_work_order)
+	{
+		$this->db->select('quotation_cost_element.*,quotation_cost_element.id as quotation_cost_element_id,organisation_structure.structure_name,position_level.name
+        ,organisation_structure.structure_name as product_name,
+        (SELECT sum(quotation_cost_element_detail.nominal) FROM quotation_cost_element_detail WHERE quotation_cost_element_detail.quotation_cost_element_id=quotation_cost_element.id) as price,
+        (SELECT COUNT(*) FROM work_order
+                JOIN so_assignment ON so_assignment.work_order_id=work_order.id_work_order
+                JOIN employee ON employee.id_employee=so_assignment.so_assignment_number
+                WHERE employee.organisation_structure_id=quotation_cost_element.structure_org_id AND
+                id_work_order='.$id_work_order.') as quantity');
+		$this->db->from('quotation_cost_element');
+        $this->db->join('organisation_structure', 'organisation_structure.id_organisation_structure=quotation_cost_element.structure_org_id');
+        $this->db->join('position_level', 'position_level.id_position_level=quotation_cost_element.level_employee_id');
+        $this->db->where('quotation_cost_element.quotation_id',$id_quotation);
+        return $this->db->get()->result_array();
+	}
+    
+    function get_quantity(){
+        $query=$this->db->query("SELECT employee.position_level,employee.organisation_structure_id FROM work_order
+                JOIN so_assignment ON so_assignment.work_order_id=work_order.id_work_order
+                JOIN employee ON employee.id_employee=so_assignment.so_assignment_number
+                WHERE id_work_order=17");
+    }
+    
 
 }

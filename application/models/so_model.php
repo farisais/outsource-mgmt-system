@@ -12,6 +12,7 @@ class So_model extends CI_Model
 		$this->db->from('so');
         $this->db->join('quotation', 'quotation.id_quotation = so.quotation', 'LEFT');
         $this->db->join('ext_company', 'ext_company.id_ext_company = so.customer');
+        $this->db->order_by('so.id_so', 'DESC');
 
 		return $this->db->get()->result_array();
 	}
@@ -86,10 +87,10 @@ class So_model extends CI_Model
 			'quotation' => $data['quotation'],
             'customer' => $data['customer'],
 			'notes' => $data['notes'],
-            'contract_number' => $data['contract_number'],
-            'contract_startdate' => $data['contract_startdate'],
-            'contract_expdate' => $data['contract_expdate'],
-			'invoice_period' => $data['invoice_period'],
+            //'contract_number' => $data['contract_number'],
+            //'contract_startdate' => $data['contract_startdate'],
+            //'contract_expdate' => $data['contract_expdate'],
+			//'invoice_period' => $data['invoice_period'],
             'status' => 'draft'
 		);
 		$this->db->insert('so', $data_input);
@@ -184,7 +185,7 @@ class So_model extends CI_Model
                 $this->db->set('startdate', $data['startdate']);
                 $this->db->set('expdate', $data['expdate']);
                 $this->db->set('invoice_term', $data['invoice_term']);
-                $this->db->set('status', $data['status']);
+                //$this->db->set('status', $data['status']);
                 $this->db->where("id_contract", $data_contract[0]['id_contract']);
                 $this->db->update('contract');
                 
@@ -308,12 +309,25 @@ class So_model extends CI_Model
         // update inquiry status
         $this->db->where('id_quotation', $quotation);
         $this->db->update('quotation', array('status' => 'close'));
-        
+         
         $this->db->trans_complete();
 
         return array('id_so' => $id, 'status' => 'open');
     }
-    
+    function select_salary($id_quotation){
+        $query=$this->db->query("SELECT * FROM quotation_cost_element 
+        RIGHT JOIN quotation_cost_element_detail ON quotation_cost_element.id=quotation_cost_element_detail.quotation_cost_element_id
+        WHERE 
+        quotation_cost_element.quotation_id=$id_quotation AND quotation_cost_element_detail.recipient='Employee'");
+        return $query->result_array();
+    }
+    function select_cost_element($id_quotation){
+        $query=$this->db->query("SELECT * FROM quotation_cost_element 
+        RIGHT JOIN quotation_cost_element_detail ON quotation_cost_element.id=quotation_cost_element_detail.quotation_cost_element_id
+        WHERE 
+        quotation_cost_element.quotation_id=$id_quotation AND quotation_cost_element_detail.recipient='Employee'");
+        return $query->result_array();
+    }
     public function confirm_so($id)
     {
         $this->db->trans_start();
@@ -334,6 +348,23 @@ class So_model extends CI_Model
 		);
 		$this->db->insert('work_order', $data_input);
 		$last_id = $this->db->insert_id();
+        
+        $salary=$this->select_salary($data[0]['quotation']);
+        // var_dump($salary);
+        //die();
+        foreach($salary as $value){
+            $data_input = array(
+            'structure_org_id' => $value['structure_org_id'],
+            'level_employee_id' => $value['level_employee_id'],
+          'base_value' => $value['nominal'],
+          'salary_type_id' => $value['salary_type_id'],
+          'occurence' => 'Per Bulan',
+          'work_order_id'=>$last_id
+          
+        );
+        $this->db->insert('wo_salary_setting', $data_input);
+        }
+        
         
         $data_products = $this->get_so_product($id);
         foreach ($data_products as $data_product) {

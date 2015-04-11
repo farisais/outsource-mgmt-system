@@ -960,129 +960,129 @@ $(document).ready(function(){
             }},
              { text: 'Tahun', dataField: 'tahun', columntype: 'TextBox',width: 60},
             { text: 'Bulan', dataField: 'bulan', columntype: 'TextBox',width: 60},
-            { text: '01', cellsalign: 'center', width: 40,dataField: '01', displayfield: 'd01', columntype: 'dropdownlist',
+            { text: '01', cellsalign: 'center', width: 60,dataField: '01', displayfield: 'd01', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '02', cellsalign: 'center', width: 40,dataField: '02', displayfield: 'd02', columntype: 'dropdownlist',
+            { text: '02', cellsalign: 'center', width: 60,dataField: '02', displayfield: 'd02', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '03', cellsalign: 'center', width: 40,dataField: '03', displayfield: 'd03', columntype: 'dropdownlist',
+            { text: '03', cellsalign: 'center', width: 60,dataField: '03', displayfield: 'd03', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '04', cellsalign: 'center', width: 40,dataField: '04', displayfield: 'd04', columntype: 'dropdownlist',
+            { text: '04', cellsalign: 'center', width: 60,dataField: '04', displayfield: 'd04', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '05', cellsalign: 'center', width: 40,dataField: '05', displayfield: 'd05', columntype: 'dropdownlist',
+            { text: '05', cellsalign: 'center', width: 60,dataField: '05', displayfield: 'd05', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '06', cellsalign: 'center', width: 40,dataField: '06', displayfield: 'd06', columntype: 'dropdownlist',
+            { text: '06', cellsalign: 'center', width: 60,dataField: '06', displayfield: 'd06', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '07', cellsalign: 'center', width: 40,dataField: '07', displayfield: 'd07', columntype: 'dropdownlist',
+            { text: '07', cellsalign: 'center', width: 60,dataField: '07', displayfield: 'd07', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '08', cellsalign: 'center', width: 40,dataField: '08', displayfield: 'd08', columntype: 'dropdownlist',
+            { text: '08', cellsalign: 'center', width: 60,dataField: '08', displayfield: 'd08', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '09', cellsalign: 'center', width: 40,dataField: '09', displayfield: 'd09', columntype: 'dropdownlist',
+            { text: '09', cellsalign: 'center', width: 60,dataField: '09', displayfield: 'd09', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '10', cellsalign: 'center', width: 40,dataField: 'd10', displayfield: 'dd10', columntype: 'dropdownlist',
+            { text: '10', cellsalign: 'center', width: 60,dataField: 'd10', displayfield: 'dd10', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '11', cellsalign: 'center', width: 40,dataField: 'd11', displayfield: 'dd11', columntype: 'dropdownlist',
+            { text: '11', cellsalign: 'center', width: 60,dataField: 'd11', displayfield: 'dd11', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '12', cellsalign: 'center', width: 40,dataField: 'd12', displayfield: 'dd12', columntype: 'dropdownlist',
+            { text: '12', cellsalign: 'center', width: 60,dataField: 'd12', displayfield: 'dd12', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '13', cellsalign: 'center', width: 40,dataField: 'd13', displayfield: 'dd13', columntype: 'dropdownlist',
+            { text: '13', cellsalign: 'center', width: 60,dataField: 'd13', displayfield: 'dd13', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '14', cellsalign: 'center', width: 40,dataField: 'd14', displayfield: 'dd14', columntype: 'dropdownlist',
+            { text: '14', cellsalign: 'center', width: 60,dataField: 'd14', displayfield: 'dd14', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '15', cellsalign: 'center', width: 40,dataField: 'd15', displayfield: 'dd15', columntype: 'dropdownlist',
+            { text: '15', cellsalign: 'center', width: 60,dataField: 'd15', displayfield: 'dd15', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '16', cellsalign: 'center', width: 40,dataField: 'd16', displayfield: 'dd16', columntype: 'dropdownlist',
+            { text: '16', cellsalign: 'center', width: 60,dataField: 'd16', displayfield: 'dd16', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '17', cellsalign: 'center', width: 40,dataField: 'd17', displayfield: 'dd17', columntype: 'dropdownlist',
+            { text: '17', cellsalign: 'center', width: 60,dataField: 'd17', displayfield: 'dd17', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '18', cellsalign: 'center', width: 40,dataField: 'd18', displayfield: 'dd18', columntype: 'dropdownlist',
+            { text: '18', cellsalign: 'center', width: 60,dataField: 'd18', displayfield: 'dd18', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '19', cellsalign: 'center', width: 40,dataField: 'd19', displayfield: 'dd19', columntype: 'dropdownlist',
+            { text: '19', cellsalign: 'center', width: 60,dataField: 'd19', displayfield: 'dd19', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '20', cellsalign: 'center', width: 40,dataField: 'd20', displayfield: 'dd20', columntype: 'dropdownlist',
+            { text: '20', cellsalign: 'center', width: 60,dataField: 'd20', displayfield: 'dd20', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '21', cellsalign: 'center', width: 40,dataField: 'd21', displayfield: 'dd21', columntype: 'dropdownlist',
+            { text: '21', cellsalign: 'center', width: 60,dataField: 'd21', displayfield: 'dd21', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '22', cellsalign: 'center', width: 40,dataField: 'd22', displayfield: 'dd22', columntype: 'dropdownlist',
+            { text: '22', cellsalign: 'center', width: 60,dataField: 'd22', displayfield: 'dd22', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '23', cellsalign: 'center', width: 40,dataField: 'd23', displayfield: 'dd23', columntype: 'dropdownlist',
+            { text: '23', cellsalign: 'center', width: 60,dataField: 'd23', displayfield: 'dd23', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '24', cellsalign: 'center', width: 40,dataField: 'd24', displayfield: 'dd24', columntype: 'dropdownlist',
+            { text: '24', cellsalign: 'center', width: 60,dataField: 'd24', displayfield: 'dd24', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '25', cellsalign: 'center', width: 40,dataField: 'd25', displayfield: 'dd25', columntype: 'dropdownlist',
+            { text: '25', cellsalign: 'center', width: 60,dataField: 'd25', displayfield: 'dd25', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '26', cellsalign: 'center', width: 40,dataField: 'd26', displayfield: 'dd26', columntype: 'dropdownlist',
+            { text: '26', cellsalign: 'center', width: 60,dataField: 'd26', displayfield: 'dd26', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '27', cellsalign: 'center', width: 40,dataField: 'd27', displayfield: 'dd27', columntype: 'dropdownlist',
+            { text: '27', cellsalign: 'center', width: 60,dataField: 'd27', displayfield: 'dd27', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '28', cellsalign: 'center', width: 40,dataField: 'd28', displayfield: 'dd28', columntype: 'dropdownlist',
+            { text: '28', cellsalign: 'center', width: 60,dataField: 'd28', displayfield: 'dd28', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '29', cellsalign: 'center', width: 40,dataField: 'd29', displayfield: 'dd29', columntype: 'dropdownlist',
+            { text: '29', cellsalign: 'center', width: 60,dataField: 'd29', displayfield: 'dd29', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '30', cellsalign: 'center', width: 40,dataField: 'd30', displayfield: 'dd30', columntype: 'dropdownlist',
+            { text: '30', cellsalign: 'center', width: 60,dataField: 'd30', displayfield: 'dd30', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
-            { text: '31', cellsalign: 'center', width: 40,dataField: 'd31', displayfield: 'dd31', columntype: 'dropdownlist',
+            { text: '31', cellsalign: 'center', width: 60,dataField: 'd31', displayfield: 'dd31', columntype: 'combobox',
             createeditor: function (row, value, editor) {
-                editor.jqxDropDownList({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
+                editor.jqxComboBox({ source: unitAdapterTS, displayMember: 'kode_schedule', valueMember: 'id' });
             }},
             
 
@@ -1835,19 +1835,21 @@ $(document).ready(function(){
     //   Area Schedulling Grid
     //
     //=================================================================================
+    /*
     var customer_sites = [
         {label: 'Gedung A', value: '1'},
         {label: 'Gedung B', value: '2'}
     ];
-    
+    */
     
     var customer_sitesSource = {
-        datatype: "array",
+        datatype: "json",
         datafields: [
-            { name: 'label', type: 'string' },
-            { name: 'value', type: 'string' }
-        ],
-        localdata: customer_sites
+            { name: 'site_name' },
+            { name: 'id_customer_site'}
+        ],        
+        url:"<?=base_url();?>work_order/init_get_customer_site",
+        root: 'data'
     };
     var CustomerAdapter = new $.jqx.dataAdapter(customer_sitesSource, {
         autoBind: true
@@ -1868,7 +1870,7 @@ $(document).ready(function(){
             { name: 'kode_schedule'},
             { name: 'nama_schedule'},
             { name: 'customer_site_id'},
-            { name: 'site_name', value: 'customer_site_id', values: { source: CustomerAdapter.records, value: 'value', name: 'label' }},
+            { name: 'site_name', value: 'customer_site_id', values: { source: CustomerAdapter, displayMember: 'site_name', valueMember: 'id_customer_site' }},
             
             { name: 'description'},
         ],
@@ -1925,7 +1927,7 @@ $(document).ready(function(){
             { text: 'Area Name', dataField: 'nama_schedule'},
             { text: 'Customer Site', dataField: 'customer_site_id', displayfield: 'site_name', columntype: 'dropdownlist', width: 100,
                 createeditor: function (row, value, editor) {
-                    editor.jqxDropDownList({ source: CustomerAdapter, displayMember: 'label', valueMember: 'value' });
+                    editor.jqxDropDownList({ source: CustomerAdapter, displayMember: 'site_name', valueMember: 'id_customer_site' });
                 }
             },
             { text: 'Description', dataField: 'description'},

@@ -100,6 +100,8 @@ class Recruitment extends MY_Controller
         return null;
     }
     
+    
+    
     public function delete_recruitment()
     {
         $this->recruitment_model->delete_recruitment($this->input->post('id_ext_company'));

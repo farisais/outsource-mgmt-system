@@ -43,6 +43,12 @@
 <script>
     function CreateData()
     {
+        var param = [];
+        var item = {};
+        item['paramName'] = 'id';
+        item['paramValue'] = 1;
+        param.push(item);
+        //load_content_ajax(GetCurrentController(), 'view_detail_cost_element' , {}, param, true);
         load_content_ajax(GetCurrentController(), 242, null, null);
     }
 

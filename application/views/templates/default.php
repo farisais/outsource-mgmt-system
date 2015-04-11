@@ -24,64 +24,68 @@
 <script type="text/javascript" src="<?php echo base_url()?>jqwidgets/jqx-all.js"></script>
 <script>
 $(document).ready(function(){
-        $(document).ready(jqUpdateSize);    // When the page first loads
-        $(window).resize(jqUpdateSize);
-        
-        selectNavMenu();
-        $(".sub-menu").click(function(e){
-            e.preventDefault();
-            confirmation_interruption();
-            var data_post = {};
-            var val = $(this).find("input").val();
-            $("#action").val(val);
-            var newMenu = $(this).attr('id').split('-')[1];
-            selectSideMenu($("#menu-selected").val(), newMenu);
-            $("#menu-selected").val(newMenu);
-            var controller = $("#controller").val();            
-       	    load_content_ajax(controller, val, data_post);
-        });
-        $("#error-notification-default").jqxWindow({
-            width: 600, height: 300, resizable: false,  isModal: true, autoOpen: false, cancelButton: $("#Cancel"), modalOpacity: 0.01           
-        });
-        
-        $("#export-grid").click(function(e){
-            e.preventDefault();
-            if($("#jqxgrid").length == 0)
-            {
-                
-            }
-            else
-            {
-                $("#jqxgrid").jqxGrid('exportdata', 'xls', 'jqxGrid');
-            }
-            
-        });
-        
-        $("#print-grid").click(function(e){
-           e.preventDefault();
-           if($("#jqxgrid").length == 0)
-            {
-                printDocument();
-            }
-            else
-            {
-                var gridContent = $("#jqxgrid").jqxGrid('exportdata', 'html');
-                var newWindow = window.open('', '', 'width=800, height=500'),
-                document = newWindow.document.open(),
-                pageContent =
-                    '<!DOCTYPE html>\n' +
-                    '<html>\n' +
-                    '<head>\n' +
-                    '<meta charset="utf-8" />\n' +
-                    '<title>Data Export</title>\n' +
-                    '</head>\n' +
-                    '<body>\n' + gridContent + '\n</body>\n</html>';
-                document.write(pageContent);
-                document.close();
-                newWindow.print(); 
-            }
-        });
+    $(document).ready(jqUpdateSize);    // When the page first loads
+    $(window).resize(jqUpdateSize);
+
+    selectNavMenu();
+    $(".sub-menu").click(function(e){
+        e.preventDefault();
+        confirmation_interruption();
+        var data_post = {};
+        var val = $(this).find("input").val();
+        $("#action").val(val);
+        var newMenu = $(this).attr('id').split('-')[1];
+        selectSideMenu($("#menu-selected").val(), newMenu);
+        $("#menu-selected").val(newMenu);
+        var controller = $("#controller").val();
+        load_content_ajax(controller, val, data_post);
     });
+    $("#error-notification-default").jqxWindow({
+        width: 600, height: 300, resizable: false,  isModal: true, autoOpen: false, cancelButton: $("#Cancel"), modalOpacity: 0.01
+    });
+
+    $("#content-popup").jqxWindow({
+        width: 850, height: 500, resizable: false,  isModal: true, autoOpen: false, cancelButton: $("#Cancel"), modalOpacity: 0.01
+    });
+
+    $("#export-grid").click(function(e){
+        e.preventDefault();
+        if($("#jqxgrid").length == 0)
+        {
+
+        }
+        else
+        {
+            $("#jqxgrid").jqxGrid('exportdata', 'xls', 'jqxGrid');
+        }
+
+    });
+
+    $("#print-grid").click(function(e){
+       e.preventDefault();
+       if($("#jqxgrid").length == 0)
+        {
+            printDocument();
+        }
+        else
+        {
+            var gridContent = $("#jqxgrid").jqxGrid('exportdata', 'html');
+            var newWindow = window.open('', '', 'width=800, height=500'),
+            document = newWindow.document.open(),
+            pageContent =
+                '<!DOCTYPE html>\n' +
+                '<html>\n' +
+                '<head>\n' +
+                '<meta charset="utf-8" />\n' +
+                '<title>Data Export</title>\n' +
+                '</head>\n' +
+                '<body>\n' + gridContent + '\n</body>\n</html>';
+            document.write(pageContent);
+            document.close();
+            newWindow.print();
+        }
+    });
+});
 </script>
 <script>
 function formatDate(date) {
@@ -142,9 +146,13 @@ function unloadAjaxGif()
     $(".table-right-bar").unblock();
 }
 
-function load_content_ajax(controller, action, data_post, param)
+function load_content_ajax(controller, action, data_post, param, is_popup)
 {
-    $("#wrapper").nextAll('div').not("#error-notification-default").not(".jqx-menu-popup").remove();
+    if(is_popup == null)
+    {
+        $("#wrapper").nextAll('div').not("#error-notification-default").not(".jqx-menu-popup").not("#content-popup").remove();
+    }
+
     if(param != null)
     {
         data_post['param'] = param;
@@ -170,24 +178,35 @@ function load_content_ajax(controller, action, data_post, param)
                 //alert('Fatal error is happening with message : ' + output + '=====> Please contact your system administrator.');
             }
             
-            
-            $("#content").html(obj.content);
-            $("#button-wrapper").html(obj.button);
-            $("#content-title").html(obj.content_title);
-            
+            if(is_popup == null)
+            {
+                $("#content").html(obj.content);
+                $("#button-wrapper").html(obj.button);
+                $("#content-title").html(obj.content_title);
+            }
+            else
+            {
+                $("#content-popup-wrapper").html(obj.content);
+                $("#content-popup-header").html(obj.content_title);
+                $("#content-popup").jqxWindow('open');
+            }
+
 			if(obj.result == "success")                                                                                                                
 			{
-                var paramText = '';
-                if(obj.param != null)
+                if(is_popup == null)
                 {
-                    var i = 0;
-                    for(i=0;i<obj.param.length;i++)
+                    var paramText = '';
+                    if(obj.param != null)
                     {
-                         paramText += '&';
-                         paramText += obj.param[i].paramName + '=' + obj.param[i].paramValue;
-                    }                    
+                        var i = 0;
+                        for(i=0;i<obj.param.length;i++)
+                        {
+                            paramText += '&';
+                            paramText += obj.param[i].paramName + '=' + obj.param[i].paramValue;
+                        }
+                    }
+                    window.history.pushState("test", "Title", "<?php echo base_url() ?>" + $("#controller").val() + "?menu="+ $("#menu-selected").val() +"&action=" + obj.id_application_action + paramText);
                 }
-                window.history.pushState("test", "Title", "<?php echo base_url() ?>" + $("#controller").val() + "?menu="+ $("#menu-selected").val() +"&action=" + obj.id_application_action + paramText);
 			}
 			else
 			{
@@ -434,6 +453,12 @@ Date.prototype.format = function (mask, utc) {
         <div>Application Error</div>
         <div id="error-content">
        
+        </div>
+    </div>
+    <div id="content-popup" style="margin-top: 40px;">
+        <div><span id="content-popup-header"></span></div>
+        <div id="content-popup-wrapper">
+
         </div>
     </div>
 	<div id="wrapper">

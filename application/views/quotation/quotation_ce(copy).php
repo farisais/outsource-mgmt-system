@@ -4,8 +4,8 @@ var linkrenderer = function (row, column, value) {
     return '<div style="margin: 4px;" class="jqx-left-align"><a href="' + '<?php echo base_url() ?>survey_assessment/download_file/' + value + '" target="_blank" style="padding: 2px">' + value + '</a></div>';
 };
 function view_tab_cost_element(){
-    /*var url = "<?php if (isset($is_edit)):?><?php echo base_url() ;?>quotation/get_cost_element/<?=$data_edit[0]['id_quotation']?><?php endif; ?>";
-    var source =
+    var url = "<?php if (isset($is_edit)):?><?php echo base_url() ;?>quotation/get_cost_element/<?=$data_edit[0]['id_quotation']?><?php endif; ?>";
+     var source =
         {
             datatype: "json",
             datafields:
@@ -134,202 +134,6 @@ function view_tab_cost_element(){
             
             }
         });
-        */
-    //=================================================================================
-    //
-    //   CE Assign Grid
-    //
-    //=================================================================================
-
-    var celink = function (row, column, value) {
-        return '<div style="margin: 4px;" class="jqx-left-align"><a href="#" style="padding: 2px">' + value + '</a></div>';
-    };
-
-    var url_ce = "<?php if(isset($is_edit)){?><?php echo base_url() ;?>quotation/get_structure_ws_from_quote/<?php echo $data_edit[0]['id_quotation'] ?><?php } ?>";
-    var source_ce =
-    {
-        datatype: "json",
-        datafields:
-            [
-                { name: 'structure'},
-                { name: 'structure_name'},
-                { name: 'cost_element'},
-                { name: 'cost_element_name'}
-            ],
-        id: 'structure',
-        url: url_ce,
-        root: 'data'
-    };
-
-    var dataAdapterCE = new $.jqx.dataAdapter(source_ce);
-
-    $("#ce-assign-grid").jqxGrid(
-        {
-            theme: $("#theme").val(),
-            width: '100%',
-            height: 200,
-            source: dataAdapterCE,
-            columnsresize: true,
-            autoshowloadelement: false,
-            sortable: true,
-            columns: [
-                { text: 'Position', dataField: 'structure', displayfield: 'structure_name', width: 150},
-                { text: 'Cost Element', dataField: 'cost_element', displayfield: 'cost_element_name', cellsrenderer: celink}
-            ]
-        });
-
-    $("#ce-assign-grid").on('cellclick', function(event){
-        var args = event.args;
-        if(args.value != null && args.datafield == 'cost_element')
-        {
-            var param = [];
-            var item = {};
-            item['paramName'] = 'id';
-            item['paramValue'] = args.value;
-            param.push(item);
-            load_content_ajax(GetCurrentController(), 'view_detail_cost_element' , {}, param, true);
-        }
-        //alert(args.value);
-    });
-
-    $("#save-ce-assign").click(function(){
-        var data = $("#ce-assign-grid").jqxGrid("getrows");
-        if(data.length > 0)
-        {
-            var data_post = {};
-            data_post['id_quotation'] = $("#id_quotation").val();
-            data_post['ce_assign'] = $("#ce-assign-grid").jqxGrid('getrows');
-            //alert(JSON.stringify(data_post));
-            loadAjaxGif();
-            $.ajax({
-                url: '<?php echo base_url() ?>quotation/save_ce_assign',
-                type: "POST",
-                data: data_post,
-                dataType:'json',
-                success:function(result){
-                    unloadAjaxGif();
-                    //alert(result);
-                    var obj = result;
-
-                    if(obj.status == 'success')
-                    {
-                        alert('Transaction Success!');
-                        var calculation = obj.calculation;
-                        var data = $("#quotation-grid").jqxGrid('getrows');
-                        for(i=0;i<data.length;i++)
-                        {
-                            for(j=0;j<calculation.length;j++)
-                            {
-                                if(calculation[j]['product'] == data[i]['id_product'])
-                                {
-                                    $("#quotation-grid").jqxGrid('setcellvalue', i, "price", calculation[j]['total']);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        alert('Transaction Failed!');
-                    }
-
-                    unloadAjaxGif();
-
-                },
-                error: function( jqXhr )
-                {
-
-                    if( jqXhr.status == 400 ) { //Validation error or other reason for Bad Request 400
-                        var json = $.parseJSON( jqXhr.responseText );
-                        alert(json);
-                    }
-                    $("#error-content").html(JSON.stringify(jqXhr.responseText).replace("\r\n", ""));
-                    $("#error-notification-default").jqxWindow("open");
-
-                    unloadAjaxGif();
-                }
-            });
-        }
-        else
-        {
-            alert('No data to save');
-        }
-    });
-
-
-    //=================================================================================
-    //
-    //   CE Existing
-    //
-    //=================================================================================
-
-    var url_existing = "<?php echo base_url()?>cost_element/get_cost_element_list";
-    var source_existing =
-    {
-        datatype: "json",
-        datafields:
-            [
-                { name: 'id_cost_element'},
-                { name: 'name'},
-                { name: 'description'},
-                { name: 'date_create', type: 'date'}
-            ],
-        id: 'id_cost_element',
-        url: url_existing,
-        root: 'data'
-    };
-    var dataAdapterExisting = new $.jqx.dataAdapter(source_existing);
-    $("#ce-existing-grid").jqxGrid(
-        {
-            theme: $("#theme").val(),
-            width: '100%',
-            height: '100%',
-            source: dataAdapterExisting,
-            groupable: true,
-            columnsresize: true,
-            autoshowloadelement: false,
-            filterable: true,
-            showfilterrow: true,
-            sortable: true,
-            autoshowfiltericon: true,
-            columns: [
-                { text: 'Name', dataField: 'name'},
-                { text: 'Description', dataField: 'description'},
-                { text: 'Date Create', dataField: 'date_create', cellsformat: 'dd/MM/yyyy', width: 100},
-            ]
-        });
-
-    $("#ce-existing-grid").on('rowdoubleclick', function(event){
-        $("#ce-existing-popup2").jqxWindow('close');
-        var args = event.args;
-        var rowindex = args.rowindex;
-        var data_copy = $(this).jqxGrid('getrowdata', rowindex);
-
-        var cerowindex = $("#ce-temp-rowindex").val();
-        //alert(cerowindex);
-        $("#ce-assign-grid").jqxGrid('setcellvalue', cerowindex, 'cost_element', data_copy['id_cost_element']);
-        $("#ce-assign-grid").jqxGrid('setcellvalue', cerowindex, 'cost_element_name', data_copy['name']);
-    });
-
-    $("#ce-existing-popup2").jqxWindow({
-        width: 600, height: 500, resizable: false,  isModal: true, autoOpen: false, cancelButton: $("#Cancel"), modalOpacity: 0.01
-    });
-
-    $("#select-ce").click(function(){
-        var selectedrowindex = $("#ce-assign-grid").jqxGrid('getselectedrowindex');
-        if (selectedrowindex >= 0) {
-            //alert('open');
-            $("#ce-existing-popup2").jqxWindow('open');
-            $("#ce-temp-rowindex").val(selectedrowindex);
-            //var id = $("#work-schedule-grid").jqxGrid('getrowid', selectedrowindex);
-            //var commit1 = $("#work-schedule-grid").jqxGrid('deleterow', id);
-        }
-        else
-        {
-            alert('No data to assign');
-        }
-    });
-
 }    
 function dataPost()
 {
@@ -488,11 +292,6 @@ $(document).ready(function(){
             }
         ]
     });
-
-    $("#quotation-grid").on('rowdoubleclick', function(event){
-        var args = event.args;
-        //alert(JSON.stringify($(this).jqxGrid('getrowdata', args.rowindex)));
-    });
     
     $("#quotation-grid").on('cellvaluechanged', function (event) 
     {
@@ -616,8 +415,7 @@ $(document).ready(function(){
     $("#inquiry-select").click(function(){
         $("#select-inquiry-popup").jqxWindow('open');
     });
-
-    var currentSite = null;
+    
     $('#select-inquiry-grid').on('rowdoubleclick', function (event) 
     {
         var args = event.args;
@@ -626,7 +424,6 @@ $(document).ready(function(){
         $('#customer-name').val(data.customer_name);
         $("#select-inquiry-popup").jqxWindow('close');
         var dataAdapterSites = getSites(data.customer);
-        currentSite = dataAdapterSites;
         $("#survey-grid").jqxGrid({
             columns: setSurveyColumn(dataAdapterSites)
         });
@@ -849,7 +646,7 @@ $(document).ready(function(){
         {label: '1', value: '1'},
         {label: '2', value: '2'},
         {label: '3', value: '3'},
-        {label: 'off', value: 'off'}
+        {label: 'off', value: 'off'}          
     ];
     var hours = [
         {label: '8 Hours', value: '8'},
@@ -861,54 +658,54 @@ $(document).ready(function(){
     {
         datatype: "json",
         datafields:
-            [
-                { name: 'id_detail_work_schedule'},
-                { name: 'area'},
-                { name: 'id_customer_site'},
-                { name: 'site'},
-                { name: 'site_name'},
-                { name: 'shift_no'},
-                { name: 'shift_name', value: 'shift_no', values: { source: shifts, value: 'value', name: 'label' }},
-                { name: 'qty', type: 'number'},
-                { name: 'working_hour'},
-                { name: 'working_hour_name', value: 'working_hour', values: { source: hours, value: 'value', name: 'label' }},
-                { name: 'structure'},
-                { name: 'structure_name'}
-            ],
+        [
+            { name: 'id_detail_work_schedule'},
+            { name: 'area'},
+            { name: 'id_customer_site'},
+            { name: 'site'},
+            { name: 'site_name'},
+            { name: 'shift_no'},
+            { name: 'shift_name', value: 'shift_no', values: { source: shifts, value: 'value', name: 'label' }},
+            { name: 'qty', type: 'number'},
+            { name: 'working_hour'},
+            { name: 'working_hour_name', value: 'working_hour', values: { source: hours, value: 'value', name: 'label' }},
+            { name: 'structure'},
+            { name: 'structure_name'}
+        ],
         id: 'id_employee',
         url: urlWS ,
         root: 'data'
     };
     var dataAdapterWS = new $.jqx.dataAdapter(sourceWS);
     $("#working-schedule-grid").jqxGrid(
-        {
-            theme: $("#theme").val(),
-            width: '100%',
-            height: 200,
-            selectionmode : 'singlerow',
-            source: dataAdapterWS,
-            columnsresize: true,
-            autoshowloadelement: false,
-            sortable: true,
-            autoshowfiltericon: true,
-            columns: [
-                { text: 'Site', dataField: 'site', displayfield: 'site_name', width: 100},
-                { text: 'Area', dataField: 'area', width: 100},
-                { text: 'Shift', dataField: 'shift_no', width: 100},
-                { text: 'Working Hour', datafield: 'working_hour', displayfield: 'working_hour_name', width: 100},
-                { text: 'Qty', dataField: 'qty', width: 100},
-                { text: 'Title', dataField: 'structure', displayfield: 'structure_name', width: 200}
-            ]
-        });
-
+    {
+        theme: $("#theme").val(),
+        width: '100%',
+        height: 200,
+        selectionmode : 'singlerow',
+        source: dataAdapterWS,
+        columnsresize: true,
+        autoshowloadelement: false,                                                                                
+        sortable: true,
+        autoshowfiltericon: true,
+        columns: [
+            { text: 'Site', dataField: 'site', displayfield: 'site_name', width: 100},
+            { text: 'Area', dataField: 'area', width: 100},
+            { text: 'Shift', dataField: 'shift_no', width: 100},
+            { text: 'Working Hour', datafield: 'working_hour', displayfield: 'working_hour_name', width: 100},
+            { text: 'Qty', dataField: 'qty', width: 100},
+            { text: 'Title', dataField: 'structure', displayfield: 'structure_name', width: 200}
+        ]
+    });
+    
     $("#make-working-schedule").on('click', function(e){
         var data_post = {};
-        data_post['id_quotation'] = $("#id_quotation").val();
+        data_post['id_quotation'] = $("#id_quotation").val();     
         load_content_ajax(GetCurrentController(), 263, data_post);
         e.preventDefault();
     });
-
-    <?php if (isset($is_edit) && $data_edit[0]['status'] == 'draft'): ?>
+    
+    <?php if (isset($is_edit) && $data_edit[0]['status'] == 'draft'): ?> 
     //=================================================================================
     //
     //   Quotation Validate
@@ -1050,46 +847,59 @@ function dataPost()
             </table>
             <div id='quotation-tabs' style="margin-top: 20px;">
                 <ul>
-                    <li>Working Schedule</li>
-                    <li>Cost Element</li>
-                    <li>Survey / Assessment</li>
-                    <li>Payment Info</li>
                     <li>Product & Services</li>
+                    <li>Survey / Assessment</li>
+                    <li>Payment Info</li>     
+                    <li>Working Schedule</li>  
+                    <li>Cost Element</li>                                    
                 </ul>
                 <div>
                     <table class="table-form" style="margin: 20px; width: 90%;">
                         <tr>
-                            <td colspan="2">
-                                <div class="row-color" style="width: 100%;">
-                                    <?php if (isset($is_edit) && $data_edit[0]['status'] == 'draft' && !$data_edit[0]['id_work_schedule']): ?><button id="make-working-schedule" <?php if(isset($is_view)){ echo 'disabled=disabled';} ?>>+</button><?php endif; ?>
-                                    <span>Make Working Schedule</span>
+                            <td colspan="2">                       
+                                 <div class="row-color" style="width: 100%;">
+                                    <button style="width: 30px;" id="add-product">+</button>
+                                    <button style="width: 30px;" id="remove-product">-</button>
+                                    <div style="display: inline;"><span>Add / Remove Product</span></div>
                                 </div>
                             </td>
                         </tr>
                         <tr>
                             <td colspan="2">
-                                <div id="working-schedule-grid"></div>
+                                <div id="quotation-grid"></div>
                             </td>
                         </tr>
-                    </table>
-                </div>
-                <div>
-                    <table class="table-form" style="margin: 20px; width: 90%;">
                         <tr>
-                            <td colspan="2">
-                                <div class="row-color" style="width: 100%;">
-                                    <!--<?php if (isset($is_edit)): ?> <button style="width: 40px;" id="add_cost_element">+</button><?php endif; ?>-->
-                                    <button id="select-ce">...</button>
-                                    <button id="save-ce-assign">Save</button>
-                                    <span>Detail Cost Element</span>
+                    <td>
+                    </td>
+                    <td>
+                        <table style="float: right; text-align: right">
+                            <tr>
+                                <td></td>
+                                <td>Untaxed Amount : </td>
+                                <td style="width: 150px;"><div id="untaxed-amount">Rp. 0</div><input type="hidden" id="subtotal-value" value="<?php echo (isset($is_edit) ? $data_edit[0]['sub_total'] : '0') ?>"/></td>
+                            </tr>
+                            <tr>
+                                <td style="padding-right: 10px;"><!--<div id="tax-select">--></div></td>
+                                <td><input type="checkbox" id="use-tax" style="display: inline-block;" <?php echo (isset($is_edit) && ($data_edit[0]['tax'] != null || $data_edit[0]['tax'] > 0) ? 'checked=true' : '') ?> />Taxes (10%) : </td>
+                                <td><div id="tax-amount">Rp. 0</div><input type="hidden" id="tax-value" value="<?php echo (isset($is_edit) ? $data_edit[0]['tax'] : '0') ?>"/></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td style="border-top: solid thin black;">Total Amount : </td>
+                                <td style="border-top: solid thin black;"><div id="total-amount">Rp. 0</div><input type="hidden" id="total-value" value="<?php echo (isset($is_edit) ? $data_edit[0]['total_price'] : '0') ?>"/></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                        <tr>
+                            <td style="width: 80%;padding-top: 20px;" colspan="2">
+                                <div class="label">
+                                    Notes
                                 </div>
+                                <textarea class="field" cols="10" rows="20" style="height: 50px;" id="notes" name="notes" <?php if(isset($is_view)){ echo 'disabled=disabled';} ?>></textarea>
                             </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">
-                                <div id="ce-assign-grid"></div>
-                            </td>
-                        </tr>
+                        </tr>                        
                     </table>
                 </div>
                 <div>
@@ -1129,56 +939,43 @@ function dataPost()
                             </td>                                                        
                         </tr>
                     </table>
-                </div>
+                </div> 
                 <div>
                     <table class="table-form" style="margin: 20px; width: 90%;">
                         <tr>
-                            <td colspan="2">
-                                <div class="row-color" style="width: 100%;">
-                                    <button style="width: 30px;" id="add-product">+</button>
-                                    <button style="width: 30px;" id="remove-product">-</button>
-                                    <div style="display: inline;"><span>Add / Remove Product</span></div>
+                            <td colspan="2">                       
+                                 <div class="row-color" style="width: 100%;">
+                                    <?php if (isset($is_edit) && $data_edit[0]['status'] == 'draft' && !$data_edit[0]['id_work_schedule']): ?><button id="make-working-schedule" <?php if(isset($is_view)){ echo 'disabled=disabled';} ?>>+</button><?php endif; ?>
+                                    <span>Make Working Schedule</span> 
                                 </div>
                             </td>
                         </tr>
                         <tr>
                             <td colspan="2">
-                                <div id="quotation-grid"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                            </td>
-                            <td>
-                                <table style="float: right; text-align: right">
-                                    <tr>
-                                        <td></td>
-                                        <td>Untaxed Amount : </td>
-                                        <td style="width: 150px;"><div id="untaxed-amount">Rp. 0</div><input type="hidden" id="subtotal-value" value="<?php echo (isset($is_edit) ? $data_edit[0]['sub_total'] : '0') ?>"/></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding-right: 10px;"><!--<div id="tax-select"></div>--></td>
-                                        <td><input type="checkbox" id="use-tax" style="display: inline-block;" <?php echo (isset($is_edit) && ($data_edit[0]['tax'] != null || $data_edit[0]['tax'] > 0) ? 'checked=true' : '') ?> />Taxes (10%) : </td>
-                                        <td><div id="tax-amount">Rp. 0</div><input type="hidden" id="tax-value" value="<?php echo (isset($is_edit) ? $data_edit[0]['tax'] : '0') ?>"/></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td style="border-top: solid thin black;">Total Amount : </td>
-                                        <td style="border-top: solid thin black;"><div id="total-amount">Rp. 0</div><input type="hidden" id="total-value" value="<?php echo (isset($is_edit) ? $data_edit[0]['total_price'] : '0') ?>"/></td>
-                                    </tr>
-                                </table>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width: 80%;padding-top: 20px;" colspan="2">
-                                <div class="label">
-                                    Notes
-                                </div>
-                                <textarea class="field" cols="10" rows="20" style="height: 50px;" id="notes" name="notes" <?php if(isset($is_view)){ echo 'disabled=disabled';} ?>></textarea>
+                                <div id="working-schedule-grid"></div>
                             </td>
                         </tr>
                     </table>
-                </div>
+                </div> 
+                <div>
+                    <table class="table-form" style="margin: 20px; width: 90%;">
+                        <tr>
+                            <td colspan="2">                       
+                                 <div class="row-color" style="width: 100%;">
+                                 <?php if (isset($is_edit)): ?> <button style="width: 40px;" id="add_cost_element">+</button><?php endif; ?>
+                                   <span>Detail Cost Element</span> 
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                            
+                            
+                                <div id="cost_element_grid"></div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>                                  
             </div>
         </div>
     </div>
@@ -1203,19 +1000,6 @@ function dataPost()
             <tr>
                 <td style="width: 80%" colspan="2">
                     <div id="select-inquiry-grid"></div>
-                </td>
-            </tr>
-        </table>
-    </div>
-</div>
-<input type="hidden" id="ce-temp-rowindex" value=""/>
-<div id="ce-existing-popup2">
-    <div>Select Existing Cost Element</div>
-    <div>
-        <table class="table-form">
-            <tr>
-                <td style="width: 80%" colspan="2">
-                    <div id="ce-existing-grid"></div>
                 </td>
             </tr>
         </table>
