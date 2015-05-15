@@ -316,8 +316,9 @@ select.field
                             <option value="crud" <?php echo (isset($is_edit) && $action_edit[0]['action_button'] == 'crud' ? "selected='selected'" : ""); ?>>CRUD</option>
                             <option value="save_discard" <?php echo (isset($is_edit) && $action_edit[0]['action_button'] == 'save_discard' ? "selected='selected'" : ""); ?>>Save & Discrad</option>
                             <option value="approve_discard" <?php echo (isset($is_edit) && $action_edit[0]['action_button'] == 'approve_discard' ? "selected='selected'" : ""); ?>>Approve & Discard</option>
-                            <option value="save_discard_generate" <?php echo (isset($is_edit) && $action_edit[0]['action_button'] == 'approve_discard' ? "selected='selected'" : ""); ?>>Save, Discard, Generate</option>
-                            <option value="save" <?php echo (isset($is_edit) && $action_edit[0]['action_button'] == 'approve_discard' ? "selected='selected'" : ""); ?>>Save</option>
+                            <option value="save_discard_generate" <?php echo (isset($is_edit) && $action_edit[0]['action_button'] == 'save_discard_generate' ? "selected='selected'" : ""); ?>>Save, Discard, Generate</option>
+                            <option value="save" <?php echo (isset($is_edit) && $action_edit[0]['action_button'] == 'save' ? "selected='selected'" : ""); ?>>Save</option>
+                            <option value="discard" <?php echo (isset($is_edit) && $action_edit[0]['action_button'] == 'discard' ? "selected='selected'" : ""); ?>>Discard</option>
                         </select>
                     </td>
                 </tr>

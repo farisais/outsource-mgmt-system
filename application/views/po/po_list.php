@@ -82,7 +82,8 @@ function EditData()
         var item = {};
         item['paramName'] = 'id';
         item['paramValue'] = row.id_po;
-        param.push(item);        
+        param.push(item);
+
         data_post['id_po'] = row.id_po;
         load_content_ajax(GetCurrentController(), 59 ,data_post, param);
     }

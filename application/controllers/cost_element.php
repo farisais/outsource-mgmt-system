@@ -119,4 +119,20 @@ class Cost_element extends MY_Controller
         return $data;
     }
 
+    public function calculate_salary()
+    {
+        $data = $this->input->post();
+        $result = $this->cost_element_model->calculate_salary($data['id_cost_element'], $data, $data['payroll_type']);
+
+        echo json_encode($result);
+    }
+	
+	public function calculate_invoice()
+    {
+        $data = $this->input->post();
+        $result = $this->cost_element_model->calculate_invoice('per_month', $data['id_cost_element'], $data, $data['payroll_type']);
+
+        echo json_encode($result);
+    }
+
 }

@@ -214,7 +214,7 @@ class Work_order_model extends CI_Model
     }
     public function save_wo_time_schedulling($data){
         $data_input["id"] = $data["id"];
-        $this->delete_detail_wo_time_schedulling($data_input["id"], 'wo_time_schedule');
+        //$this->delete_detail_wo_time_schedulling($data_input["id"], 'wo_time_schedule');
         $this->save_detail_wo_time_schedulling($data_input["id"], $data['time_schedulling']);
     }
     public function delete_detail_wo_time_schedulling($id,$table){
@@ -225,8 +225,7 @@ class Work_order_model extends CI_Model
     {
         foreach($data as $d)
         {
-            if($d['kode_schedule'] != '')
-            {
+
                 $data_input = array();
                 $data_input['work_order_id'] = $id;
                 $data_input['kode_schedule'] = $d['kode_schedule'];
@@ -240,7 +239,13 @@ class Work_order_model extends CI_Model
                 $data_input['begin_cout'] = (!isset($d['begin_cout']) ? null : $d['begin_cout']);
                 $data_input['end_cout'] = (!isset($d['end_cout']) ? null : $d['end_cout']);
                 $data_input['schedule_type'] = (!isset($d['schedule_type']) ? null : $d['schedule_type']);
-                
+            if($d['id'] != '' && $d['id'] !=null)
+            {
+                $this->db->where('id', $d['id']);
+                $this->db->update('wo_time_schedule', $data_input);
+            }
+            else
+            {
                 $this->db->insert('wo_time_schedule', $data_input);
             }
         }
@@ -296,7 +301,10 @@ class Work_order_model extends CI_Model
         $this->db->trans_start();
         
         $data_input = array(
-            'status' => 'running'
+            'status' => 'running',
+            'contract_startdate' => $data['contract_startdate'],
+            'contract_expdate' => $data['contract_expdate'],
+            'project_name' => $data['project_name']
         );
 
         $this->db->where('id_work_order', $data['id_work_order']);
@@ -514,5 +522,31 @@ WHERE area_rotation.work_order_id=$id");
         //$this->db->update('so_assignment', array("status" => "unassign"));
         $this->db->delete('so_assignment');
         $this->db->trans_complete();
+    }
+
+    public function get_structure_ws_from_wo($id)
+    {
+        $query = "select qca.*, ce.name as cost_element_name, so_assign.structure_name from wo_ce_assign as qca
+                  inner join
+                      (select dws.structure as dws_structure, os.structure_name from detail_work_schedule as dws
+                      inner join work_order_schedule as wos on wos.work_schedule = dws.work_schedule
+                      inner join organisation_structure as os on os.id_organisation_structure = dws.structure
+                      where wos.work_order = " . $id . " group by dws.structure) as so_assign
+                  on dws_structure = qca.structure
+                  inner join cost_element as ce on ce.id_cost_element = qca.cost_element
+                  where qca.work_order = " . $id ;
+        $result = $this->db->query($query)->result_array();
+
+        return $result;
+    }
+
+    public function get_wo_ce_by_structure($wo, $str)
+    {
+        $this->db->select('*');
+        $this->db->from('wo_ce_assign');
+        $this->db->where('structure', $str);
+        $this->db->where('work_order', $wo);
+
+        return $this->db->get()->result_array();
     }
 }

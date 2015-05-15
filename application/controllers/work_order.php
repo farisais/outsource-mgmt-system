@@ -49,13 +49,20 @@ class Work_order extends MY_Controller
     
     public function save_work_order()
     {
-        if($this->input->post('is_edit') == 'true')
+        $data = $this->input->post();
+        if($data['contract_startdate'] != null & $data['contract_expdate'] != null && $data['project_name'] != null && $data['project_name'] != '')
         {
-            $this->work_order_model->edit_work_order($this->input->post());
+            if ($this->input->post('is_edit') == 'true')
+            {
+                $this->work_order_model->edit_work_order($this->input->post());
+            } else
+            {
+                $this->work_order_model->save_work_order($this->input->post());
+            }
         }
         else
         {
-            $this->work_order_model->save_work_order($this->input->post());
+            return array("has_error" => true, "error_message" => "Please fill project contract start date, contract end date, and project name");
         }
         
         return null;
@@ -128,7 +135,17 @@ class Work_order extends MY_Controller
         $this->work_order_model->save_wo_shift_rotation($this->input->post());
     }
     function validate_work_order(){
-        $this->work_order_model->validate_work_order($this->input->post());
+        $data = $this->input->post();
+        if($data['contract_startdate'] != null & $data['contract_expdate'] != null && $data['project_name'] != null && $data['project_name'] != '')
+        {
+            $this->work_order_model->validate_work_order($data);
+
+            return null;
+        }
+        else
+        {
+            return array("has_error" => true, "error_message" => "Please fill project contract start date, contract end date, and project name");
+        }
     }
     public function get_employee_grid()
     {
@@ -172,6 +189,11 @@ class Work_order extends MY_Controller
         $this->work_order_model->unassign_so_assignment($this->input->post('so_assignment_number'), $this->input->post('wo'));
         
         echo 'success';
+    }
+
+    public function get_structure_ws_from_wo($id)
+    {
+        echo "{\"data\" : " . json_encode($this->work_order_model->get_structure_ws_from_wo($id)) . "}";
     }
     
 }

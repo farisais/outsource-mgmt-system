@@ -5,6 +5,7 @@ class Payroll extends MY_Controller
     {
         parent::__construct("authorize", "payroll", true);
         $this->load->model('payroll_model');
+        $this->load->model('payroll_periode_model');
     }
 
     function get_payroll_list()
@@ -16,15 +17,25 @@ class Payroll extends MY_Controller
     {
         return null;
     }
-    public function get_wo_list_all(){
-       echo "{\"data\" : " . json_encode($this->payroll_model->get_wo_list()) . "}";
+    public function get_wo_list_all()
+    {
+       echo "{\"data\" : " . json_encode($this->payroll_periode_model->get_wo_all()) . "}";
     }
-    function init_view(){
 
-        $data['date_start']=$this->input->post('date_start');
-        $data['date_finished']=$this->input->post('date_finished');
-        $data['id_work_order']=$this->input->post('id_work_order');
+    function init_view_detail_payroll($id, $wo, $date_start, $date_finished)
+    {
+        $data = array();
+        $data['date_start']= $date_start;
+        $data['date_finished'] = $date_finished;
+        $data['id_work_order'] = $wo;
+        $data['id_payroll_periode'] = $id;
+
         return $data;
+    }
+
+    public function generate_payslip()
+    {
+
     }
 
 }

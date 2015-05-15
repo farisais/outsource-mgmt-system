@@ -87,10 +87,7 @@ class So_model extends CI_Model
 			'quotation' => $data['quotation'],
             'customer' => $data['customer'],
 			'notes' => $data['notes'],
-            //'contract_number' => $data['contract_number'],
-            //'contract_startdate' => $data['contract_startdate'],
-            //'contract_expdate' => $data['contract_expdate'],
-			//'invoice_period' => $data['invoice_period'],
+			'invoice_period' => $data['invoice_period'],
             'status' => 'draft'
 		);
 		$this->db->insert('so', $data_input);
@@ -185,7 +182,9 @@ class So_model extends CI_Model
                 $this->db->set('startdate', $data['startdate']);
                 $this->db->set('expdate', $data['expdate']);
                 $this->db->set('invoice_term', $data['invoice_term']);
-                //$this->db->set('status', $data['status']);
+				$this->db->set('contract_number', $data['contract_number']);
+				$this->db->set('po_number', $data['po_number']);
+                $this->db->set('status', $data['status']);
                 $this->db->where("id_contract", $data_contract[0]['id_contract']);
                 $this->db->update('contract');
                 
@@ -210,8 +209,9 @@ class So_model extends CI_Model
             'status' => null
         );
         $this->db->insert('contract', $data_input);
-        
-        return $filename;
+        $insert_id = $this->db->insert_id();
+		$return = array('filename' => $filename, 'id_contract' => $insert_id);
+        return $return;
     }
     
     public function generate_so_number()
@@ -416,6 +416,18 @@ class So_model extends CI_Model
             
             $this->db->insert('wo_time_schedule', $dat);
         }
+
+        //add wo cost element
+        $data_ce_quotation = $this->get_quote_ce($data[0]['quotation']);
+        foreach($data_ce_quotation as $ce)
+        {
+            $d = array();
+            $d['work_order'] = $last_id;
+            $d['cost_element'] = $ce['cost_element'];
+            $d['structure'] = $ce['structure'];
+
+            $this->db->insert('wo_ce_assign', $d);
+        }
         
         $this->db->where('id_so', $id);
         $this->db->update('so', array('status' => 'close'));
@@ -431,11 +443,21 @@ class So_model extends CI_Model
         inner join work_schedule as ws on ws.id_work_schedule=ss.work_schedule 
         inner join detail_work_schedule as dws on dws.work_schedule=ws.id_work_schedule 
         where ss.so = " . $id;
-        
+
         $result = $this->db->query($query);
         
         return $result->result_array();
         
                     
+    }
+
+
+    public function get_quote_ce($quote)
+    {
+        $this->db->select('*');
+        $this->db->from('quotation_ce_assign');
+        $this->db->where('quotation', $quote);
+
+        return $this->db->get()->result_array();
     }
 }

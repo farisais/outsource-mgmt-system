@@ -66,17 +66,20 @@ class Timesheet_model extends CI_Model
             $tg = $this->get_timesheet_group($data['input-date'], $data['project_name']);
             if(count($tg) > 0)
             {
-               exit("Timesheet date already exist");                          
-            }    
-            $data_input['work_order_id']   =   $data['project_name'];
-            $data_input['input_method']   =   'manual';
-            $this->db->insert('timesheet_group', $data_input);
-            $timesheet_id = $this->db->insert_id();
+               exit("Timesheet date already exist");
+            }
+            else
+            {
+                $data_input['work_order_id'] = $data['project_name'];
+                $data_input['input_method'] = 'manual';
+                $this->db->insert('timesheet_group', $data_input);
+                $timesheet_id = $this->db->insert_id();
+            }
         }
         else
         {
             $data_input = array();
-            $data_input["date"]         =   $data["input-date"];
+            $data_input["date"] =   $data["input-date"];
             $data_input['work_order_id']   =   $data['project_name'];
             $timesheet_id = $this->input->post('id_timesheet_group');
             $this->db->where('id', $timesheet_id);
@@ -90,8 +93,7 @@ class Timesheet_model extends CI_Model
         {
             $this->delete_detail_timesheet($timesheet_id, 'timesheet');
         }
-        
-        
+
         $this->db->trans_complete();
     }
     
@@ -711,24 +713,25 @@ class Timesheet_model extends CI_Model
         $shift_data = $result->result_array();
         //echo "query ==> " . $query;
         //echo "shift data ===> " . json_encode($shift_data);
-        $shift_id = '-1';
+        $shift_id = null;
         $shift_result = null;
         if(count($shift_data) > 0)
         {
             foreach($shift_data[0] as $key => $value)
             {
-                if (strpos($key, 'd') !== false)
+                if($key != 'work_order')
                 {
-                    str_replace('d', '', $key);
+                    $key = str_replace('d', '', $key);
                 }
-                
+
+
                 if($key == $hari)
                 {
                     $shift_id = $value;
                     break;
                 }
             }
-            
+
             $query = "select wts.* from wo_time_schedule as wts where wts.id = " . $shift_id . " and wts.work_order_id = " . $wo;
             $shift_result = $this->db->query($query)->result_array();
         }

@@ -46,21 +46,19 @@ class Inquiry_model extends CI_Model
 			'inquiry_date' => $data['inquiry_date'],
 			'customer' => $data['customer'],
 			'expected_delivery' => $data['delivery_date'],
-			'notes' => $data['notes'],
+			'inquiry_detail' => $data['inquiry_detail'],
+			'sales_person' => $data['sales_person'],
             'status' => 'draft',
 		);
 		$this->db->insert('inquiry', $data_input);
 		$last_id = $this->db->insert_id();
-		$this->add_inquiry_product($last_id, $data['products']);
 		$this->db->trans_complete();
 	}
 
 	public function add_inquiry_product($id, $data_post)
 	{
-
 		foreach($data_post as $data)
 		{
-            
 			$data_input = array(
 				'product' => $data['id_product'],
 				'uom' => $data['unit'],

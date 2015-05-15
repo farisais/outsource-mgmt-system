@@ -14,6 +14,8 @@ class So_assignment_model extends CI_Model
 
 		return $this->db->get()->result_array();
 	}
+	
+	
     
     public function get_so_assignment_employee()
     {

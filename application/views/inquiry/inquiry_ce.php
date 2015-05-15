@@ -105,179 +105,6 @@ $(document).ready(function(){
         $("#select-customer-popup").jqxWindow('close');
     });
     
-    //=================================================================================
-    //
-    //   Inquiry Grid
-    //
-    //=================================================================================
-    <?php if (isset($is_edit)): ?>
-    <?php
-    // var_dump(inquiry_products);
- ?>
-    var product_lists = [
-        <?php foreach ($inquiry_products as $product): ?>
-            { id_inquiry_product: "<?=$product['id_inquiry_product']?>",
-            product_code: "<?=$product['product_code']?>",
-            product_name: "<?=$product['product_name']?>",
-            unit_name: "<?=$product['unit_name']?>",
-            unit: "<?=$product['unit']?>",
-            qty_request: "<?=$product['qty_request']?>",
-            qty_deliver: "<?=$product['qty_deliver']?>",
-            remark: "<?=$product['remark']?>"
-            },
-        <?php endforeach; ?>
-        ];
-        var source =
-        {
-            datatype: "array",
-            datafields:
-                [
-                    { name: 'product_code'},
-                    { name: 'product_name'},
-                    { name: 'unit_name'},
-                    { name: 'unit'},
-                    { name: 'qty_request'},
-                    { name: 'qty_deliver'},
-                    { name: 'remark'}
-                ],
-            localdata: product_lists
-        };
-        var dataAdapter = new $.jqx.dataAdapter(source);
-
-    <?php endif; ?>
-
-    $("#product-grid").jqxGrid(
-    {
-        theme: $("#theme").val(),
-        width: '100%',
-        height: 450,
-        selectionmode : 'singlerow',
-        <?php if(isset($is_view)){ echo 'disabled: true,';} ?>
-        <?php echo (isset($is_edit) ? 'source: dataAdapter,' : ''); ?>
-        editable: true,
-        columnsresize: true,
-        autoshowloadelement: false,                                                                                
-        sortable: true,
-        autoshowfiltericon: true,
-        rendertoolbar: function (toolbar) {
-            $("#add-product").click(function(){
-                <?php if(isset($is_view)){ echo 'return;';} ?>
-                var offset = $("#remove-product").offset();
-                $("#select-product-popup").jqxWindow({ position: { x: parseInt(offset.left) + $("#remove-product").width() + 20, y: parseInt(offset.top)} });
-                $("#select-product-popup").jqxWindow('open');
-            });
-            $("#remove-product").click(function(){
-                <?php if(isset($is_view)){ echo 'return;';} ?>
-                var selectedrowindex = $("#product-grid").jqxGrid('getselectedrowindex');
-                if (selectedrowindex >= 0) {
-                    var id = $("#product-grid").jqxGrid('getrowid', selectedrowindex);
-                    var commit1 = $("#product-grid").jqxGrid('deleterow', id);
-                }
-                
-            });
-        },
-        columns: [
-            { text: 'Product Code', dataField: 'product_code'},
-            { text: 'Product', dataField: 'product_name'},
-            { text: 'Unit', dataField: 'unit', displayfield: 'unit_name', columntype: 'dropdownlist',
-                createeditor: function (row, value, editor) {
-                    editor.jqxDropDownList({ source: unitAdapter, displayMember: 'name', valueMember: 'id_unit_measure' });
-                }},
-            { text: 'Qty Request', dataField: 'qty_request', width: 100}, 
-            { text: 'Qty Deliver', dataField: 'qty_deliver', width: 100},
-            { text: 'Remark', dataField: 'remark'}
-        ]
-    });
-    
-    $("#product-grid").on('cellvaluechanged', function (event) 
-    {
-        
-    });
-    
-    $("#product-grid").on("rowdoubleclick", function(event){
-        var args = event.args;
-        
-        var data = $(this).jqxGrid('getrowdata', args.rowindex);
-        // alert(JSON.stringify(data));
-    });
-    
-    var localizationobj = {};
-    localizationobj.currencysymbol = "Rp. ";
-    $("#product-grid").jqxGrid('localizestrings', localizationobj);
-    
-    $("#product-grid").jqxGrid('setcolumnproperty', 'product_name', 'editable', false);
-    $("#product-grid").jqxGrid('setcolumnproperty', 'product_code', 'editable', false);
-    
-    //=================================================================================
-    //
-    //   Select product Grid
-    //
-    //=================================================================================
-    
-    var url_select_product = "<?php echo base_url() ;?>product/get_product_list";
-    var source_select_product =
-    {
-        datatype: "json",
-        datafields:
-        [
-            { name: 'id_product'},
-            { name: 'product_category'},
-            { name: 'merk'},
-            { name: 'product_code'},
-            { name: 'product_name'},
-            { name: 'name'},
-            { name: 'unit_name'},
-            { name: 'unit'},            
-            { name: 'category_name'},
-            { name: 'qty_request', type: 'number'},
-            { name: 'qty_deliver', type: 'number'},
-            { name: 'remark', type: 'string'}
-        ],
-        id: 'id_product',
-        url: url_select_product ,
-        root: 'data'
-    };
-    var dataAdapter_select_product = new $.jqx.dataAdapter(source_select_product);
-    
-    $("#select-product-grid").jqxGrid(
-    {
-        theme: $("#theme").val(),
-        width: '100%',
-        height: 400,
-        selectionmode : 'singlerow',
-        source: dataAdapter_select_product,
-        columnsresize: true,
-        autoshowloadelement: false,                                                                                
-        sortable: true,
-        filterable: true,
-        showfilterrow: true,
-        autoshowfiltericon: true,
-        columns: [
-            { text: 'Product Code', dataField: 'product_code', width: 150},
-            { text: 'Name', dataField: 'product_name'},
-            { text: 'Category', dataField: 'category_name', width: 150}, 
-            { text: 'Merk', dataField: 'name', width: 100}                                        
-        ]
-    });
-    
-    $('#select-product-grid').on('rowdoubleclick', function (event) 
-    {
-        var args = event.args;
-        var data = $('#select-product-grid').jqxGrid('getrowdata', args.rowindex);
-        data['qty_request'] = 0;
-        data['qty_deliver'] = 0;
-        data['remark'] = '';
-        var commit0 = $("#product-grid").jqxGrid('addrow', null, data);
-        $("#select-product-popup").jqxWindow('close');
-    });
-    
-    $('#product-grid').on('rowdoubleclick', function (event) 
-    {
-        var args = event.args;
-        var data = $('#product-grid').jqxGrid('getrowdata', args.rowindex);
-        // alert(JSON.stringify(data));
-    });
-    
     <?php if (isset($is_edit) && $data_edit[0]['status'] == 'draft'): ?> 
     //=================================================================================
     //
@@ -292,7 +119,7 @@ $(document).ready(function(){
         item['paramValue'] = <?php echo $data_edit[0]['id_inquiry'] ?>;
         param.push(item);        
         data_post['is_edit'] = $("#is_edit").val(); 
-        data_post['id_po'] = $("#id_inquiry").val();
+        data_post['id_inquiry'] = $("#id_inquiry").val();
         load_content_ajax(GetCurrentController(), 264, data_post, param);
         e.preventDefault();
     });
@@ -305,17 +132,17 @@ function SaveData()
 
     data_post['is_edit'] = $("#is_edit").val();
     data_post['id_inquiry'] = $("#id_inquiry").val();
+	data_post['sales_person'] = $("#sales-person").val();
     data_post['inquiry_date'] = $("#inquiry-date").val('date').format('yyyy-mm-dd');
     data_post['delivery_date'] = $("#delivery-date").val('date').format('yyyy-mm-dd');
     data_post['customer'] = $("#customer-name").val().value;
-    data_post['notes'] = $("#notes").val();
-    data_post['products'] = $('#product-grid').jqxGrid('getrows');
+    data_post['inquiry_detail'] = $("#inquiry-detail").val();
     
-    load_content_ajax(GetCurrentController(), 113, data_post);
+    load_content_ajax(GetCurrentController(), 'save_edit_inquiry', data_post);
 }
 function DiscardData()
 {
-    load_content_ajax(GetCurrentController(), 109 , null);
+    load_content_ajax(GetCurrentController(), 'view_inquiry' , null);
 }
 
 function EditData()
@@ -404,28 +231,21 @@ function EditData()
                             <button id="customer-select" <?php if(isset($is_view)){ echo 'disabled=disabled';} ?>>...</button>
                         </div>
                     </td>
-                    <td></td>
-                </tr>
-                 <tr>
-                    <td colspan="2">                       
-                         <div class="row-color" style="width: 100%;">
-                            <button style="width: 30px;" id="add-product">+</button>
-                            <button style="width: 30px;" id="remove-product">-</button>
-                            <div style="display: inline;"><span>Add / Remove Product</span></div>
+                    <td>
+						<div class="label">
+                            Sales Person
                         </div>
-                    </td>
-                </tr>
-                 <tr>
-                    <td colspan="2">
-                        <div id="product-grid"></div>
+                        <div class="column-input" colspan="2">
+                            <input style="display:inline; width: 70%; font: -webkit-small-control; padding-left: 5px;" class="field" type="text" id="sales-person" name="name" value="<?php echo (isset($is_edit) ? $data_edit[0]['sales_person'] : '') ?>"/>
+                        </div>
                     </td>
                 </tr>
                 <tr>
                     <td style="width: 80%;padding-top: 20px;" colspan="2">
                         <div class="label">
-                            Notes
+                            Inquiry Detail
                         </div>
-                        <textarea id="notes" <?php if(isset($is_view)){ echo 'disabled=disabled';} ?> name="notes" class="field" cols="10" rows="20" style="height: 50px;"><?php echo (isset($is_edit) ? $data_edit[0]['notes'] : '') ?></textarea>
+                        <textarea id="inquiry-detail" <?php if(isset($is_view)){ echo 'disabled=disabled';} ?> name="notes" class="field" cols="10" rows="20" style="height: 50px;"><?php echo (isset($is_edit) ? $data_edit[0]['inquiry_detail'] : '') ?></textarea>
                     </td>
                 </tr>
             </table>

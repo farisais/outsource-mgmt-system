@@ -45,7 +45,7 @@ $(document).ready(function(){
     });
 
     $("#content-popup").jqxWindow({
-        width: 850, height: 500, resizable: false,  isModal: true, autoOpen: false, cancelButton: $("#Cancel"), modalOpacity: 0.01
+        width: 850, height: 'auto', resizable: false,  isModal: true, autoOpen: false, cancelButton: $("#Cancel"), modalOpacity: 0.01, minHeight: 500, maxHeight: 1000
     });
 
     $("#export-grid").click(function(e){
@@ -177,22 +177,22 @@ function load_content_ajax(controller, action, data_post, param, is_popup)
             {
                 //alert('Fatal error is happening with message : ' + output + '=====> Please contact your system administrator.');
             }
-            
-            if(is_popup == null)
-            {
-                $("#content").html(obj.content);
-                $("#button-wrapper").html(obj.button);
-                $("#content-title").html(obj.content_title);
-            }
-            else
-            {
-                $("#content-popup-wrapper").html(obj.content);
-                $("#content-popup-header").html(obj.content_title);
-                $("#content-popup").jqxWindow('open');
-            }
 
 			if(obj.result == "success")                                                                                                                
 			{
+                if(is_popup == null)
+                {
+                    $("#content").html(obj.content);
+                    $("#button-wrapper").html(obj.button);
+                    $("#content-title").html(obj.content_title);
+                }
+                else
+                {
+                    $("#content-popup-wrapper").html(obj.content);
+                    $("#content-popup-header").html(obj.content_title);
+                    $("#content-popup").jqxWindow('open');
+                }
+
                 if(is_popup == null)
                 {
                     var paramText = '';
@@ -228,6 +228,12 @@ function load_content_ajax(controller, action, data_post, param, is_popup)
                     $("#error-content").html(obj.ajax_message);
                     $("#error-notification-default").jqxWindow("open");
                 }
+                else if(obj.result == 'validation_error')
+                {
+                    //alert(obj.ajax_message);
+                    $("#error-content").html(obj.ajax_message);
+                    $("#error-notification-default").jqxWindow("open");
+                }
 			}
             jqUpdateSize();
 		},
@@ -238,7 +244,7 @@ function load_content_ajax(controller, action, data_post, param, is_popup)
                 var json = $.parseJSON( jqXhr.responseText );
                 alert(json);
             }
-            $("#error-content").html(JSON.stringify(jqXhr.responseText).replace("\r\n", ""));
+            $("#error-content").html(jqXhr.responseText);
             $("#error-notification-default").jqxWindow("open");
         }
    	});

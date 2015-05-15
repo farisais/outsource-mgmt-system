@@ -216,6 +216,7 @@ function view_tab_cost_element(){
                         alert('Transaction Success!');
                         var calculation = obj.calculation;
                         var data = $("#quotation-grid").jqxGrid('getrows');
+                        alert(JSON.stringify(obj));
                         for(i=0;i<data.length;i++)
                         {
                             for(j=0;j<calculation.length;j++)
@@ -491,7 +492,7 @@ $(document).ready(function(){
 
     $("#quotation-grid").on('rowdoubleclick', function(event){
         var args = event.args;
-        //alert(JSON.stringify($(this).jqxGrid('getrowdata', args.rowindex)));
+        alert(JSON.stringify($(this).jqxGrid('getrowdata', args.rowindex)));
     });
     
     $("#quotation-grid").on('cellvaluechanged', function (event) 
@@ -923,6 +924,7 @@ $(document).ready(function(){
         param.push(item);        
         data_post['is_edit'] = $("#is_edit").val(); 
         data_post['id_quotation'] = $("#id_quotation").val();
+        data_post['detail_product'] = $("#quotation-grid").jqxGrid('getrows');
         load_content_ajax(GetCurrentController(), 265, data_post, param);
         e.preventDefault();
     });

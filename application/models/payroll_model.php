@@ -14,8 +14,7 @@ class Payroll_model extends CI_Model
         return $this->db->get()->result_array();
     }
      public function get_wo_list() {
-        
-        
+
         $query_list_wo=$this->db->query("
         SELECT 	work_order.project_name,work_order.contract_startdate,work_order.contract_expdate,work_order.id_work_order,
 				so.so_number,ext_company.name AS customer_name,
@@ -42,6 +41,7 @@ class Payroll_model extends CI_Model
         }
         return $result_list_wo;
     }
+
     function get_detail_salary_per_employee($id_work_order,$id_payroll_periode,$date_start,$date_finish){
         $query_list_employee=$this->db->query("
         SELECT so_assignment.*

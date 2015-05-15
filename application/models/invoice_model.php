@@ -71,7 +71,7 @@ class Invoice_model extends CI_Model {
 
         $this->db->insert('invoice', $data_input);
         $invoice_id = $this->db->insert_id();
-        //$this->save_detail_invoice($invoice_id, $data['detail_invoice']);
+        $this->save_detail_invoice($invoice_id, $data['detail_invoice']);
         $this->db->trans_complete();
 
         return $invoice_id;
@@ -216,9 +216,11 @@ class Invoice_model extends CI_Model {
         return null;
     }
 
-    public function get_invoice_history($id_so, $exclude_id = null) {
+    public function get_invoice_history($id_so, $exclude_id = null)
+    {
         $inv = null;
-        if ($exclude_id != null) {
+        if ($exclude_id != null)
+        {
             $inv = $this->get_invoice_by_id($exclude_id);
         }
 
@@ -237,7 +239,8 @@ class Invoice_model extends CI_Model {
         return $this->db->get()->result_array();
     }
 
-    public function get_invoice_left($id_so, $exclude_id = null) {
+    public function get_invoice_left($id_so, $exclude_id = null)
+    {
         $inv = null;
         if ($exclude_id != null) {
             $inv = $this->get_invoice_by_id($exclude_id);
@@ -268,7 +271,8 @@ class Invoice_model extends CI_Model {
         return $so[0]['total_price'] - $total;
     }
 
-    public function validate_invoice($id_invoice) {
+    public function validate_invoice($id_invoice)
+    {
         $inv = $this->get_invoice_by_id($id_invoice);
         $this->db->trans_start();
 
@@ -307,23 +311,25 @@ class Invoice_model extends CI_Model {
         }
     }
      public function save_detail_invoice($id, $data)
-    {
-        foreach($data as $d)
-        {
-            if($d['product_name'] != '')
-            {
-                $data_input = array();
-                $data_input['product_name'] = $d['product_name'];
-                $data_input['unit'] = $d['unit'];
-                $data_input['description'] = $d['description'];
-                $data_input['quantity'] = $d['quantity'];
-                $data_input['price']=$d['price'];
-                $data_input['invoice_id']=$id;
-                $this->db->insert('invoice_detail', $data_input);
-            }
-        }
-    }
+     {
+         foreach ($data as $d) {
+             if ($d['product_name'] != '') {
+                 $data_input = array();
+                 $data_input['product'] = $d['product'];
+                 $data_input['unit'] = $d['unit'];
+                 $data_input['description'] = $d['description'];
+                 $data_input['quantity'] = $d['qty'];
+                 $data_input['price'] = $d['price'];
+                 $data_input['invoice_id'] = $id;
+                 $this->db->insert('invoice_detail', $data_input);
+             }
+         }
+     }
+
+
     function invoice_detail($id_payroll_wo){
+        $ci =& get_instance();
+        $ci->load->model('cost_element_model');
         $query=$this->db->query("SELECT so.id_so,quotation.id_quotation,payroll_wo.work_order_id
 FROM payroll_wo
 JOIN work_order ON work_order.id_work_order=payroll_wo.work_order_id
@@ -334,6 +340,7 @@ WHERE payroll_wo.id=$id_payroll_wo");
         $hasil=$this->get_cost_element($array[0]['id_quotation'],$array[0]['work_order_id']);
         return $hasil;
     }
+
     public function get_cost_element($id_quotation,$id_work_order)
 	{
 		$this->db->select('quotation_cost_element.*,quotation_cost_element.id as quotation_cost_element_id,organisation_structure.structure_name,position_level.name

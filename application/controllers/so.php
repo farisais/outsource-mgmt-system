@@ -98,7 +98,7 @@ class So extends MY_Controller
             $uploaded = $this->upload->data();
             $filename = $this->so_model->add_so_contract_file($uploaded);
             rename($uploaded['full_path'], $config['upload_path'] . '/' . $filename);
-            echo $filename;
+            echo json_encode($filename);
         }
 
         echo $this->upload->display_errors();
@@ -117,5 +117,12 @@ class So extends MY_Controller
     {
         echo json_encode($this->so_model->get_distinct_shift_wo_schedule($id));
     }
+	
+	public function save_so_contract()
+	{
+		$this->so_model->add_so_contract($this->input->post('id_so'), $this->input->post('contracts'));
+		
+		echo 'success';
+	}
     
 }

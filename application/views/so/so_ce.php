@@ -6,10 +6,11 @@ var linkrenderer_survey = function (row, column, value) {
 var linkrenderer_contract = function (row, column, value) {
     return '<div style="margin: 4px;" class="jqx-left-align"><a href="' + '<?php echo base_url() ?>contract/download_file/' + value + '" target="_blank" style="padding: 2px">' + value + '</a></div>';
 };
-function view_tab_cost_element(id){
+function view_tab_cost_element(id)
+{
     //alert(id);
-    var url = "<?php echo base_url() ;?>quotation/get_cost_element/"+id;
-     var source =
+    /*var url = "<?php echo base_url() ;?>quotation/get_cost_element/"+id;
+    var source =
         {
             datatype: "json",
             datafields:
@@ -133,7 +134,63 @@ function view_tab_cost_element(id){
             });
             
             }
+        });*/
+    //=================================================================================
+    //
+    //   CE Assign Grid
+    //
+    //=================================================================================
+
+    var celink = function (row, column, value) {
+        return '<div style="margin: 4px;" class="jqx-left-align"><a href="#" style="padding: 2px">' + value + '</a></div>';
+    };
+
+    var url_ce = "<?php if(isset($is_edit)){?><?php echo base_url() ;?>quotation/get_structure_ws_from_quote/<?php echo $data_edit[0]['quotation'] ?><?php } ?>";
+    var source_ce =
+    {
+        datatype: "json",
+        datafields:
+            [
+                { name: 'structure'},
+                { name: 'structure_name'},
+                { name: 'cost_element'},
+                { name: 'cost_element_name'}
+            ],
+        id: 'structure',
+        url: url_ce,
+        root: 'data'
+    };
+
+    var dataAdapterCE = new $.jqx.dataAdapter(source_ce);
+
+    $("#ce-assign-grid").jqxGrid(
+        {
+            theme: $("#theme").val(),
+            width: '100%',
+            height: 200,
+            source: dataAdapterCE,
+            columnsresize: true,
+            autoshowloadelement: false,
+            sortable: true,
+            columns: [
+                { text: 'Position', dataField: 'structure', displayfield: 'structure_name', width: 150},
+                { text: 'Cost Element', dataField: 'cost_element', displayfield: 'cost_element_name', cellsrenderer: celink}
+            ]
         });
+
+    $("#ce-assign-grid").on('cellclick', function(event){
+        var args = event.args;
+        if(args.value != null && args.datafield == 'cost_element')
+        {
+            var param = [];
+            var item = {};
+            item['paramName'] = 'id';
+            item['paramValue'] = args.value;
+            param.push(item);
+            load_content_ajax(GetCurrentController(), 'view_detail_cost_element' , {}, param, true);
+        }
+        //alert(args.value);
+    });
 }  
 $(document).ready(function(){
     
@@ -264,6 +321,11 @@ $(document).ready(function(){
                 }
             }
         ]
+    });
+
+    $("#so-grid").on('rowdoubleclick', function(event){
+        var args = event.args;
+        alert(JSON.stringify($(this).jqxGrid('getrowdata', args.rowindex)));
     });
     
     $("#so-grid").on('cellvaluechanged', function (event) 
@@ -416,16 +478,20 @@ $(document).ready(function(){
     
     $('#contract-file').on('change', function(e) {
         $("#contract-form").ajaxForm({
-            success: function () {
+            success: function (output) {
                 $('#contract-file').val("");
-            },
-            complete: function (xhr) {
-                var data = {};
-                data['filename'] = xhr.responseText;
+				output = JSON.parse(output);
+				alert(output.filename);
+				var data = {};
+				data['id_contract'] = output['id_contract'];
+                data['filename'] = output['filename'];
                 data['startdate'] = '';
                 data['expdate'] = '';
                 data['invoice_term'] = '';
                 var commit0 = $("#contract-grid").jqxGrid('addrow', null, data);
+            },
+            complete: function (xhr) {
+               
             }
         }).submit();
         e.preventDefault();
@@ -443,6 +509,8 @@ $(document).ready(function(){
             { name: 'expdate', type: 'date', format: "yyyy-MM-dd"},
             { name: 'invoice_term'},
             { name: 'invoice_term_name', value: 'invoice_term', values: { source: termsAdapter.records, value: 'value', name: 'label' }},
+			{ name: 'po_number'},
+			{ name: 'contract_number'},
             { name: 'status'},
             { name: 'status_name', value: 'status', values: { source: ctstatusAdapter.records, value: 'value', name: 'label' }},
         ],
@@ -464,7 +532,7 @@ $(document).ready(function(){
         sortable: true,
         autoshowfiltericon: true,
         columns: [
-            { text: 'Number', datafield: 'filename', editable: false, cellsrenderer: linkrenderer_contract},
+            { text: 'Number', datafield: 'filename', editable: false, cellsrenderer: linkrenderer_contract, width: 110},
             { text: 'Start Date', datafield: 'startdate', columntype: 'datetimeinput', width: 110, cellsformat: 'd'},
             { text: 'Expire Date', datafield: 'expdate', columntype: 'datetimeinput', width: 110, cellsformat: 'd'},
             { text: 'Invoice Term', datafield: 'invoice_term', displayfield: 'invoice_term_name', columntype: 'dropdownlist', width: 150,
@@ -476,7 +544,9 @@ $(document).ready(function(){
                     });
                 }
             },
-            { text: 'Status', datafield: 'status_term', displayfield: 'status_name', columntype: 'dropdownlist', width: 150,
+			{ text: 'Contract Number', datafield: 'contract_number', width: 110}, 
+			{ text: 'PO Number', datafield: 'po_number', width: 110},
+            { text: 'Status', datafield: 'status', displayfield: 'status_name', columntype: 'dropdownlist', width: 150,
                 createeditor: function (row, value, editor) {
                     editor.jqxDropDownList({ 
                         source: ctstatusAdapter, 
@@ -485,9 +555,37 @@ $(document).ready(function(){
                     });
                 }
             }
-            
         ]
     });
+	
+	$("#save-contract").click(function(){
+		var data_post = {};
+		data_post['id_so'] = $("#id_so").val();
+		data_post['contracts'] = $("#contract-grid").jqxGrid('getrows');
+		 for (var i = 0; i < data_post['contracts'].length; i++) {
+			data_post['contracts'][i].startdate = (data_post['contracts'][i].startdate == null ? null : data_post['contracts'][i].startdate.format('yyyy-mm-dd'));
+			data_post['contracts'][i].expdate = (data_post['contracts'][i].expdate == null ? null : data_post['contracts'][i].expdate.format('yyyy-mm-dd'));
+		}
+		$.ajax({
+			url: '<?php base_url() ?>so/save_so_contract',
+			type: "POST",
+			data: data_post,
+			success: function(output)
+			{		  
+				alert('Transaction success');
+			},
+			error: function( jqXhr ) 
+			{
+				$(".table-right-bar").unblock();
+				if( jqXhr.status == 400 ) { //Validation error or other reason for Bad Request 400
+					var json = $.parseJSON( jqXhr.responseText );
+					alert(json);
+				}
+				$("#error-content").html(jqXhr.responseText);
+				$("#error-notification-default").jqxWindow("open");
+			}
+		});
+	});
     
     //=================================================================================
     //
@@ -694,6 +792,28 @@ $(document).ready(function(){
         };
         var dataAdapterWS = new $.jqx.dataAdapter(sourceWS);
         $("#working-schedule-grid").jqxGrid({source: dataAdapterWS});
+
+        //Assign CE Grid
+        url_ce = "<?php echo base_url() ;?>quotation/get_structure_ws_from_quote/" + data.id_quotation;
+        source_ce =
+        {
+            datatype: "json",
+            datafields:
+                [
+                    { name: 'structure'},
+                    { name: 'structure_name'},
+                    { name: 'cost_element'},
+                    { name: 'cost_element_name'}
+                ],
+            id: 'structure',
+            url: url_ce,
+            root: 'data'
+        };
+
+        dataAdapterCE = new $.jqx.dataAdapter(source_ce);
+        dataAdapterCE.dataBind();
+        $("#ce-assign-grid").jqxGrid({source: dataAdapterCE});
+        $("#ce-assign-grid").jqxGrid('refreshdata');
     });
 });
 
@@ -762,7 +882,7 @@ $(document).ready(function(){
         param.push(item);        
         data_post['is_edit'] = $("#is_edit").val();
         data_post['id_so'] = $("#id_so").val();
-        load_content_ajax(GetCurrentController(), 267, data_post, param);
+        load_content_ajax(GetCurrentController(), 'confirm_sales_order', data_post, param);
         e.preventDefault();
     });    
     <?php endif; ?>
@@ -771,7 +891,7 @@ $(document).ready(function(){
 <?php endif; ?>
 <input type="hidden" id="prevent-interruption" value="true" />
 <input type="hidden" id="is_edit" value="<?php echo (isset($is_edit) ? 'true' : 'false') ?>" />
-<input type="hidden" id="id_role" value="<?php echo (isset($is_edit) ? $data_edit[0]['id_so'] : '') ?>" />
+<input type="hidden" id="id_so" value="<?php echo (isset($is_edit) ? $data_edit[0]['id_so'] : '') ?>" />
 <div class="document-action">
     <?php if (isset($is_edit) && $data_edit[0]['status'] == 'draft'): ?><button id="so-validate">Validate</button><?php endif; ?>
     <?php if (isset($is_edit) && $data_edit[0]['status'] == 'open'): ?><button id="so-confirm">Confirm</button><?php endif; ?>
@@ -859,39 +979,42 @@ $(document).ready(function(){
             </table>
             <div id='so-tabs' style="margin-top: 20px;">
                 <ul>
-                    <li>Product & Services</li>
-                    <li>Survey / Assessment</li>
-                    <li>Contract</li>   
                     <li>Working Schedule</li>
-                    <li>Cost Element</li>                                     
+                    <li>Cost Element</li>
+                    <li>Survey / Assessment</li>
+                    <li>Payment Info</li>
+                    <li>Product & Services</li>
                 </ul>
                 <div>
                     <table class="table-form" style="margin: 20px; width: 90%;">
-                        <?php /*
                         <tr>
                             <td colspan="2">
-                                 <div class="row-color" style="width: 100%;">
-                                    <button style="width: 30px;" id="add-product">+</button>
-                                    <button style="width: 30px;" id="remove-product">-</button>
-                                    <div style="display: inline;"><span>Add / Remove Product</span></div>
+                                <div class="row-color" style="width: 100%;">
+                                    <span>Working Schedule</span>
                                 </div>
                             </td>
                         </tr>
-                         * 
-                         */ ?>
                         <tr>
                             <td colspan="2">
-                                <div id="so-grid"></div>
+                                <div id="working-schedule-grid"></div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div>
+                    <table class="table-form" style="margin: 20px; width: 90%;">
+                        <tr>
+                            <td colspan="2">
+                                <div class="row-color" style="width: 100%;">
+                                    <span>Cost Element</span>
+                                </div>
                             </td>
                         </tr>
                         <tr>
-                            <td style="width: 80%;padding-top: 20px;" colspan="2">
-                                <div class="label">
-                                    Notes
-                                </div>
-                                <textarea id="notes" class="field" cols="10" rows="20" style="height: 50px;"></textarea>
+                            <td colspan="2">
+                                <div id="ce-assign-grid"></div>
                             </td>
-                        </tr>                        
+                        </tr>
                     </table>
                 </div>
                 <div>
@@ -910,6 +1033,7 @@ $(document).ready(function(){
                                  <div class="row-color" style="width: 100%;">
                                     <button style="width: 30px;" id="add-contract">+</button>
                                     <button style="width: 30px;" id="remove-contract">-</button>
+									<button style="width: 60px;" id="save-contract">Save</button>
                                     <div style="display: inline;"><span>Add / Remove Contract</span></div>
                                     <form id="contract-form" method="post" enctype="multipart/form-data" action="<?php echo base_url() ;?>so/upload_contract">
                                         <input type="file" name="contract_file" style="display:none;" id="contract-file">
@@ -926,36 +1050,33 @@ $(document).ready(function(){
                 </div>
                 <div>
                     <table class="table-form" style="margin: 20px; width: 90%;">
+                        <?php /*
                         <tr>
-                            <td colspan="2">                       
+                            <td colspan="2">
                                  <div class="row-color" style="width: 100%;">
-                                    <span>Working Schedule</span>
+                                    <button style="width: 30px;" id="add-product">+</button>
+                                    <button style="width: 30px;" id="remove-product">-</button>
+                                    <div style="display: inline;"><span>Add / Remove Product</span></div>
                                 </div>
                             </td>
                         </tr>
+                         *
+                         */ ?>
                         <tr>
                             <td colspan="2">
-                                <div id="working-schedule-grid"></div>
+                                <div id="so-grid"></div>
                             </td>
                         </tr>
-                    </table>
-                </div> 
-                <div>
-                    <table class="table-form" style="margin: 20px; width: 90%;">
                         <tr>
-                            <td colspan="2">                       
-                                 <div class="row-color" style="width: 100%;">
-                                    <span>Cost Elemen</span>
+                            <td style="width: 80%;padding-top: 20px;" colspan="2">
+                                <div class="label">
+                                    Notes
                                 </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">
-                                <div id="cost_element_grid"></div>
+                                <textarea id="notes" class="field" cols="10" rows="20" style="height: 50px;"></textarea>
                             </td>
                         </tr>
                     </table>
-                </div>                                  
+                </div>
             </div>
         </div>
     </div>

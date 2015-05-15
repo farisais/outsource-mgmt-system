@@ -22,7 +22,10 @@ class Invoice extends MY_Controller {
         $this->load->model('bank_model');
         $this->load->model('work_order_model');
         $this->load->model('payroll_model');
+        $this->load->model('payroll_periode_model');
         $this->load->model('appsetting_model');
+        $this->load->model('cost_element_model');
+
     }
 
     public function get_invoice_list() {
@@ -54,11 +57,14 @@ class Invoice extends MY_Controller {
 
     public function save_invoice() {
         $id_invoice = null;
-        if ($this->input->post('is_edit') == 'false') {
+        if ($this->input->post('is_edit') == 'false')
+        {
             $invoice_number = $this->generate_invoice_number();
             $id_invoice = $this->invoice_model->save_invoice($this->input->post(), $invoice_number);
             $this->create_report('400485678', $invoice_number, 'invoice');
-        } else {
+        }
+        else
+        {
             $this->invoice_model->edit_invoice($this->input->post());
             $id_invoice = $this->input->post('id_invoice');
         }
@@ -81,6 +87,16 @@ class Invoice extends MY_Controller {
         );
 
         return $data;
+    }
+
+    public function get_wo_list_invoice()
+    {
+        echo "{\"data\" : " . json_encode($this->payroll_periode_model->get_wo_list_invoice()) . "}";
+    }
+
+    public function get_calculate_invoice($ce)
+    {
+        echo json_encode($this->cost_element_model->calculate_invoice('per_month', $ce));
     }
 
     function kirim_invoice_email() {
@@ -158,9 +174,11 @@ class Invoice extends MY_Controller {
         //die();       
         exec($cmd);
     }
-    function detail_invoice(){
+    function detail_invoice()
+    {
         $id=$this->uri->segment(3);
-        echo "{\"data\" : " . json_encode($this->invoice_model->invoice_detail($id)) . "}";
+		$payroll_periode = $this->uri->segment(4);
+        echo "{\"data\" : " . json_encode($this->payroll_periode_model->get_invoice_all_employee($id, $payroll_periode)) . "}";
         //$this->invoice_model->invoice_detail($id);
     }
 

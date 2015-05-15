@@ -330,11 +330,11 @@ class MY_Controller extends CI_Controller
         $param = null;                                                
         if($this->input->post('param'))
         {
-            $param = array();                                        
+            $param = array();
             foreach($this->input->post('param') as $p)
             {
-                array_push($param, $p['paramValue']);               
-            }         
+                array_push($param, $p['paramValue']);
+            }
         }
         $result = $this->execute_action($this->input->get('action'), $param);
         echo json_encode($result);
@@ -367,64 +367,74 @@ class MY_Controller extends CI_Controller
                     $controller = new $initClass;
                                            
                     if($param != null)
-                    {      
-                        $data_view = call_user_func_array(array($controller, $action_array[0]['function_exec']), $param);                                                               
+                    {
+                        $data_view = call_user_func_array(array($controller, $action_array[0]['function_exec']), $param);
                     } 
                     else
                     {
                         $data_view = call_user_func(array($controller, $action_array[0]['function_exec']));
                     }                                                             
                 }
-                
-                if($action_array[0]['use_log'] == 1 || $action_array[0]['use_log'] == true)
+
+                if(!isset($data_view['has_error']))
                 {
-                    $this->appsetting_model->add_log($action_array[0], $data_view);
-                }
-                
-                if($this->appsetting_model->check_action_notify($action))
-                {
-                    $email_content = $this->create_email_content($action_array, $data_view);
-                    $this->insert_email_queue($action, $email_content);
-                }
-                
-                if($this->input->post('action_condition_identifier'))
-                {
-                    $action_condition = $this->appsetting_model->get_action_condition_by_action_and_identifier($action_array[0]['id_application_action'], $this->input->post('action_condition_identifier'));
-                    if(count($action_condition) > 0)
+                    if($action_array[0]['use_log'] == 1 || $action_array[0]['use_log'] == true)
                     {
-    
-                        $target = $action_condition[0]['target_action'];
-                        //$action_array = $this->menu_model->get_detail_action($target);
+                        $this->appsetting_model->add_log($action_array[0], $data_view);
+                    }
+
+                    if($this->appsetting_model->check_action_notify($action))
+                    {
+                        $email_content = $this->create_email_content($action_array, $data_view);
+                        $this->insert_email_queue($action, $email_content);
+                    }
+
+                    if($this->input->post('action_condition_identifier'))
+                    {
+                        $action_condition = $this->appsetting_model->get_action_condition_by_action_and_identifier($action_array[0]['id_application_action'], $this->input->post('action_condition_identifier'));
+                        if(count($action_condition) > 0)
+                        {
+
+                            $target = $action_condition[0]['target_action'];
+                            //$action_array = $this->menu_model->get_detail_action($target);
+                            if(isset($data_view['interfunction_param']))
+                            {
+                                $param = array();
+                                foreach($data_view['interfunction_param'] as $p)
+                                {
+                                    array_push($param, $p['paramValue']);
+                                }
+                            }
+                            return $this->execute_action($target, $param);
+                        }
+                    }
+
+                    if($action_array[0]['target_action'] != null || $action_array[0]['target_action'] != '')
+                    {
                         if(isset($data_view['interfunction_param']))
                         {
-                            $param = array(); 
+                            $param = array();
                             foreach($data_view['interfunction_param'] as $p)
                             {
-                                 array_push($param, $p['paramValue']); 
+                                array_push($param, $p['paramValue']);
                             }
                         }
-                        return $this->execute_action($target, $param); 
+                        return $this->execute_action($action_array[0]['target_action'], $param);
                     }
+
+                    $data_view['class'] = $this;
+                    $result_execute = 'success';
+
+                    $content_title = $action_array[0]['name'];
+                    $controller = $action_array[0]['controller'];
+                    $content = $this->load->view($action_array[0]['controller'] . ($action_array[0]['prefix'] != null && $action_array[0]['prefix'] != '' ? '/' . $action_array[0]['prefix'] : '' ) . '/' . $action_array[0]['view_file'], $data_view, true);
+                    $action_button = $this->load->view('templates/button/' . $action_array[0]['action_button'], null, true);
                 }
-                
-                if($action_array[0]['target_action'] != null || $action_array[0]['target_action'] != '')
+                else
                 {
-                    if(isset($data_view['interfunction_param']))
-                    {
-                        $param = array(); 
-                        foreach($data_view['interfunction_param'] as $p)
-                        {
-                             array_push($param, $p['paramValue']); 
-                        }
-                    }
-                    return $this->execute_action($action_array[0]['target_action'], $param);                                                
+                    $result_execute = 'validation_error';
+                    $ajax_message = $data_view['error_message'];
                 }
-                $data_view['class'] = $this;
-                $result_execute = 'success';
-                $content_title = $action_array[0]['name'];
-                $controller = $action_array[0]['controller'];
-                $content = $this->load->view($action_array[0]['controller'] . ($action_array[0]['prefix'] != null && $action_array[0]['prefix'] != '' ? '/' . $action_array[0]['prefix'] : '' ) . '/' . $action_array[0]['view_file'], $data_view, true);
-                $action_button = $this->load->view('templates/button/' . $action_array[0]['action_button'], null, true);   
 
             }
             else
@@ -496,7 +506,7 @@ class MY_Controller extends CI_Controller
                     {
                         $apperror = true;
                         $data_view = array(
-                            'message' => 'Cannot find one or more parameter in action : ' . $action_array[0]['name'] . '. Please checkk your application setting or contact your System Administrator'
+                            'message' => 'Cannot find one or more parameter in action : ' . $action_array[0]['name'] . '. Please check your application setting or contact your System Administrator'
                         );
                     }
                     

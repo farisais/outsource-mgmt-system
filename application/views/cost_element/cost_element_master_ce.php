@@ -6,6 +6,9 @@
         //   Cost Element Detail Grid
         //
         //=================================================================================
+		 <?php if(!isset($is_view)){ ?>
+		$("#payroll-type").jqxComboBox({ source: [ { label: 'Regular', value: 'regular'}, { label: 'Overtime', value: 'overtime'}, { label: 'Both', value: 'both'} ] });
+		<?php } ?>
         var value_type = [
             { label: 'Numeric', value: 'numeric'},
             { label: 'Percentage', value: 'percentage'}
@@ -112,6 +115,7 @@
             ]
         });
 
+
         $("#add-detail").click(function(){
             var data = {};
             data['name'] = null;
@@ -179,7 +183,21 @@
             }
         });
 
+        $("#ce-detail-grid").on('bindingcomplete', function(){
+            <?php if(isset($is_view))
+            {
+            ?>
+            $("#ce-detail-grid").jqxGrid('hidecolumn', 'sequence_operation');
+            $("#ce-detail-grid").jqxGrid('hidecolumn', 'salariable');
+            $("#ce-detail-grid").jqxGrid('hidecolumn', 'invoiceable');
+            $("#ce-detail-grid").jqxGrid('hidecolumn', 'condition');
+            <?php
+            }
+            ?>
+        });
+
         <?php if(!isset($is_view)){ ?>
+
         //=================================================================================
         //
         //   Invoice Simulation Grid
@@ -205,7 +223,7 @@
         });
 
         $("#simulate-invoice").click(function(){
-            $("#invoice-simulation-grid").jqxGrid('clear');
+            /*$("#invoice-simulation-grid").jqxGrid('clear');
             var data = $("#ce-detail-grid").jqxGrid('getrows');
             var aggregate = 0;
             var temp_grid = [];
@@ -272,7 +290,41 @@
 
                     $("#invoice-simulation-grid").jqxGrid('addrow', null, data_input);
                 }
-            }
+            }*/
+			var data_post = {};
+            data_post['id_cost_element'] = $("#id_cost_element").val();
+            data_post['overtime'] = $("#overtime-hour").val();
+			data_post['payroll_type'] = $("#payroll-type").val();
+            //alert(JSON.stringify(data_post));
+            loadAjaxGif();
+            $.ajax({
+                url: 'cost_element/calculate_invoice',
+                type: "POST",
+                data: data_post,
+                dataType:'json',
+                success:function(output)
+                {
+                    unloadAjaxGif();
+                    //alert(JSON.stringify(output));
+                    $("#invoice-simulation-grid").jqxGrid('clear');
+                    for(i=0;i<output.detail_calculation.length;i++)
+                    {
+                        var data = output.detail_calculation[i];
+
+                        $("#invoice-simulation-grid").jqxGrid('addrow', null, data);
+                    }
+
+                },
+                error:function(jqXhr)
+                {
+                    if( jqXhr.status == 400 ) { //Validation error or other reason for Bad Request 400
+                        var json = $.parseJSON( jqXhr.responseText );
+                        alert(json);
+                    }
+
+                    unloadAjaxGif();
+                }
+            });
             //$("#total-simulate-invoice").html(aggregate);
         });
 
@@ -290,17 +342,89 @@
             return null;
         }
 
+        //=================================================================================
+        //
+        //   Salary Simulation
+        //
+        //=================================================================================
+
+        $("#start-period-simulation").jqxDateTimeInput({width: '250px', height: '25px'});
+        $("#end-period-simulation").jqxDateTimeInput({width: '250px', height: '25px'});
+
+        $("#salary-simulation-grid").jqxGrid(
+            {
+                theme: $("#theme").val(),
+                width: '100%',
+                height: 250,
+                selectionmode: 'singlerow',
+                columnsresize: true,
+                autoshowloadelement: false,
+                sortable: true,
+                autoshowfiltericon: true,
+                columns: [
+                    {text: 'Name', dataField: 'name', width: 200},
+                    {text: 'Value', dataField: 'value', cellsformat: 'd2', width: 200},
+                    {text: 'Calc. Value', dataField: 'calc_value', cellsformat: 'd2', width: 200},
+                    {text: 'Aggregate Value', dataField: 'aggregate', cellsformat: 'd2', width: 200},
+                    {text: 'THP', dataField: 'thp', cellsformat: 'd2', width: 200},
+                    {text: 'Remark', dataField: 'remark', width: 150}
+                ]
+            });
+
+        $("#simulate-salary").click(function(){
+            var data_post = {};
+            data_post['start_date'] = $("#start-periode-simulation").val();
+            data_post['end_date'] = $("#start-periode-simulation").val();
+            data_post['id_cost_element'] = $("#id_cost_element").val();
+            data_post['overtime'] = $("#overtime-hour").val();
+			data_post['payroll_type'] = $("#payroll-type").val();
+            //alert(JSON.stringify(data_post));
+            loadAjaxGif();
+            $.ajax({
+                url: 'cost_element/calculate_salary',
+                type: "POST",
+                data: data_post,
+                dataType:'json',
+                success:function(output)
+                {
+                    unloadAjaxGif();
+                    //alert(JSON.stringify(output));
+                    $("#salary-simulation-grid").jqxGrid('clear');
+                    for(i=0;i<output.detail_calculation.length;i++)
+                    {
+                        var data = output.detail_calculation[i];
+
+                        $("#salary-simulation-grid").jqxGrid('addrow', null, data);
+                    }
+
+                },
+                error:function(jxHr)
+                {
+                    if( jqXhr.status == 400 ) { //Validation error or other reason for Bad Request 400
+                        var json = $.parseJSON( jqXhr.responseText );
+                        alert(json);
+                    }
+
+                    unloadAjaxGif();
+                }
+            });
+        });
+
         <?php } ?>
+
+
+
+
+
+        <?php if(!isset($is_view)){ ?>
 
         //=================================================================================
         //
         //   Tabs Initialisation
         //
         //=================================================================================
+        $('#ce-tabs').jqxTabs({ width: '100%', position: 'top', scrollPosition: 'right'});
 
-        //$('#ce-tabs').jqxTabs({ width: '100%', position: 'top', scrollPosition: 'right'});
-
-        <?php if(!isset($is_view)){ ?>
         //=================================================================================
         //
         //   CE Existing
@@ -423,6 +547,10 @@
 
 </script>
 <style>
+    .table-form
+    {
+        margin:10px;
+    }
     .table-form .label
     {
         width: 80px;
@@ -440,8 +568,8 @@
     <button style="margin-left: 20px;" id="copy-existing">Copy Existing</button>
 </div>
 <?php } ?>
-<div id='form-container' style="font-size: 13px; font-family: Arial, Helvetica, Tahoma">
-    <div class="form-center" style="padding: 30px;">
+<div id='form-container' style="font-size: 13px; font-family: Arial, Helvetica, Tahoma;<?php if(isset($is_view)){ ?> top: 0px; <?php } ?>">
+    <div class="form-center" style="padding: 30px;<?php if(isset($is_view)){ ?> margin: 0px; <?php } ?>">
         <div><h1 style="font-size: 18pt; font-weight: bold;">Cost Element / <span><?php echo (isset($is_edit) ? $data_edit[0]['id_cost_element'] : ''); ?></span></h1></div>
         <div>
             <table class="table-form">
@@ -479,37 +607,93 @@
                         <div id="ce-detail-grid"></div>
                     </td>
                 </tr>
-                <?php if(!isset($is_view)) { ?>
-                <tr>
-
-                </tr>
-                <tr>
-                    <td colspan="4">
-                        <span>Below is the invoice simulation for 1 qty. Click on "Begin" to begin the simulation</span>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="4">
-                        <input type="checkbox" id="ask_invoice" style="display: inline"/>Ask on Invoice
-                        <input type="checkbox" id="per_year" style="display: inline"/>Include per year
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="4">
-                        <div class="row-color" style="width: 100%;">
-                            <button style="width: 60px;" id="simulate-invoice">Begin</button>
-                            <div style="display: inline;"><span>Invoice Simulation</span></div>
-                        </div>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td colspan="4">
-                        <div id="invoice-simulation-grid"></div>
-                    </td>
-                </tr>
-                <?php } ?>
             </table>
+            <?php if(!isset($is_view)) { ?>
+                <div id='ce-tabs' style="argin-top: 20px;">
+                    <ul>
+                        <li>Invoice Simulation</li>
+                        <li>Salary Simulation</li>
+                    </ul>
+                    <div>
+                        <table class="table-form">
+                            <tr>
+                                <td colspan="4">
+                                    <span>Below is the invoice simulation for 1 qty. Click on "Begin" to begin the simulation</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="4">
+                                    <input type="checkbox" id="ask_invoice" style="display: inline"/>Ask on Invoice
+                                    <input type="checkbox" id="per_year" style="display: inline"/>Include per year
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="4">
+                                    <div class="row-color" style="width: 100%;">
+                                        <button style="width: 60px;" id="simulate-invoice">Begin</button>
+                                        <div style="display: inline;"><span>Invoice Simulation</span></div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="4">
+                                    <div id="invoice-simulation-grid"></div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div>
+                        <table class="table-form" >
+                            <tr>
+                                <td colspan="4">
+                                    <span>Below is the salary simulation for 1 employee. Click on "Begin" to begin the simulation</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Start Period
+                                </td>
+                                <td>
+                                    <div id="start-period-simulation"></div>
+                                </td>
+                                <td>
+                                    End Period
+                                </td>
+                                <td>
+                                    <div id="end-period-simulation"></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Overtime Hour
+                                </td>
+                                <td>
+                                    <input class="field" id="overtime-hour" type="text" />
+                                </td>
+                                <td>Payroll Type</td>
+                                <td>
+									<div id="payroll-type"></div>
+								</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4">
+                                    <div class="row-color" style="width: 100%;">
+                                        <button style="width: 60px;" id="simulate-salary">Begin</button>
+                                        <div style="display: inline;"><span>Salary Simulation</span></div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="4">
+                                    <div id="salary-simulation-grid"></div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            <?php } ?>
         </div>
     </div>
 </div>

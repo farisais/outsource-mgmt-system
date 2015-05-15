@@ -47,7 +47,7 @@ class Quotation extends MY_Controller
         {
             $this->quotation_model->add_quotation($this->input->post());
         }
-        
+
         return null;
     }
     
@@ -156,7 +156,12 @@ class Quotation extends MY_Controller
 
     public function get_structure_ws_from_quote($id)
     {
-        echo "{\"data\" : " . json_encode($this->quotation_model->get_structure_ws_from_quote($id)) . "}";
+        $result = $this->quotation_model->get_structure_ws_from_quote($id);
+        if(count($result) == 0)
+        {
+            $result = $this->quotation_model->get_structure_ws_from_quote_init($id);
+        }
+        echo "{\"data\" : " . json_encode($result) . "}";
     }
 
     public function save_ce_assign()

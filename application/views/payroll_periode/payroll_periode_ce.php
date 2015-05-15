@@ -1,51 +1,77 @@
 <script>
-function formatDate(date) {
-        var foo = date;
-        var arr = foo.split("/");
-        return arr[2]+'-'+arr[1]+'-'+arr[0];
+function formatDate(date)
+{
+    var foo = date;
+    var arr = foo.split("/");
+    return arr[2]+'-'+arr[1]+'-'+arr[0];
 }
-function buttonclick(){
-    //alert('ok');
-      var id = event.target.id;
-      var data = $('#project-wo-grid').jqxGrid('getrowdata', id);
-      //alert(data);
-      var data_post = {};
-        //console.log(data);
-        //data_post['is_edit'] = $("#is_edit").val();
-        data_post['id_work_order'] = data.id_work_order;
-        
-        date_start = $("#date_start").val();
-        data_post['date_start'] = formatDate(date_start);
-        
-        date_finished = $("#date_finish").val();
-        //alert(formatDate(date_finished));
-        //return false;
-        data_post['date_finished'] = formatDate(date_finished);
-        data_post['id_payroll_periode'] = $('#id_payroll_periode').val();
-        load_content_ajax(GetCurrentController(), 393, data_post);
-    // alert(data.customer_name + " " + data.id_work_order);
-}
-function buttonclick_aprove(){
-      var id = event.target.id;
-      var data = $('#payroll-wo-grid').jqxGrid('getrowdata', id);
-              
-      var data_post = {};
+function buttonclick(event)
+{
+    var id = event.target.id;
+    var data = $('#project-wo-grid').jqxGrid('getrowdata', id);
 
-        //data_post['is_edit'] = $("#is_edit").val();
-        data_post['id_work_order'] = data.id_work_order;
-        
-        date_start = $("#date_start").val();
-        data_post['date_start'] = formatDate(date_start);
-        
-        date_finished = $("#date_finish").val();
-        //alert(formatDate(date_finished));
-        //return false;
-        data_post['id_payroll_periode'] = $('#id_payroll_periode').val();
-        data_post['date_finished'] = formatDate(date_finished)
-        //alert(data_post['date_finished']);
-      //return false;    ;
-        load_content_ajax(GetCurrentController(), 393, data_post);
-    // alert(data.customer_name + " " + data.id_work_order);
+    var data_post = {};
+
+    var date_start = $("#date_start").val();
+    var date_finished = $("#date_finish").val();
+
+    var param = [];
+    var item = {};
+
+    item['paramName'] = 'id';
+    item['paramValue'] = $('#id_payroll_periode').val();
+    param.push(item);
+
+    item = {};
+    item['paramName'] = 'wo';
+    item['paramValue'] = data.id_work_order;
+    param.push(item);
+
+    item = {};
+    item['paramName'] = 'date_start';
+    item['paramValue'] = formatDate(date_start);
+    param.push(item);
+
+    item = {};
+    item['paramName'] = 'date_finished';
+    item['paramValue'] = formatDate(date_finished);
+    param.push(item);
+
+    load_content_ajax(GetCurrentController(), 'view_detail_payroll_period', data_post, param);
+}
+function buttonclick_aprove()
+{
+    var id = event.target.id;
+    var data = $('#payroll-wo-grid').jqxGrid('getrowdata', id);
+
+    var data_post = {};
+
+    var date_start = $("#date_start").val();
+    var date_finished = $("#date_finish").val();
+
+    var param = [];
+    var item = {};
+
+    item['paramName'] = 'id';
+    item['paramValue'] = $('#id_payroll_periode').val();
+    param.push(item);
+
+    item = {};
+    item['paramName'] = 'wo';
+    item['paramValue'] = data.id_work_order;
+    param.push(item);
+
+    item = {};
+    item['paramName'] = 'date_start';
+    item['paramValue'] = formatDate(date_start);
+    param.push(item);
+
+    item = {};
+    item['paramName'] = 'date_finished';
+    item['paramValue'] = formatDate(date_finished);
+    param.push(item);
+
+    load_content_ajax(GetCurrentController(), 'view_detail_payroll_period', data_post, param);
 }
     $(document).ready(function () {
         var QueryString = function () {
@@ -75,6 +101,9 @@ function buttonclick_aprove(){
         $('#generate-payroll').on('click', function(e) {  
             
         });
+		
+		$("#payroll-type").jqxComboBox({ source: [ { label: 'Regular', value: 'regular'}, { label: 'Overtime', value: 'overtime'}, { label: 'Both', value: 'both'} ] });
+
         $("#delete-payroll").on('click', function(e){
             var row = $('#payroll-wo-grid').jqxGrid('getrowdata', parseInt($('#payroll-wo-grid').jqxGrid('getselectedrowindexes')));
             if(row==null){
@@ -113,6 +142,7 @@ function buttonclick_aprove(){
 
 if (isset($is_edit)) : ?>
      $('.document-action').show();
+	 $("#payroll-type").jqxComboBox('val', '<?php echo  $data_edit->payroll_type ?>');
      $("#date_start").jqxDateTimeInput('val', <?php echo "'" . date('m/d/Y', strtotime($data_edit->date_start)) . "'"; ?>);
      $("#date_finish").jqxDateTimeInput('val', <?php echo "'" . date('m/d/Y', strtotime($data_edit->date_finish)) . "'"; ?>);
      
@@ -312,16 +342,18 @@ if (isset($is_edit)) : ?>
     });
 
     function SaveData() {
-        var data_post = {};
+		var data_post = {};
 
         data_post['periode_name'] = $("#periode_name").val();
         data_post['date_start'] = $("#date_start").val();
         data_post['date_finish'] = $("#date_finish").val();
+		data_post['payroll_type'] = $("#payroll-type").val();
 
         data_post['is_edit'] = $("#is_edit").val();
+		
         data_post['id_payroll_periode'] = $("#id_payroll_periode").val();
 
-        load_content_ajax(GetCurrentController(), 392, data_post);
+        load_content_ajax(GetCurrentController(), 'save_edit_payroll_periode', data_post);
     }
 
     function DiscardData()
@@ -443,10 +475,18 @@ if (isset($is_edit)) : ?>
                 </tr>
                 <tr>
                     <td class="label">
-                        periode Finish
+                        Periode Finish
                     </td>
                     <td>                        
                         <div id="date_finish" name="date_finish" style="display: inline-block;"></div>
+                    </td>
+                </tr>
+				<tr>
+                    <td class="label">
+                        Payroll Type
+                    </td>
+                    <td>                        
+                        <div id="payroll-type" style="display: inline-block;"></div>
                     </td>
                 </tr>
             </table>

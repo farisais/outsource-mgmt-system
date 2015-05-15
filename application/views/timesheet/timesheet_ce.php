@@ -122,12 +122,16 @@ $(document).ready(function(){
             { text: 'Full Name', dataField: 'full_name'},
             { text: 'In', dataField: 'in', cellsformat: 't', width: 100}, 
             { text: 'Out', dataField: 'out',cellsformat: 't', width: 100},
-            { text: 'Working Hour', dataField: 'working_hour', width: 100},
+            { text: 'Working Hour', dataField: 'working_hour', cellsformat: 'd2', width: 100},
             
         ]
     });
-     $("#employee-so-grid").jqxGrid('setcolumnproperty', 'id_employee', 'editable', false);
-    $("#employee-so-grid").jqxGrid('setcolumnproperty', 'full_name', 'editable', false);
+
+    $("#employee-so-grid").on('bindingcomplete', function(){
+        $("#employee-so-grid").jqxGrid('setcolumnproperty', 'id_employee', 'editable', false);
+        $("#employee-so-grid").jqxGrid('setcolumnproperty', 'full_name', 'editable', false);
+        $("#employee-so-grid").jqxGrid('setcolumnproperty', 'working_hour', 'editable', false);
+    });
     <?php 
         }else{
     ?>       
@@ -135,15 +139,11 @@ $(document).ready(function(){
      $('#select-workorder').on('select', function (event) {
        var args = event.args;
        if (args) {
-            
-           // index represents the item's index.                          
+
            var index = args.index;
            var item = args.item;
-           // get item's label and value.
-           //var label = item.label;
            var value = item.value;
            render_grid_employee(value);
-           //alert("label: " + value);
        }
    }); 
    $("#employee-so-grid").jqxGrid(
@@ -164,7 +164,7 @@ $(document).ready(function(){
             { text: 'Full Name', dataField: 'full_name'},
             { text: 'In', dataField: 'in', cellsformat: 't', width: 100}, 
             { text: 'Out', dataField: 'out',cellsformat: 't', width: 100},
-            { text: 'Working Hour', dataField: 'working_hour', width: 100},
+            { text: 'Working Hour', dataField: 'working_hour', cellsformat: 'd2', width: 100},
             
         ]
     });
@@ -185,10 +185,8 @@ function SaveData()
     data_post['id_timesheet_group'] = $("#id_timesheet_group").val();
     data_post['is_edit'] = $("#is_edit").val();
     //alert(JSON.stringify(data_post));
-    //console.log(data_post);
-    //return false;
-     <?php if(!isset($is_edit)){?>       
-       
+
+     <?php if(!isset($is_edit)){?>
    
     $.ajax({
 		url: 'timesheet/cek_master_timesheet',
@@ -196,20 +194,22 @@ function SaveData()
 		data: 'date='+data_post['input-date']+'&work_order='+data_post['project_name'],
         dataType:'json',
 		success:function(result){
-               	if (result.success==true){
-            	    load_content_ajax(GetCurrentController(), 355, data_post);
-                }else{
+               	if (result.success==true)
+                {
+            	    load_content_ajax(GetCurrentController(), 'save_edit_timesheet', data_post);
+                }
+                else
+                {
                     $("#jqxNotification").jqxNotification('open');
                     return false;
                 }
-                
 		}
    	});
     
      <?php 
         }
     ?>  
-    load_content_ajax(GetCurrentController(), 355, data_post);  
+    load_content_ajax(GetCurrentController(), 'save_edit_timesheet', data_post);
 }
 function DiscardData()
 {

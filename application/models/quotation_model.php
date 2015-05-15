@@ -209,7 +209,7 @@ class Quotation_model extends CI_Model
         return $last_id;
     }
     
-    public function validate_quotation($id) 
+    public function validate_quotation($id)
     {
         $this->db->select('inquiry');
 		$this->db->from('quotation');
@@ -218,6 +218,15 @@ class Quotation_model extends CI_Model
         $inquiry = $data[0]['inquiry'];
         
         $this->db->trans_start();
+
+        $data_product = $this->input->post('detail_product');
+        foreach($data_product as $product)
+        {
+            $this->db->where('quotation', $id);
+            $this->db->where('product', $product['id_product']);
+
+            $this->db->update('quotation_product', array("price" => $product['price']));
+        }
         
         $this->db->where('id_quotation', $id);
         $this->db->update('quotation', array('status' => 'open'));
@@ -400,6 +409,17 @@ class Quotation_model extends CI_Model
                   on dws_structure = qca.structure
                   inner join cost_element as ce on ce.id_cost_element = qca.cost_element
                   where qca.quotation = " . $id ;
+        $result = $this->db->query($query)->result_array();
+
+        return $result;
+    }
+
+    public function get_structure_ws_from_quote_init($id)
+    {
+        $query = "select dws.structure , os.structure_name from detail_work_schedule as dws
+                  inner join work_schedule as ws on ws.id_work_schedule = dws.work_schedule
+                  inner join organisation_structure as os on os.id_organisation_structure = dws.structure
+                  where ws.quotation = " . $id . " group by dws.structure ";
         $result = $this->db->query($query)->result_array();
 
         return $result;

@@ -59,18 +59,14 @@ $(document).ready(function(){
             item['paramValue'] = <?php echo $data_edit[0]['id_work_order'] ?>;
             param.push(item);        
             data_post['id_work_order'] = <?php echo $data_edit[0]['id_work_order'] ?>;
-            data_post['contract_startdate'] = formatDate($("#contract_startdate").val());
-            data_post['contract_expdate'] = formatDate($("#contract_expdate").val());
-            data_post['project_name'] = $("#project_name").val();
-
             load_content_ajax(GetCurrentController(), 'validate_work_order', data_post, param);
             e.preventDefault();
         });   
         
     $('#work-order-tabs').jqxTabs({ width: '100%', autoHeight: false,position: 'top', scrollPosition: 'right'});
     $("#work-order-date").jqxDateTimeInput({width: '250px', height: '25px'}); 
-    $("#contract_expdate").jqxDateTimeInput({width: '250px', height: '25px',value: null});
-    $("#contract_startdate").jqxDateTimeInput({width: '250px', height: '25px',value: null});
+    $("#contract_expdate").jqxDateTimeInput({width: '250px', height: '25px'}); 
+    $("#contract_startdate").jqxDateTimeInput({width: '250px', height: '25px'});
     $("#delivery-date").jqxDateTimeInput({width: '250px', height: '25px', value: null}); 
     
     <?php if(isset($is_edit)) :?>
@@ -196,79 +192,10 @@ $(document).ready(function(){
     
     //=================================================================================
     //
-    //   Contract Grid
+    //   Survey Grid
     //
     //=================================================================================
-	
-	var linkrenderer_contract = function (row, column, value) {
-    return '<div style="margin: 4px;" class="jqx-left-align"><a href="' + '<?php echo base_url() ?>contract/download_file/' + value + '" target="_blank" style="padding: 2px">' + value + '</a></div>';
-	};
-
-    terms = [
-        {label: 'Monthly', value: 'Monthly'}, 
-        {label: 'Every 3 Months', value: 'Every 3 Months'},
-        {label: 'Every 6 Months', value: 'Every 6 Months'},
-        {label: 'Yearly', value: 'Yearly'}
-    ];
-    termsSource = {
-        datatype: "array",
-        datafields: [
-            { name: 'label', type: 'string' },
-            { name: 'value', type: 'string' }
-        ],
-        localdata: terms
-    };
-    termsAdapter = new $.jqx.dataAdapter(termsSource, {
-        autoBind: true
-    });
-    ctstatus = [
-        {label: 'Draft', value: 'draft'}, 
-        {label: 'Active', value: 'active'},
-        {label: 'Terminated', value: 'terminated'}
-    ];
-    ctstatusSource = {
-        datatype: "array",
-        datafields: [
-            { name: 'label', type: 'string' },
-            { name: 'value', type: 'string' }
-        ],
-        localdata: ctstatus
-    };
-    ctstatusAdapter = new $.jqx.dataAdapter(ctstatusSource, {
-        autoBind: true
-    });
     
-    $("#add-contract").on('click', function(e) {
-        $('#contract-file').trigger('click');
-        e.preventDefault();
-    });
-    
-	$("#add-contract").on('click', function(e) {
-        $('#contract-file').trigger('click');
-        e.preventDefault();
-    });
-    
-    $('#contract-file').on('change', function(e) {
-        $("#contract-form").ajaxForm({
-            success: function (output) {
-                $('#contract-file').val("");
-				output = JSON.parse(output);
-				alert(output.filename);
-				var data = {};
-				data['id_contract'] = output['id_contract'];
-                data['filename'] = output['filename'];
-                data['startdate'] = '';
-                data['expdate'] = '';
-                data['invoice_term'] = '';
-                var commit0 = $("#contract-grid").jqxGrid('addrow', null, data);
-            },
-            complete: function (xhr) {
-               
-            }
-        }).submit();
-        e.preventDefault();
-    });
-	
     var urlContract = "<?php if (isset($is_edit)):?><?php echo base_url()?>work_order/get_work_order_contract_list?id=<?php echo $data_edit[0]['id_work_order']; ?> <?php endif; ?>";
     var sourceContract =
     {
@@ -280,11 +207,7 @@ $(document).ready(function(){
             { name: 'startdate', type: 'date', format: "yyyy-MM-dd"},
             { name: 'expdate', type: 'date', format: "yyyy-MM-dd"},
             { name: 'invoice_term'},
-            { name: 'invoice_term_name', value: 'invoice_term', values: { source: termsAdapter.records, value: 'value', name: 'label' }},
-			{ name: 'po_number'},
-			{ name: 'contract_number'},
-            { name: 'status'},
-            { name: 'status_name', value: 'status', values: { source: ctstatusAdapter.records, value: 'value', name: 'label' }},
+            { name: 'status'}
         ],
         id: 'id_contract',
         url: urlContract,
@@ -298,69 +221,19 @@ $(document).ready(function(){
         height: 200,
         source: dataAdapterContract,
         selectionmode : 'singlerow',
-        editable: true,
+        editable: false,
         columnsresize: true,
         autoshowloadelement: false,                                                                                
         sortable: true,
         autoshowfiltericon: true,
         columns: [
-            { text: 'Number', datafield: 'filename', editable: false, cellsrenderer: linkrenderer_contract, width: 110},
-            { text: 'Start Date', datafield: 'startdate', columntype: 'datetimeinput', width: 110, cellsformat: 'd'},
-            { text: 'Expire Date', datafield: 'expdate', columntype: 'datetimeinput', width: 110, cellsformat: 'd'},
-            { text: 'Invoice Term', datafield: 'invoice_term', displayfield: 'invoice_term_name', columntype: 'dropdownlist', width: 150,
-                createeditor: function (row, value, editor) {
-                    editor.jqxDropDownList({ 
-                        source: termsAdapter, 
-                        displayMember: 'label', 
-                        valueMember: 'value'
-                    });
-                }
-            },
-			{ text: 'Contract Number', datafield: 'contract_number', width: 110}, 
-			{ text: 'PO Number', datafield: 'po_number', width: 110},
-            { text: 'Status', datafield: 'status', displayfield: 'status_name', columntype: 'dropdownlist', width: 150,
-                createeditor: function (row, value, editor) {
-                    editor.jqxDropDownList({ 
-                        source: ctstatusAdapter, 
-                        displayMember: 'label', 
-                        valueMember: 'value'
-                    });
-                }
-            }
+            { text: 'Filename', datafield: 'filename'},
+            { text: 'Start Date', datafield: 'startdate', width: 110, cellsformat: 'd'},
+            { text: 'Expire Date', datafield: 'expdate', width: 110, cellsformat: 'd'},
+            { text: 'Invoice Term', datafield: 'invoice_term'},
+            { text: 'Status', datafield: 'status'}
         ]
     });
-	
-	$("#save-contract").click(function(){
-		var data_post = {};
-		data_post['id_so'] = $("#id_so").val();
-		data_post['contracts'] = $("#contract-grid").jqxGrid('getrows');
-		 for (var i = 0; i < data_post['contracts'].length; i++) {
-			data_post['contracts'][i].startdate = (data_post['contracts'][i].startdate == null ? null : data_post['contracts'][i].startdate.format('yyyy-mm-dd'));
-			data_post['contracts'][i].expdate = (data_post['contracts'][i].expdate == null ? null : data_post['contracts'][i].expdate.format('yyyy-mm-dd'));
-		}
-		$.ajax({
-			url: '<?php base_url() ?>so/save_so_contract',
-			type: "POST",
-			data: data_post,
-			success: function(output)
-			{		  
-				alert('Transaction success');
-				dataAdapterContract.dataBind();
-				$("#contract-grid").jqxGrid({source: dataAdapterContract});
-				$("#contract-grid").jqxGrid('refreshdata');
-			},
-			error: function( jqXhr ) 
-			{
-				$(".table-right-bar").unblock();
-				if( jqXhr.status == 400 ) { //Validation error or other reason for Bad Request 400
-					var json = $.parseJSON( jqXhr.responseText );
-					alert(json);
-				}
-				$("#error-content").html(jqXhr.responseText);
-				$("#error-notification-default").jqxWindow("open");
-			}
-		});
-	});
 
     
     //=================================================================================
@@ -556,7 +429,7 @@ $(document).ready(function(){
         root: 'data'
     };
     var dataAdapterSS = new $.jqx.dataAdapter(sourceSS);
-    /*$("#salary-setting-grid").jqxGrid(
+    $("#salary-setting-grid").jqxGrid(
     {
         theme: $("#theme").val(),
         width: '100%',
@@ -640,7 +513,7 @@ $(document).ready(function(){
             
 
         ]
-    });*/
+    });
 //   END Salary Setting Grid    
 
 //   Salary SO Assignment Grid
@@ -967,7 +840,7 @@ $(document).ready(function(){
     });
     
     $("#time-schedulling-grid").on('rowdoubleclick', function(event){
-        alert(JSON.stringify($(this).jqxGrid('getrowdata', event.args.rowindex)));
+        //alert(JSON.stringify($(this).jqxGrid('getrowdata', event.args.rowindex)));
     });
     
     
@@ -2066,65 +1939,6 @@ $(document).ready(function(){
     //   Area Schedulling  Grid
     //
     //=================================================================================
-
-    //=================================================================================
-    //
-    //   CE Assign Grid
-    //
-    //=================================================================================
-
-    var celink = function (row, column, value) {
-        return '<div style="margin: 4px;" class="jqx-left-align"><a href="#" style="padding: 2px">' + value + '</a></div>';
-    };
-
-    var url_ce = "<?php if(isset($is_edit)){?><?php echo base_url() ;?>work_order/get_structure_ws_from_wo/<?php echo $data_edit[0]['id_work_order'] ?><?php } ?>";
-    var source_ce =
-    {
-        datatype: "json",
-        datafields:
-            [
-                { name: 'structure'},
-                { name: 'structure_name'},
-                { name: 'cost_element'},
-                { name: 'cost_element_name'}
-            ],
-        id: 'structure',
-        url: url_ce,
-        root: 'data'
-    };
-
-    var dataAdapterCE = new $.jqx.dataAdapter(source_ce);
-
-    $("#ce-assign-grid").jqxGrid(
-        {
-            theme: $("#theme").val(),
-            width: '100%',
-            height: 200,
-            source: dataAdapterCE,
-            columnsresize: true,
-            autoshowloadelement: false,
-            sortable: true,
-            columns: [
-                { text: 'Position', dataField: 'structure', displayfield: 'structure_name', width: 150},
-                { text: 'Cost Element', dataField: 'cost_element', displayfield: 'cost_element_name', cellsrenderer: celink}
-            ]
-        });
-
-    $("#ce-assign-grid").on('cellclick', function(event){
-        var args = event.args;
-        if(args.value != null && args.datafield == 'cost_element')
-        {
-            var param = [];
-            var item = {};
-            item['paramName'] = 'id';
-            item['paramValue'] = args.value;
-            param.push(item);
-            load_content_ajax(GetCurrentController(), 'view_detail_cost_element' , {}, param, true);
-        }
-        //alert(args.value);
-    });
-
-
     
 });
 function ValidateData(){
@@ -2151,12 +1965,12 @@ function SaveData()
     data_post['contract_expdate'] = formatDate($("#contract_expdate").val());
     data_post['project_name'] = $("#project_name").val();
     
-    load_content_ajax(GetCurrentController(), 'save_edit_work_order', data_post);
+    load_content_ajax(GetCurrentController(), 398, data_post);
     
 }
 function DiscardData()
 {
-    load_content_ajax(GetCurrentController(), 'view_work_order', null);
+    load_content_ajax(GetCurrentController(), 129, null);
 }
 function InitFunction()
 {
@@ -2253,7 +2067,7 @@ function RefreshEmployeeAssignGrid()
             </span>
         </li>
         <li <?php echo (isset($is_edit) && $data_edit[0]['status'] == 'running' ? 'class="status-active"' : '') ?>>
-            <span class="label">Running</span>
+            <span class="label">Open</span>
             <span class="arrow">
                 <span></span>
             </span>
@@ -2323,14 +2137,13 @@ function RefreshEmployeeAssignGrid()
                     <li>Contract</li>
                     <li>Purchase Requirement</li>    
                     <li>Working Schedule</li>
-                    <!--<li>Salary Setting</li>-->
-                    <li>Cost Element</li>
+                    <li>Salary Setting</li>  
                     <li>SO Assignment</li>
                     <li>Time Schedulling</li>
-                    <li>Shift Rotation</li>
+                     <li>Shift Rotation</li>
                     <li>Fingerprint Device</li>                    
-                    <li>List Area</li>
-                    <li>Area Rotation</li>
+		    <li>List Area</li>
+		    <li>Area Rotation</li>                
                 </ul>
                 <div>
                     <table class="table-form" style="margin: 20px; width: 90%;">
@@ -2382,12 +2195,7 @@ function RefreshEmployeeAssignGrid()
                     </table>
                 </div>
                 <div>
-					<div class="row-color" style="width: 98%; margin: 5px;">
-                        <button style="width: 30px;" id="add-contract">+</button>
-                        <button style="width: 30px;" id="remove-contract">-</button>
-                        <button style="width: 60px;" id="save-contract">Save</button>
-                    </div>
-                    <table class="table-form" style="margin: 5px; width: 98%;">
+                    <table class="table-form" style="margin: 20px; width: 90%;">
                         <tr>
                             <td colspan="2">
                                 <div id="contract-grid"></div>
@@ -2421,7 +2229,7 @@ function RefreshEmployeeAssignGrid()
                         
                     </table>
                 </div> 
-                <!--<div>
+                <div>
                     <div class="row-color" style="width: 98%; margin: 5px;">
                         <button style="width: 30px;" id="add_salary_setting">+</button>
                         <button style="width: 30px;" id="remove_salary_setting">-</button>
@@ -2433,22 +2241,6 @@ function RefreshEmployeeAssignGrid()
                         <tr>
                             <td colspan="2">
                                 <div id="salary-setting-grid"></div>
-                            </td>
-                        </tr>
-                    </table>
-                </div>-->
-                <div>
-                    <table class="table-form" style="margin: 20px; width: 90%;">
-                        <tr>
-                            <td colspan="2">
-                                <div class="row-color" style="width: 100%;">
-                                    <span>Detail Cost Element</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">
-                                <div id="ce-assign-grid"></div>
                             </td>
                         </tr>
                     </table>
@@ -2497,7 +2289,7 @@ function RefreshEmployeeAssignGrid()
                         </tr>
                     </table>
                 </div>
-		        <div>
+		<div>
                     <table class="table-form" style="margin: 20px; width: 90%;">
                         <tr>
                             <td>

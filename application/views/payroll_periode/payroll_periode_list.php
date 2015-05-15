@@ -8,6 +8,7 @@
                 [
                     { name: 'id_payroll_periode'}, 
                     { name: 'periode_name'}, 
+					{ name: 'payroll_type'}, 
                     { name: 'date_start',type: 'date'},
                     { name: 'date_finish',type: 'date'}
                 ],
@@ -30,13 +31,13 @@
                 showfilterrow: true,
                 sortable: true,
                 autoshowfiltericon: true,
-                pageable: true,
                 //pagerrenderer: pagerrenderers,
                 columns: [
                     { text: 'ID', dataField: 'id_payroll_periode'},
                     { text: 'Periode Name', dataField: 'periode_name'}, 
                     { text: 'Periode Start', dataField: 'date_start',cellsformat: 'dd/MM/yyyy',filtertype: 'date'},
-                    { text: 'Periode Finish', dataField: 'date_finish',cellsformat: 'dd/MM/yyyy',filtertype: 'date'}
+                    { text: 'Periode Finish', dataField: 'date_finish',cellsformat: 'dd/MM/yyyy',filtertype: 'date'},
+					{ text: 'Type', dataField: 'payroll_type'}
                 ]
             });         
         });  
@@ -55,13 +56,13 @@ function EditData()
         var data_post = {};
         var param = [];
         var item = {};
-        item['paramName'] = 'id_payroll_periode';
+        item['paramName'] = 'id';
         item['paramValue'] = row.id_payroll_periode;
         param.push(item);        
         data_post['id_payroll_periode'] = row.id_payroll_periode;
         //console.log(row);
         //alert(row.id_payroll_periode);
-        load_content_ajax(GetCurrentController(), 359 ,data_post, param);
+        load_content_ajax(GetCurrentController(), 'edit_payroll_periode' ,data_post, param);
     }
     else
     {
