@@ -361,8 +361,8 @@ class So_model extends CI_Model
           'occurence' => 'Per Bulan',
           'work_order_id'=>$last_id
           
-        );
-        $this->db->insert('wo_salary_setting', $data_input);
+			);
+			$this->db->insert('wo_salary_setting', $data_input);
         }
         
         
@@ -428,7 +428,40 @@ class So_model extends CI_Model
 
             $this->db->insert('wo_ce_assign', $d);
         }
-        
+		
+		//Add material request for wo
+		$this->load->model('work_order_model');
+		$this->load->model('mr_model');
+		$query_get_schedule = $this->db->get_where('so_schedule', array('so' => $id));
+        if ($query_get_schedule->num_rows()) 
+		{
+            $data_schedule = $query_get_schedule->result_array();
+			$purchase_requirement_product = $this->work_order_model->get_work_order_proc($data_schedule[0]['work_schedule']);
+			
+			//Insert MR
+			$data_mr = array();
+			$data_mr['date'] = date('Y-m-d');
+			$data_mr['mr_number'] = $this->mr_model->generate_mr_number();
+			$data_mr['status'] = 'draft';
+			$data_mr['work_order'] = $last_id;
+			
+			$this->db->insert('mr', $data_mr);
+			$mr_id = $this->db->insert_id();
+			
+			//Insert MR Product
+			foreach($purchase_requirement_product as $prod)
+			{
+				$data_mr_prod = array();
+				$data_mr_prod['mr'] = $mr_id;
+				$data_mr_prod['product'] = $prod['product'];
+				$data_mr_prod['qty_request'] = 0;
+				$data_mr_prod['qty_require'] =  $prod['qty'];
+				$data_mr_prod['uom'] = $prod['uom'];
+				
+				$this->db->insert('mr_product', $data_mr_prod);
+			}	
+		}
+		
         $this->db->where('id_so', $id);
         $this->db->update('so', array('status' => 'close'));
         

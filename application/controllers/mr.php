@@ -61,7 +61,33 @@ class Mr extends MY_Controller
     
     public function get_mr_product_list_open()
     {
-         echo "{\"data\" : " . json_encode($this->mr_model->get_mr_product_open_by_id_mr($this->input->get('id'))) . "}";
+		$this->load->model('stock_model');
+		$product_mr = $this->mr_model->get_mr_product_open_by_id_mr($this->input->get('id'));
+		$stock_available = $this->stock_model->get_stock_all();
+		$result = array();
+		
+		for($i=0;$i<count($product_mr);$i++)
+		{
+			$found = false;
+			for($j=0;$j<count($stock_available);$j++)
+			{
+				if($product_mr[$i]['id_product'] == $stock_available[$j]['id_product'])
+				{
+					if($product_mr[$i]['qty'] > $stock_available[$j]['total_qty'])
+					{
+						$found = true;
+						$product_mr[$i]['qty'] = $product_mr[$i]['qty'] - $stock_available[$j]['total_qty'];
+						array_push($result, $product_mr[$i]);
+					}
+				}
+			}
+			
+			if($found == false)
+			{
+				array_push($result, $product_mr[$i]);
+			}
+		}
+         echo "{\"data\" : " . json_encode($result) . "}";
     }
 }
 ?>

@@ -30,7 +30,7 @@
             {
                 theme: $("#theme").val(),
                 width: '100%',
-                height: '100%',
+                height: '95%',
                 source: dataAdapter,
                 groupable: true,
                 columnsresize: true,
@@ -47,6 +47,25 @@
                     
                 ]
             });
+            
+            
+        $("#jqxgrid").on("rowdoubleclick", function(event){
+        var row = $('#jqxgrid').jqxGrid('getrowdata', event.args.rowindex);
+        
+        if(row != null)
+        {
+            var data_post = {};
+            var param = [];
+            var item = {};
+            item['paramName'] = 'id';
+            item['paramValue'] = row.id_gr;
+            param.push(item);        
+            data_post['id_gr'] = row.id_gr;
+            load_content_ajax(GetCurrentController(), 199 ,data_post, param);
+            
+        }
+       
+    });
                         
         });  
 </script>
@@ -82,11 +101,11 @@ function DeleteData()
         
     if(row != null)
     {
-       if(confirm("Are you sure you want to delete menu : " + row.name))
+       if(confirm("Are you sure you want to delete Good Receipt : " + row.gr_number))
         {
             var data_post = {};
-            data_post['id_application_action'] = row.id_application_action;
-            load_content_ajax(GetCurrentController(), 4 ,data_post);
+            data_post['id_gr'] = row.id_gr;
+            load_content_ajax(GetCurrentController(), 70 ,data_post);
         }
     }
     else

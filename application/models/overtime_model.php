@@ -122,4 +122,74 @@ class Overtime_model extends CI_Model {
         
         return $this->db->query($query)->result_array();
     }
+	
+	public function get_overtime_rule_all()
+	{
+		$query = "select otr.* from overtime_rule as otr";
+		
+		return $this->db->query($query)->result_array();
+	}
+	
+	public function get_overtime_rule_by_id($id)
+	{
+		$query = "select otr.*, dr.* from overtime_rule as otr inner join detail_overtime_rule as dr on dr.overtime_rule = otr.id_overtime_rule where otr.id_overtime_rule = " . $id;
+		
+		return $this->db->query($query)->result_array();
+	}
+	
+	public function save_overtime_rule($data)
+	{
+		$this->db->trans_start();
+		$d = array();
+		$d['name'] = $data['name'];
+		$d['description'] = $data['description'];
+		
+		$this->db->insert('overtime_rule', $d);
+		$insert_id = $this->db->insert_id();
+		
+		$this->insert_detail_overtime_rule($insert_id, $data['detail_overtime_rule']);
+		
+		$this->db->trans_complete();
+		return $d;
+	}
+	
+	public function insert_detail_overtime_rule($otr, $data)
+	{
+		foreach($data as $dt)
+		{
+			$d = array();
+			$d['overtime_rule'] = $otr;
+			$d['hour_regex'] = $dt['hour_regex'];
+			$d['multiply'] = $dt['multiply'];
+			
+			$this->db->insert('detail_overtime_rule', $d);
+		}
+	}
+	
+	public function edit_overtime_rule($data)
+	{
+		$this->db->trans_start();
+		$d = array();
+	
+		$d['name'] = $data['name'];
+		$d['description'] = $data['description'];
+		
+		$this->db->where('id_overtime_rule', $data['id_overtime_rule']);
+		$this->db->update('overtime_rule', $d);
+		$insert_id = $data['id_overtime_rule'];
+		
+		$this->delete_detail_overtime_rule($insert_id);
+		
+		$this->insert_detail_overtime_rule($insert_id, $data['detail_overtime_rule']);
+		
+		$this->db->trans_complete();
+		return $d;
+	}
+	
+	public function delete_detail_overtime_rule($otr)
+	{
+		$this->db->where('overtime_rule', $otr);
+		$this->db->delete('detail_overtime_rule');
+	}
+	
 }

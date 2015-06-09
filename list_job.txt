@@ -1,0 +1,25 @@
+Preparation List for Bazcorp Training:
+1. Data
+	- User Data
+	- Cost Element Data
+2. Application Functionality
+	- Reporting for Finance
+	- Reporting for Busdev
+	- Timesheet should be working without error
+	- Leave application
+	- Incentive
+	- GA Connectivity (done)
+	- Cost Element Condition
+3. User Guide
+	- Busdev
+	- OPS
+	- HR
+	- Finance
+	- IT
+	- Admin
+4. Schedule
+	- Introduction
+	- Busdev Operational Training
+	- OPS Operational Training
+	- HR Operational Training
+	- Finance Operational

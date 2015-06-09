@@ -16,6 +16,25 @@ class Product_model extends CI_Model
                 
 		return $this->db->get()->result_array();
 	}
+        
+    public function get_product_final_all($so)
+	{
+	   //Get all product from SO
+       $query = 'select sfp.qty as qty_request, p.*, merk.name as merk_name, um.name as unit_name, pc.product_category as category_name from so_finish_product as sfp inner join product as p on p.id_product = sfp.product inner join unit_measure as um 
+       on um.id_unit_measure = p.unit inner join merk on merk.id_merk=p.merk inner join product_category as pc on pc.id_product_category=p.product_category 
+       where sfp.so=' . $so;
+       
+       $product_so = $this->db->query($query)->result_array();
+       
+       //Get all product from project list
+       $query = 'select sum(plp.qty) as qty_request, p.*, merk.name as merk_name, um.name as unit_name, pc.product_category as category_name from project_list as pl inner join project_list_product as plp on pl.id_project_list=plp.project_list inner join product as p on p.id_product=plp.product inner join unit_measure as um 
+       on um.id_unit_measure = p.unit inner join merk on merk.id_merk=p.merk inner join product_category as pc on pc.id_product_category=p.product_category 
+       where pl.so=' . $so . ' group by p.id_product';
+       
+       $product_pl = $this->db->query($query)->result_array();
+       
+	   return array_merge($product_so, $product_pl);;
+	}
     
     public function save_product($data)
     {

@@ -8,7 +8,7 @@ class Project_list_model extends CI_Model
 	
 	public function get_pl_all()
 	{
-		$this->db->select('project_list.*, so.so_number , customer.name');
+		$this->db->select('project_list.*, so.so_number , customer.name as customer_name');
 		$this->db->from('project_list');
         $this->db->join('so', 'project_list.so=so.id_so', 'INNER');
         $this->db->join('customer', 'so.customer=customer.id_customer', 'INNER');
@@ -36,6 +36,17 @@ class Project_list_model extends CI_Model
         $this->db->join('so', 'project_list.so=so.id_so', 'INNER');
                
         $this->db->where('project_list.id_project_list', $id);
+                
+		return $this->db->get()->result_array();
+    }
+    
+    public function get_pl_by_id_so($id)
+    {
+        $this->db->select('project_list.*, so.so_number');
+        $this->db->from('project_list');
+        $this->db->join('so', 'project_list.so=so.id_so', 'INNER');
+               
+        $this->db->where('project_list.so', $id);
                 
 		return $this->db->get()->result_array();
     }
@@ -125,13 +136,22 @@ class Project_list_model extends CI_Model
         $this->db->delete('project_list_product');
     }
     
+    public function change_pl_status($id, $status)
+    {
+        $this->db->trans_start();
+        
+        $this->db->where('id_project_list', $id);
+        $this->db->update('project_list', array('status' => $status));
+        
+        $this->db->trans_complete();
+    }
+    
     public function edit_project_list($data)
     {
         $this->db->trans_start();
         
         $data_input = array();
         $data_input['so'] = $data['so'];
-        $data_input['project_list_number'] = $data['project_list_number'];
         $data_input['date_create'] = date('Y-m-d');
         $data_input['status'] = 'draft';
         
@@ -166,15 +186,58 @@ class Project_list_model extends CI_Model
         return $this->db->get()->result_array();
     }
     
-    public function get_pl_product_for_mr($id)
+    public function get_pl_product_list_with_valuation($id)
     {
-        $this->db->select('project_list_product.*, project_list_product.qty as qty_require, project_list_product.product as id_product ,product.product_code,product.product_name,um.name as unit_name');
+        $ci =& get_instance();
+        $ci->load->model('material_valuation_model');
+        
+        $this->db->select('project_list_product.*, project_list_product.qty as total_qty,product.product_code,product.product_name,um.name as unit_name, product.*');
         $this->db->from('project_list_product');
         $this->db->join('product', 'product.id_product=project_list_product.product', 'INNER');
         $this->db->join('unit_measure as um', 'um.id_unit_measure=project_list_product.uom', 'INNER');
         $this->db->where('project_list_product.project_list', $id);
         
+        $pl_product = $this->db->get()->result_array();
+        
+        for($i=0;$i<count($pl_product);$i++)
+        {
+            $pl_product[$i]['unit_cogs'] = 0;
+            $pl_product[$i]['total_cogs'] = 0;
+            if($pl_product[$i]['is_material_valuation'] == 1)
+            {
+                $product_valuation = $ci->material_valuation_model->get_material_valuation_by_prod($pl_product[$i]['id_product']);
+                if(count($product_valuation) > 0)
+                {
+                    $pl_product[$i]['unit_cogs'] = $product_valuation[0]['valuation'];
+                    $pl_product[$i]['total_cogs'] = $pl_product[$i]['total_qty'] * $product_valuation[0]['valuation'];
+                }
+            }
+            else
+            {
+                $pl_product[$i]['unit_cogs'] = $pl_product[$i]['cost_price'];
+                $pl_product[$i]['total_cogs'] = $pl_product[$i]['total_qty'] * $pl_product[$i]['cost_price'];
+            }
+            
+        }
+        
+        return $pl_product;
+    }
+    
+    public function get_pl_product_for_mr($id)
+    {
+        $this->db->select('project_list_product.*, project_list_product.uom AS unit, project_list_product.qty as qty_require, project_list_product.product as id_product ,product.product_code,product.product_name,um.name as unit_name');
+        $this->db->from('project_list_product');
+        $this->db->join('product', 'product.id_product=project_list_product.product', 'INNER');
+        $this->db->join('unit_measure as um', 'um.id_unit_measure=unit', 'INNER');
+        $this->db->where('project_list_product.project_list', $id);
+        
         return $this->db->get()->result_array();
+        
+        for($i=0;$i<count($result);$i++)
+        {
+            $result[$i]['qty_request'] = 0;
+        }
+        return $result;
     }
 
 }

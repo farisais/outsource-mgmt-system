@@ -78,11 +78,11 @@ function DeleteData()
         
     if(row != null)
     {
-       if(confirm("Are you sure you want to delete menu : " + row.name))
+       if(confirm("Are you sure you want to delete BOM : " + row.name))
         {
             var data_post = {};
-            data_post['id_application_action'] = row.id_application_action;
-            //load_content_ajax(GetCurrentController(), 'delete_bom' ,data_post);
+            data_post['id_bom'] = row.id_bom;
+            load_content_ajax(GetCurrentController(), 'delete_bom' ,data_post);
         }
     }
     else

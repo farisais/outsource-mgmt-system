@@ -53,6 +53,11 @@ class Po extends MY_Controller
     {
         echo "{\"data\" : " . json_encode($this->po_model->get_po_product_by_id($this->input->get('id'))) . "}";
     }
+	
+	public function get_po_product_list_received()
+    {
+        echo "{\"data\" : " . json_encode($this->po_model->get_po_product_by_id_received($this->input->get('id'))) . "}";
+    }
     
     public function get_po_open_list()
     {

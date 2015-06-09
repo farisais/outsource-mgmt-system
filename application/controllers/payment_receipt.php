@@ -54,10 +54,7 @@ class payment_receipt extends MY_Controller
     
     public function delete_payment_receipt()
     {
-        $this->payment_receipt_model->delete_payment_receipt($this->input->post('id_payment_receipt'));
-        //$this->payment_receipt_product_model->delete_payment_receipt_product->('payment_receipt')
-        
-        return null;
+        $this->payment_receipt_model->change_payment_receipt_status($this->input->post('id_payment_receipt'), 'void');
     }
     
     public function init_edit_payment_receipt($id)
@@ -71,6 +68,19 @@ class payment_receipt extends MY_Controller
         
         return $data;   
     }
+    
+   /* public function init_edit_payment_receipt($id)
+    {
+        $data = array(
+            "po" => $this->po_model->get_po_all(),
+            "payment_receipt" => $this->payment_receipt_model->get_payment_receipt_all(),
+            "data_edit" => $this->payment_receipt_model->get_payment_receipt_by_id($id),
+            "is_edit" => 'true',
+            "is_view" => 'true'
+        );
+        
+        return $data;   
+    }*/
     
     public function get_payment_receipt_product_list()
     {

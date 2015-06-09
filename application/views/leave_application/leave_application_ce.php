@@ -3,10 +3,38 @@
     $(document).ready(function(){
         $("#leave-date-from").jqxDateTimeInput({width: '250px', height: '25px', readonly: true, formatString: 'yyyy-MM-dd'});
         $("#leave-date-to").jqxDateTimeInput({width: '250px', height: '25px', readonly: true, formatString: 'yyyy-MM-dd'});
-        
+
         $("#get_emp_code").on('click', function(e) { //button for employee master pop up 
             $("#select-employee-popup").jqxWindow('open');
         });
+		
+		$("#leave-date-form").on('change', function(){
+			if($("#leave-date-to").val() == null || $("#leave-date-to").val() == '')
+			{
+				$("#leave-day").val(0);
+			}
+			else
+			{
+				var date_from = new Date($(this).val());
+				var date_to = new Date($("#leave-date-to").val());
+				var days = parseInt((date_to.getTime() - date_from.getTime()) / (24*3600*1000));
+				$("#leave-day").val(days + 1);
+			}
+		});
+		
+		$("#leave-date-to").on('change', function(){
+			if($("#leave-date-from").val() == null || $("#leave-date-from").val() == '')
+			{
+				$("#leave-day").val(0);
+			}
+			else
+			{
+				var date_to = new Date($(this).val());
+				var date_from = new Date($("#leave-date-from").val());
+				var days = parseInt((date_to.getTime() - date_from.getTime()) / (24*3600*1000));
+				$("#leave-day").val(days + 1);
+			}
+		});
 		
 		$("#leave-validate").click(function(){
 			var id = $("#id_leave_application").val();
@@ -38,6 +66,8 @@
         }
         ?>
         
+        init_days($("#leave-date-from").val(), $("#leave-date-to").val());
+		
         ///// source master table employee/////
         var urlsecurity = "<?php echo base_url(); ?>leave_application/get_employee_list";
         var sourcesecurity =
@@ -96,6 +126,14 @@
             $("#select-employee-popup").jqxWindow('close');
         });
     });
+	
+	function init_days(t1,t2)
+	{
+		var date_to = new Date(t2);
+		var date_from = new Date(t1);
+		var days = parseInt((date_to.getTime() - date_from.getTime()) / (24*3600*1000));
+		$("#leave-day").val(days + 1);
+	}
     
     function cek_cuti(id){
         $.ajax({
@@ -134,7 +172,7 @@
             data_post['notes'] = $("#notes").val();
             data_post['id'] = $("#id_leave_application").val();
 
-        load_content_ajax(GetCurrentController(), 163, data_post);
+			load_content_ajax(GetCurrentController(), 'save_edit_leave_application', data_post);
         }
 
     }
@@ -149,7 +187,13 @@
 <input type="hidden" id="is_edit" value="<?php echo (isset($is_edit) ? 'true' : 'false') ?>" />
 <input type="hidden" id="id_leave_application" value="<?php echo (isset($is_edit) ? $data_edit->id : '') ?>" />
 <div class="document-action">
-    <button id="leave-validate">Submit for approval</button>
+	<?php 
+	if(isset($is_edit))
+	{?>
+    <button id="leave-validate">Approve Leave</button>
+	<?php
+	}
+	?>
     <ul class="document-status">
         <li class="<?php echo ($data_edit->approval=="0" ? "status-active" : "");?>">
             <span class="label">Draft</span>
@@ -242,6 +286,7 @@
                             </ select>
                         </div>
                     </td>
+					<!--
                     <td rowspan="4">
                         <div class="label">&nbsp;</div>
                         <table style="border: 1px solid #000000; width: 100%">
@@ -259,7 +304,7 @@
                                 </td>
                             </tr>
                         </table>
-                    </td>
+                    </td>-->
                 </tr>
                 <tr>
                     <td>

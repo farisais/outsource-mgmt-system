@@ -82,6 +82,15 @@ class Payslip_model extends CI_Model
 
         return $this->db->query($query)->result_array();
     }
+	
+	public function get_tax_report_all()
+	{	
+		$query = 'select p.*, pp.periode_name ,wo.work_order_number, e.employee_number, e.full_name, e.npwp, os.structure_name from payslip as p inner join employee as e on e.id_employee = p.employee 
+		inner join organisation_structure as os on os.id_organisation_structure = e.organisation_structure_id 
+		inner join work_order as wo on wo.id_work_order = p.work_order 
+		inner join payroll_periode as pp on pp.id_payroll_periode = p.payroll_periode';
+		return $this->db->query($query)->result_array();
+	}
 
 
 }

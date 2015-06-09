@@ -1,10 +1,16 @@
 <script type="text/javascript" src="<?php echo base_url() ?>jqwidgets/globalization/globalize.js"></script>
 <script>
 $(document).ready(function(){
-    $("#delivery-date").jqxDateTimeInput({width: '250px', height: '25px', readonly: true}); 
+    $("#delivery-date").jqxDateTimeInput({width: '250px', height: '25px', readonly: true <?php if(isset($is_view)){ echo ',disabled: true';} ?>}); 
     
     $("#clear-delivery-date").click(function(){
+        <?php 
+        if(!isset($is_view))
+        {?>
         $("#delivery-date").val(null);
+        <?php
+        }
+        ?>
     });
     
     <?php 
@@ -95,7 +101,13 @@ $(document).ready(function(){
     });
     
     $("#po-select").click(function(){
+        <?php 
+        if(!isset($is_view))
+        {?>
         $("#select-po-popup").jqxWindow('open');
+        <?php
+        }
+        ?>
     });
     
     $('#select-po-grid').on('rowdoubleclick', function (event) 
@@ -259,6 +271,7 @@ $(document).ready(function(){
     $("#po-product-grid").jqxGrid(
     {
         theme: $("#theme").val(),
+        <?php if(isset($is_view)){ echo 'disabled: true,';} ?>
         width: '100%',
         height: 250,
         selectionmode : 'singlerow',
@@ -312,21 +325,29 @@ $(document).ready(function(){
         ]
     });
     
-    $("#subtotal").jqxNumberInput({ width: '80%', height: '25px', symbol: 'Rp. ',  spinButtons: false, readOnly: true, promptChar: "", digits: 9 });
+    $("#subtotal").jqxNumberInput({ width: '80%', height: '25px', symbol: 'Rp. ',  spinButtons: false, readOnly: true, promptChar: "", digits: 9, disabled: true });
     $("#subtotal").jqxNumberInput('val', 0);
     
-    $("#tax").jqxNumberInput({ width: '80%', height: '25px', symbol: 'Rp. ',  spinButtons: false, readOnly: true, promptChar: "", digits: 9 });
+    $("#tax").jqxNumberInput({ width: '80%', height: '25px', symbol: 'Rp. ',  spinButtons: false, readOnly: true, promptChar: "", digits: 9, disabled: true });
     $("#tax").jqxNumberInput('val', 0);
     
-    $("#total").jqxNumberInput({ width: '90%', height: '25px', symbol: 'Rp. ',  spinButtons: false, readOnly: true, promptChar: "", digits: 9 });
+    $("#total").jqxNumberInput({ width: '90%', height: '25px', symbol: 'Rp. ',  spinButtons: false, readOnly: true, promptChar: "", digits: 9, disabled: true });
     $("#total").jqxNumberInput('val', 0);
     
-    $("#payment").jqxNumberInput({ width: '80%', height: '25px', symbol: 'Rp. ',  spinButtons: false, readOnly: false, digits: 9, min: 0});
+    $("#payment").jqxNumberInput({ width: '80%', height: '25px', symbol: 'Rp. ',  spinButtons: false, readOnly: false, digits: 9, min: 0 <?php if(isset($is_view)){ echo ',disabled: true';} ?>});
     $("#payment").jqxNumberInput('val', 0);
     
-    $("#payment-left").jqxNumberInput({ width: '80%', height: '25px', symbol: 'Rp. ',  spinButtons: false, readOnly: true, promptChar: "", digits: 9 });
+    $("#payment-left").jqxNumberInput({ width: '80%', height: '25px', symbol: 'Rp. ',  spinButtons: false, readOnly: true, promptChar: "", digits: 9, disabled: true });
     $("#payment-left").jqxNumberInput('val', 0);
     
+    $("#difference").on('change', function(event){
+        var value = event.args.value;
+        if(value < 0)
+        {
+            alert('Payment cannot be greater than payment payment left');
+            $("#payment").jqxNumberInput('val', 0);
+        }
+    });
     <?php
     if(isset($from_po))
     {?>
@@ -346,7 +367,7 @@ $(document).ready(function(){
         $("#difference").jqxNumberInput('val',$("#payment-left").jqxNumberInput('val') - value);
     });
     
-    $("#difference").jqxNumberInput({ width: '80%', height: '25px', symbol: 'Rp. ',  spinButtons: false, readOnly: false, promptChar: "" });
+    $("#difference").jqxNumberInput({ width: '80%', height: '25px', symbol: 'Rp. ',  spinButtons: false, readOnly: false, promptChar: "", disabled: true });
     $("#difference").jqxNumberInput('val', 0);
     
     //=================================================================================
@@ -367,35 +388,35 @@ $(document).ready(function(){
     ?>
     
     $("#make-payment").click(function(){
-        if($("#difference").val() > 0)
+        
+        if($("#difference").val() < 0)
         {
-            var data_post = {};
-            
-            data_post['note'] = $("#notes").html();
-            data_post['date'] = $("#delivery-date").val('date').format('yyyy-mm-dd');
-            data_post['id_po'] = $("#po-no").val().value;
-            data_post['total_payment'] = $("#payment").val();
-            data_post['difference'] = $("#difference").val();
-            
-            data_post['is_edit'] = $("#is_edit").val(); 
-            data_post['id_payment_receipt'] = $("#id_payment_receipt").val(); 
-            var payment_method = $("input[name='payment']:checked").val();
-            data_post['payment_method'] = payment_method;
-            data_post['rekening'] = $("#rekening").val()
-            data_post['action_condition_identifier'] = 'make_payment';
-            
-            load_content_ajax(GetCurrentController(), 249, data_post);
+            alert("Cannot save data. Difference should be greater than 0");
+            throw '';
         }
-        else
-        {
-            alert("Differences should be greater than 0");
-        }
+        var data_post = {};
+        
+        data_post['note'] = $("#notes").html();
+        data_post['date'] = $("#delivery-date").val('date').format('yyyy-mm-dd');
+        data_post['id_po'] = $("#po-no").val().value;
+        data_post['total_payment'] = $("#payment").val();
+        data_post['difference'] = $("#difference").val();
+        
+        data_post['is_edit'] = $("#is_edit").val(); 
+        data_post['id_payment_receipt'] = $("#id_payment_receipt").val(); 
+		
+        var payment_method = $("input[name='payment']:checked").val();
+        data_post['payment_method'] = payment_method;
+        data_post['rekening'] = $("#rekening").val()
+        data_post['action_condition_identifier'] = 'make_payment';
+        
+        load_content_ajax(GetCurrentController(), 'save_edit_payment_receipt', data_post);
     });
     
      $("#cancel-payment").click(function(){
         var data_post = {};
         data_post['id_payment'] = $("#id_payment_receipt").val();
-        load_content_ajax(GetCurrentController(), 253, data_post);
+        load_content_ajax(GetCurrentController(), 'cancel_payment_receipt', data_post);
     });
     
     //=================================================================================
@@ -481,7 +502,6 @@ $(document).ready(function(){
     		type: "POST",
     		data: data_post,
     		success: function(output){
-                $(".table-right-bar").unblock();
                 try
                 {
                     obj = JSON.parse(output);
@@ -552,45 +572,49 @@ $(document).ready(function(){
 
 function SaveData()
 {
-    if($("#difference").val() > 0)
+    if($("#difference").val() < 0)
     {
-        var data_post = {};
-        <?php
-        if(!isset($is_edit) || (isset($is_edit) && $data_edit[0]['status'] == 'open'))
-        {?>
-            data_post['note'] = $("#notes").html();
-            data_post['date'] = $("#delivery-date").val('date').format('yyyy-mm-dd');
-            data_post['id_po'] = $("#po-no").val().value;
-            data_post['total_payment'] = $("#payment").val();
-            data_post['difference'] = $("#difference").val();
-            
-            data_post['is_edit'] = $("#is_edit").val(); 
-            data_post['id_payment_receipt'] = $("#id_payment_receipt").val(); 
-            var payment_method = $("input[name='payment']:checked").val();
-            data_post['payment_method'] = payment_method;
-            data_post['rekening'] = $("#rekening").val()
-            load_content_ajax(GetCurrentController(), 249, data_post);
-        <?php 
-        }
-        else
-        {
-            if($data_edit[0]['status'] == 'close' || $data_edit[0]['status'] == 'cancel')
-            {?>
-            load_content_ajax('administrator', 246 , null);
-            <?php    
-            }
-        }
-        ?>
+        alert("Cannot save data. Difference should be greater than 0");
+        throw '';
     }
-    else
+    var data_post = {};
+    <?php 
+    if(isset($is_edit) && $data_edit[0]['status'] != 'void' || !isset($is_edit) )
     {
-        alert("Differences should be greater than 0");
+		if(!isset($is_edit) || (isset($is_edit) && $data_edit[0]['status'] == 'open'))
+		{?>
+        data_post['note'] = $("#notes").html();
+        data_post['date'] = $("#delivery-date").val('date').format('yyyy-mm-dd');
+        data_post['id_po'] = $("#po-no").val().value;
+        data_post['total_payment'] = $("#payment").val();
+        data_post['difference'] = $("#difference").val();
+        
+        data_post['is_edit'] = $("#is_edit").val(); 
+        data_post['id_payment_receipt'] = $("#id_payment_receipt").val(); 
+		
+        var payment_method = $("input[name='payment']:checked").val();
+        data_post['payment_method'] = payment_method;
+        data_post['rekening'] = $("#rekening").val()
+        load_content_ajax(GetCurrentController(), 'save_edit_payment_receipt', data_post);
+		<?php 
+		}
+		else
+		{
+			if($data_edit[0]['status'] == 'close' || $data_edit[0]['status'] == 'cancel')
+			{?>
+			load_content_ajax('administrator', 'view_payment_receipt' , null);
+			<?php    
+			}
+		}
+    ?>
+    <?php   
     }
+    ?>    
     
 }
 function DiscardData()
 {
-    load_content_ajax('administrator', 246 , null);
+    load_content_ajax('administrator', 'view_payment_receipt' , null);
 }
 
 </script>
@@ -598,8 +622,12 @@ function DiscardData()
 <input type="hidden" id="is_edit" value="<?php echo (isset($is_edit) ? 'true' : 'false') ?>" />
 <input type="hidden" id="id_payment_receipt" value="<?php echo (isset($is_edit) ? $data_edit[0]['id_payment_receipt'] : '') ?>" />
 <div class="document-action">
+    
     <?php 
-    if(!isset($is_edit) || (isset($is_edit) && ($data_edit[0]['status'] != 'close' && $data_edit[0]['status'] != 'cancel')))
+    if(!isset($is_view))
+    {?>
+    <?php 
+    if(!isset($is_edit) || (isset($is_edit) && $data_edit[0]['status'] != 'close' && $data_edit[0]['status'] != 'cancel'))
     {?>
     <button id="make-payment">Make Payment</button>
     <?php    
@@ -611,6 +639,9 @@ function DiscardData()
     {?>
     <button id="cancel-payment">Cancel Payment</button>
     <?php    
+    }
+    ?>
+    <?php
     }
     ?>
     
@@ -753,7 +784,7 @@ function DiscardData()
                             Transfer
                         </div>
                         <div class="column-input" colspan="2">
-                            <input type="radio" name="payment" value="transfer" id="payment-transfer" /> 
+                            <input <?php if(isset($is_view)){ echo 'disabled="true"';} ?> type="radio" name="payment" value="transfer" id="payment-transfer" /> 
                         </div>
                     </td>
                     <td>
@@ -761,7 +792,7 @@ function DiscardData()
                             Cash
                         </div>
                         <div class="column-input" colspan="2">
-                            <input type="radio" name="payment" value="cash" id="payment-cash"/> 
+                            <input <?php if(isset($is_view)){ echo 'disabled="true"';} ?> type="radio" name="payment" value="cash" id="payment-cash"/> 
                         </div>
                     </td>
                 </tr>
@@ -783,7 +814,7 @@ function DiscardData()
                         <div class="label">
                             Notes
                         </div>
-                        <textarea class="field" cols="10" rows="20" style="height: 50px;"></textarea>
+                        <textarea <?php if(isset($is_view)){ echo 'disabled=disabled';} ?> class="field" cols="10" rows="20" style="height: 50px;"></textarea>
                     </td>
                 </tr>
             </table>

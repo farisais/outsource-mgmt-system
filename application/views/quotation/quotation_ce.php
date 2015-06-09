@@ -216,7 +216,6 @@ function view_tab_cost_element(){
                         alert('Transaction Success!');
                         var calculation = obj.calculation;
                         var data = $("#quotation-grid").jqxGrid('getrows');
-                        alert(JSON.stringify(obj));
                         for(i=0;i<data.length;i++)
                         {
                             for(j=0;j<calculation.length;j++)

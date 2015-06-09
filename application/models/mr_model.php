@@ -8,18 +8,18 @@ class Mr_model extends CI_Model
 	
 	public function get_mr_all()
 	{
-        $this->db->select('mr.*, project_list.project_list_number');
+        $this->db->select('mr.*, work_order.work_order_number');
 	    $this->db->from('mr');
-        $this->db->join('project_list', 'project_list.id_project_list=mr.project_list', 'LEFT');
+        $this->db->join('work_order', 'work_order.id_work_order=mr.work_order', 'LEFT');
                 
 		return $this->db->get()->result_array();
 	}
         
         public function get_mr_open()
 	{
-        $this->db->select('mr.*, project_list.project_list_number');
+        $this->db->select('mr.*, work_order.work_order_number');
         $this->db->from('mr');
-        $this->db->join('project_list', 'project_list.id_project_list=mr.project_list', 'LEFT');
+        $this->db->join('work_order', 'work_order.id_work_order=mr.work_order', 'LEFT');
         
         $this->db->where('mr.status =', 'open');
                 
@@ -31,7 +31,7 @@ class Mr_model extends CI_Model
         $this->db->trans_start();
         
         $data_input = array(
-            "project_list" => ($data['project_list'] == '' ? null : $data['project_list']),
+            "work_order" => ($data['work_order'] == '' ? null : $data['work_order']),
             "date" => $data['date'],
             "mr_number" => $this->generate_mr_number(),
             "status" => 'draft'
@@ -57,7 +57,7 @@ class Mr_model extends CI_Model
             $data_input['product'] = $p['id_product'];
             $data_input['qty_request'] = $p['qty_request'];
             $data_input['qty_require'] = $p['qty_require'];
-            $data_input['uom'] = $p['uom'];
+            $data_input['uom'] = $p['unit'];
             $this->db->insert('mr_product', $data_input);
         }
     }
@@ -70,7 +70,7 @@ class Mr_model extends CI_Model
         return array('id_mr' => $id, 'status' => 'open');
     }
     
-    public function change_mr_status($id,$status)
+    public function change_mr_status($id, $status)
     {
         $this->db->trans_start();
         
@@ -104,7 +104,7 @@ class Mr_model extends CI_Model
         $this->db->trans_start();
         
         $data_input = array(
-            "project_list" => ($data['project_list'] == '' ? null : $data['project_list']),
+            "project_list" => ($data['work_order'] == '' ? null : $data['work_order']),
             "date" => $data['date'],
             "mr_number" => $data['mr_number'],
         );
@@ -139,14 +139,27 @@ class Mr_model extends CI_Model
     
     public function get_mr_by_id($id)
     {
-        $this->db->select('mr.*, project_list.project_list_number');
+        $this->db->select('mr.*, work_order.work_order_number');
 	    $this->db->from('mr');
-        $this->db->join('project_list', 'project_list.id_project_list=mr.project_list', 'LEFT');
+        $this->db->join('work_order', 'work_order.id_work_order=mr.work_order', 'LEFT');
                 
         $this->db->where('mr.id_mr', $id);
                 
 		return $this->db->get()->result_array();
     }
+	
+	public function get_mr_product_from_wo($wo)
+	{
+		$this->db->select('mr_product.*, product.*, unit_measure.name AS unit_name, product_category.product_category AS category_name, mr.*');
+        $this->db->from('mr_product');
+		$this->db->join('mr', 'mr.id_mr=mr_product.mr', 'INNER');
+        $this->db->join('product', 'mr_product.product=product.id_product', 'INNER');
+        $this->db->join('unit_measure', 'unit_measure.id_unit_measure=product.unit', 'LEFT');
+        $this->db->join('product_category', 'product_category.id_product_category=product.product_category', 'LEFT');
+        $this->db->where('mr.work_order', $wo);
+        
+        return $this->db->get()->result_array();
+	}
     
     public function get_mr_product_by_id_mr($id_mr)
     {
@@ -162,12 +175,47 @@ class Mr_model extends CI_Model
     
     public function get_mr_product_open_by_id_mr($id_mr)
     {
+        $this->db->select('mr_product.*, mr_product.qty_require AS qty , product.*, unit_measure.name AS unit_name, product_category.product_category AS category_name, m.name');
+        $this->db->from('mr_product');
+        $this->db->join('product', 'mr_product.product=product.id_product', 'INNER');
+        $this->db->join('unit_measure', 'unit_measure.id_unit_measure=product.unit', 'LEFT');
+        $this->db->join('merk as m', 'm.id_merk=product.merk', 'LEFT');
+        $this->db->join('product_category', 'product_category.id_product_category=product.product_category', 'LEFT');
+        $this->db->where('mr_product.mr', $id_mr);
+        
+		
+        $result = $this->db->get()->result_array();
+        
+        for($i=0;$i<count($result);$i++)
+        {
+            $result[$i]['unit_price'] = 0;
+        }
+        return $result;
+        
+        
+    }
+    
+    public function get_mr_product_open_po($id_mr)
+    {
+        $query = 'select pp.* from po_product as pp inner join po on po.id_po=pp.po inner join mr on mr.id_mr=po.mr where mr.id_mr=' . $id_mr;
+        $check_po = $this->db->query($query);
+        
+        $check_po = $check_po->result_array();
+        
         $this->db->select('mr_product.*, mr_product.qty_request AS qty , product.*, unit_measure.name AS unit_name, product_category.product_category AS category_name, m.name');
         $this->db->from('mr_product');
         $this->db->join('product', 'mr_product.product=product.id_product', 'INNER');
         $this->db->join('unit_measure', 'unit_measure.id_unit_measure=product.unit', 'LEFT');
         $this->db->join('merk as m', 'm.id_merk=product.merk', 'LEFT');
         $this->db->join('product_category', 'product_category.id_product_category=product.product_category', 'LEFT');
+        if(count($check_po) > 0)
+        {
+            $this->db->join('po', 'po.mr=mr_product.mr', 'INNER');
+            $this->db->join('po_product as pp', 'pp.po=po.id_po', 'INNER');
+            $this->db->where('pp.product != mr_product.product');
+        }
+
+        
         $this->db->where('mr_product.mr', $id_mr);
         
         $result = $this->db->get()->result_array();

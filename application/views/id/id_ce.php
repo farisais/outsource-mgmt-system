@@ -1,7 +1,7 @@
 <script type="text/javascript" src="<?php echo base_url() ?>jqwidgets/globalization/globalize.js"></script>
 <script>
 $(document).ready(function(){  
-    $("#id-date").jqxDateTimeInput({width: '250px', height: '25px'});
+    $("#id-date").jqxDateTimeInput({width: '250px', height: '25px' <?php if(isset($is_view)){ echo ',disabled: true';} ?>});
     $("#select-product-popup").jqxWindow({
         width: 600, height: 500, resizable: false,  isModal: true, autoOpen: false, cancelButton: $("#Cancel"), modalOpacity: 0.01           
     });
@@ -72,7 +72,13 @@ $(document).ready(function(){
     });
     
    $("#pl-select").click(function(){
+        <?php 
+        if(!isset($is_view))
+        {?>
         $("#select-pl-popup").jqxWindow('open');
+        <?php    
+        }
+        ?>
     });
     
     $('#select-pl-grid').on('rowdoubleclick', function (event) 
@@ -159,6 +165,7 @@ $(document).ready(function(){
 		data: data_post,
 		success: function(output)
         {	
+            //alert(output);
             try
             {
                 obj = JSON.parse(output);
@@ -329,6 +336,7 @@ $(document).ready(function(){
     $("#id-product-grid").jqxGrid(
     {
         theme: $("#theme").val(),
+        <?php if(isset($is_view)){ echo 'disabled: true,';} ?>
         width: '100%',
         height: 250,
         selectionmode : 'singlerow',
@@ -398,42 +406,41 @@ $(document).ready(function(){
         {?>
             var data_input = {};
             //data_input['warehouse'] = $("#destination-select").val().value;
-            var cansave = true;
+            
             var products = [];
             var productGrid = $('#id-product-grid').jqxGrid('getrows');
+            for(i=0;i<productGrid.length;i++)
+            {
+                if(productGrid[i]['qty'] > productGrid[i]['qty_available'])
+                {
+                    alert('Cannot save data. Qty request greater than stock available');
+                    throw '';
+                }
+                
+            }
             var i=0;
             for(i=0;i<productGrid.length;i++)
             {
-                if(productGrid[i].qty < productGrid[i].qty_available)
-                {
-                    cansave = false;
-                }
-                else
-                {
-                    var row = {};
-                    row['product'] = productGrid[i].id_product;
-                    row['uom'] = productGrid[i].uom;
-                    row['qty'] = productGrid[i].qty;
-                    row['warehouse'] = productGrid[i].source_location;
-                    products.push(row);
-                }
+                var row = {};
+                row['product'] = productGrid[i].id_product;
+                row['uom'] = productGrid[i].uom;
+                row['qty'] = productGrid[i].qty;
+                row['warehouse'] = productGrid[i].source_location;
+                products.push(row);
             }
             
-            if(cansave == true)
-            {
-                data_input['is_edit'] = $("#is_edit").val(); 
-                data_input['id_internal_delivery'] = $("#id_internal_delivery").val(); 
-                data_input['products'] = products;
-                //alert(JSON.stringify(data_input));
-                
-                var param = [];
-                var item = {};
-                item['paramName'] = 'id';
-                item['paramValue'] = <?php echo $data_edit[0]['id_internal_delivery'] ?>;
-                param.push(item);    
-                //alert(JSON.stringify(data_input));    
-                load_content_ajax(GetCurrentController(), 183, data_input, param); 
-            }
+            data_input['is_edit'] = $("#is_edit").val(); 
+            data_input['id_internal_delivery'] = $("#id_internal_delivery").val(); 
+            data_input['products'] = products;
+            //alert(JSON.stringify(data_input));
+            
+            var param = [];
+            var item = {};
+            item['paramName'] = 'id';
+            item['paramValue'] = <?php echo $data_edit[0]['id_internal_delivery'] ?>;
+            param.push(item);    
+            //alert(JSON.stringify(data_input));    
+            load_content_ajax(GetCurrentController(), 183, data_input, param); 
         <?php 
         }
         else
@@ -448,38 +455,34 @@ $(document).ready(function(){
 
 function SaveData()
 {
-    var cansave = true;
-    var productGrid = $('#id-product-grid').jqxGrid('getrows');
-    for(i=0;i<productGrid.length;i++)
+    var data_post = {};
+    <?php 
+    if(isset($is_edit) && $data_edit[0]['status'] != 'void' || !isset($is_edit) )
+    {?>
+    data_post['date'] = $("#id-date").val('date').format('yyyy-mm-dd');
+    data_post['note'] = $("#notes").html();
+    data_post['from'] = $("#from").val();
+    data_post['to'] = $("#to").val();
+    data_post['project_list'] = $("#pl-no").val().value;
+    data_post['product_detail'] = $('#id-product-grid').jqxGrid('getrows');
+    
+    for(i=0;i<data_post['product_detail'].length;i++)
     {
-        if(productGrid[i].qty < productGrid[i].qty_available)
+        if(data_post['product_detail'][i]['qty'] > data_post['product_detail'][i]['qty_available'])
         {
-            cansave = false;
-            
+            alert('Cannot save data. Qty request greater than stock available');
+            throw '';
         }
+        
     }
     
-    if(cansave == true)
-    {
-        var data_post = {};
-        
-        data_post['date'] = $("#id-date").val('date').format('yyyy-mm-dd');
-        data_post['note'] = $("#notes").html();
-        data_post['from'] = $("#from").val();
-        data_post['to'] = $("#to").val();
-        data_post['project_list'] = $("#pl-no").val().value;
-        data_post['product_detail'] = $('#id-product-grid').jqxGrid('getrows');
-        
-        data_post['is_edit'] = $("#is_edit").val(); 
-        data_post['id_internal_delivery'] = $("#id_internal_delivery").val(); 
-        //alert(JSON.stringify(data_post));
-        load_content_ajax(GetCurrentController(), 111, data_post);
+    data_post['is_edit'] = $("#is_edit").val(); 
+    data_post['id_internal_delivery'] = $("#id_internal_delivery").val(); 
+    //alert(JSON.stringify(data_post));
+    load_content_ajax(GetCurrentController(), 111, data_post);
+    <?php   
     }
-    else
-    {
-         alert("Qty should be greater than qty available");
-    }
-    
+    ?>
 }
 function DiscardData()
 {
@@ -492,10 +495,16 @@ function DiscardData()
 <input type="hidden" id="id_internal_delivery" value="<?php echo (isset($is_edit) ? $data_edit[0]['id_internal_delivery'] : '') ?>" />
 <div class="document-action">
     <?php 
-    if(isset($is_edit) && $data_edit[0]['status'] == 'draft')
-    {?>
-    <button style="margin-left: 20px;" id="id-validate">Validate</button>
-    <?php    
+    if(!isset($is_view))
+    {
+        if(isset($is_edit) && $data_edit[0]['status'] == 'draft')
+        {
+            if($data_edit[0]['status'] != 'void')
+            {?>
+            <button style="margin-left: 20px;" id="id-validate">Validate</button>
+            <?php    
+            }
+        }
     }
     ?>
     
@@ -542,11 +551,11 @@ function DiscardData()
       </tr>
       <tr>
         <td style="vertical-align: top;">From:<br></td>
-        <td style="vertical-align: top;"><input style="display:inline; width: 70%; font: -webkit-small-control; padding-left: 5px;" class="field" type="text" id="from" name="name" value="<?php echo (isset($is_edit) ? $data_edit[0]['from'] : '') ?>"/></td>
+        <td style="vertical-align: top;"><input <?php if(isset($is_view)){ echo 'disabled="true"';} ?> style="display:inline; width: 70%; font: -webkit-small-control; padding-left: 5px;" class="field" type="text" id="from" name="name" value="<?php echo (isset($is_edit) ? $data_edit[0]['from'] : '') ?>"/></td>
       </tr>
       <tr>
         <td style="vertical-align: top;">To:<br></td>
-        <td style="vertical-align: top;"><input style="display:inline; width: 70%" class="field" type="text" id="to" name="name" value="<?php echo (isset($is_edit) ? $data_edit[0]['to'] : '') ?>"/></td>
+        <td style="vertical-align: top;"><input <?php if(isset($is_view)){ echo 'disabled="true"';} ?> style="display:inline; width: 70%" class="field" type="text" id="to" name="name" value="<?php echo (isset($is_edit) ? $data_edit[0]['to'] : '') ?>"/></td>
       </tr>
     </tbody>
             

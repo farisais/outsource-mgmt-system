@@ -8,11 +8,10 @@ class Po_model extends CI_Model
 	
 	public function get_po_all()
 	{
-		$this->db->select('po.*, ext_company.name AS supplier_name');
+		$this->db->select('po.*, ext_company.name AS supplier_name, mr.id_mr, mr.mr_number');
 		$this->db->from('po');
         $this->db->join('ext_company', 'po.supplier=ext_company.id_ext_company', 'INNER');
-	$this->db->join('mr', 'mr.id_mr=po.mr', 'LEFT');
-                
+		$this->db->join('mr', 'mr.id_mr=po.mr', 'LEFT');
 		return $this->db->get()->result_array();
 	}
     
@@ -40,13 +39,15 @@ class Po_model extends CI_Model
             'delivery_date' => $data_post['delivery_date'],
             'supplier' => $data_post['supplier'],
             'status' => ($data_post['is_edit'] == 'false' ? 'draft' : 'open'),
-            'mr' => ($data_post['mr'] == '' ? null : $data_post['mr']),
+            'mr' => (!isset($data_post['mr']) || $data_post['mr'] == '' || $data_post['mr'] == null ? null : $data_post['mr']),
             'user_create' => $this->session->userdata('app_userid'),
             'date_create' => date('Y-m-d H:i:s'),
-            'source' => ($data_post['mr'] == '' ? 'make_stock' : 'mr'),
+            'source' => (!isset($data_post['mr']) || $data_post['mr'] == '' ||  $data_post['mr'] == null ? 'make_stock' : 'mr'),
             'total_price' => $data_post['total_price'],
             'tax' => $data_post['tax'],
-            'sub_total' => $data_post['sub_total']
+            'sub_total' => $data_post['sub_total'],
+            'discount_type' => $data_post['discount_type'],
+            'discount_value' => $data_post['discount_value']
         );
         
         $this->db->insert('po', $data);
@@ -73,13 +74,15 @@ class Po_model extends CI_Model
             'delivery_date' => $data_post['delivery_date'],
             'supplier' => $data_post['supplier'],
             'status' => 'draft',
-            'mr' => ($data_post['mr'] == '' ? null : $data_post['mr']),
+            'mr' => (!isset($data_post['mr']) || $data_post['mr'] == '' || $data_post['mr'] == null ? null : $data_post['mr']),
             'user_create' => $this->session->userdata('app_userid'),
             'date_create' => date('Y-m-d H:i:s'),
-            'source' => ($data_post['mr'] == '' ? 'make_stock' : 'mr'),
+            'source' => (!isset($data_post['mr']) || $data_post['mr'] == '' ||  $data_post['mr'] == null ? 'make_stock' : 'mr'),
             'total_price' => $data_post['total_price'],
             'tax' => $data_post['tax'],
-            'sub_total' => $data_post['sub_total']
+            'sub_total' => $data_post['sub_total'],
+            'discount_type' => $data_post['discount_type'],
+            'discount_value' => $data_post['discount_value']
         );
         
         $this->db->where('id_po', $data_post['id_po']);
@@ -93,12 +96,6 @@ class Po_model extends CI_Model
         
         array_merge($data_post, array("id_po" => $last_id, "po_number" => $data['po_number']));
         return $data_post;
-    }
-    
-    public function delete_po_product($id)
-    {
-        $this->db->where('po', $id);
-        $this->db->delete('po_product');
     }
     
     public function add_po_product($id, $data_product)
@@ -145,12 +142,41 @@ class Po_model extends CI_Model
         return array('id_po' => $id, 'status' => 'open');
     }
     
+    public function get_po_history($id_mr, $exclude_id = null)
+    {
+        $po = null;
+        if($exclude_id !=null)
+        {
+            $po = $this->get_po_by_id($exclude_id);
+        }
+        
+        $this->db->select('po.*, mr.mr_number, pp.*,p.*, um.name as unit_name');
+		$this->db->from('po');
+        $this->db->join('mr', 'mr.id_mr=po.mr', 'LEFT');
+        $this->db->join('po_product as pp', 'pp.po=po.id_po', 'INNER');
+        $this->db->join('product as p', 'p.id_product=pp.product', 'INNER');
+        $this->db->join('unit_measure as um', 'um.id_unit_measure=pp.uom', 'INNER');
+        $this->db->join('ext_company as s', 's.id_ext_company=po.supplier', 'INNER');
+        $this->db->where('po.mr', $id_mr);
+        $this->db->where('po.status', 'open');
+        if($exclude_id !=null)
+        {
+            $this->db->where('po.id_po !=', $exclude_id);
+            
+            $this->db->where('DATE(po.date) <= DATE(\''. $po[0]['date'] . '\')', null, false );
+            $this->db->where('po.id_po <', $po[0]['id_po']);
+        }
+                
+		return $this->db->get()->result_array();
+    }
+    
+    
     public function get_po_by_id($id)
     {
-        $this->db->select('po.*, ext_company.name as supplier_name, ext_company.address, mr.mr_number, mr.id_mr, mr.project_list,mr.date as mr_date, mr.status as mr_status');
+        $this->db->select('po.*, ext_company.name as supplier_name, ext_company.address, mr.id_mr, mr.mr_number,mr.date as mr_date, mr.status as mr_status');
         $this->db->from('po');
         $this->db->where('po.id_po', $id);
-	$this->db->join('mr', 'mr.id_mr=po.mr', 'LEFT');
+		$this->db->join('mr', 'mr.id_mr=po.mr', 'LEFT');
         $this->db->join('ext_company', 'ext_company.id_ext_company=po.supplier', 'INNER');
         return $this->db->get()->result_array();
     }
@@ -169,6 +195,27 @@ class Po_model extends CI_Model
             $result[$i]['qty_ordered'] = $result[$i]['qty'] - $result[$i]['qty_received'];
         }
         return $result;
+    }
+	
+	public function get_po_product_by_id_received($id)
+    {
+        $this->db->select('po_product.*, po_product.uom as unit, unit_measure.name as unit_name, product.*');
+        $this->db->from('po_product');
+        $this->db->join('product', 'product.id_product=po_product.product', 'INNER');
+        $this->db->join('unit_measure', 'unit_measure.id_unit_measure=po_product.uom', 'INNER');
+        $this->db->where('po', $id);
+        
+        $result = $this->db->get()->result_array();
+		$return = array();
+        for($i=0;$i<count($result);$i++)
+        {
+            $result[$i]['qty_ordered'] = $result[$i]['qty'] - $result[$i]['qty_received'];
+			if($result[$i]['qty_ordered'] > 0)
+			{
+				array_push($return, $result[$i]);
+			}
+        }
+        return $return;
     }
     
     public function get_barcode_list()
@@ -190,19 +237,6 @@ class Po_model extends CI_Model
         $this->db->where('id_po', $id);
         $this->db->update('po', array("status" => $status));
         
-        //klo misal po status == close dan po refer ke mr maka mr close
-        
-        if($status == 'close')
-        {
-            $po = $this->get_po_by_id($id);
-            if($po[0]['mr'] != null && $po[0]['mr'] != '')
-            {
-                $ci &= get_instance();
-                $ci->load->model('mr_model');
-                $ci->mr_model->change_mr_status($po[0]['mr'], 'close');
-            }
-            //close MR
-        }
         $this->db->trans_complete();
         
     }
@@ -249,6 +283,10 @@ class Po_model extends CI_Model
     
     public function get_product_from_barcode($barcode)
     {
+        if($barcode == '' || $barcode == null)
+        {
+            $barcode = -1;
+        }
         $this->db->select('p.*,pc.product_category as category, um.name as unit_name_product, tm.type_material, po.*, pp.*, um2.name as unit_name, merk.name as merk_name');
         $this->db->from('po_product as pp');
         $this->db->join('product as p', 'p.id_product=pp.product', 'INNER');
@@ -261,5 +299,24 @@ class Po_model extends CI_Model
         $this->db->where('pp.product_barcode', $barcode);
         
         return $this->db->get()->result_array();
+    }
+    
+    public function check_po_product_receive($id)
+    {
+        $this->db->select('*');
+        $this->db->from('po_product');
+        $this->db->where('po', $id);
+        
+        $pp = $this->db->get()->result_array();
+        
+        foreach($pp as $p)
+        {
+            if($p['qty_received'] != $p['qty'])
+            {
+                return false;
+            }
+        }
+        
+        return true;
     }
 }

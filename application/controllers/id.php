@@ -35,20 +35,38 @@ class Id extends MY_Controller
     
     public function delete_id()
     {
-        $this->id_model->delete_id($this->input->post('id_internal_delivery'));
-        
-        return null;
+        $dataID = $this->id_model->get_id_by_id($id);
+        if($dataMR[0]['status'] == 'draft')
+        {
+        $this->id_model->change_id_status($this->input->post('id_internal_delivery'), 'void');
+        }
     }
     
     public function edit_id($id)
     {
+        $dataID = $this->id_model->get_id_by_id($id);
+        if($dataMR[0]['status'] == 'draft')
+        {
         $data = array(
             'data_edit' => $this->id_model->get_id_by_id($id),
             'is_edit' => true
         );
         
         return $data;
+        }
     }
+    
+     public function view_id_detail($id)
+    {
+        $data = array(
+            'data_edit' => $this->id_model->get_id_by_id($id),
+            'is_edit' => true,
+            'is_view' => true
+        );
+        
+        return $data;
+    }
+    
     public function get_id_product_list()
     {
         echo "{\"data\" : " . json_encode($this->id_model->get_id_product_by_id($this->input->get('id'))) . "}";

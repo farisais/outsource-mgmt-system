@@ -51,7 +51,6 @@
             { text: 'MR Number', dataField: 'mr_number', width: 100},
             { text: 'Supplier', dataField: 'supplier', displayField: 'supplier_name'},
             { text: 'Date', dataField: 'date', width: 200, cellsformat: 'dd/MM/yyyy',filtertype: 'date'}, 
-            { text: 'Delivery Date', dataField: 'delivery_date', width: 200, cellsformat: 'dd/MM/yyyy',filtertype: 'date'}, 
             { text: 'Total Price', dataField: 'total_price', width: 200, cellsformat: 'c2'},
             { text: 'Status', dataField: 'status', width: 100, cellclassname: cellclass}
         ]
@@ -63,13 +62,31 @@
         localizationobj.currencysymbol = "Rp. ";
         $("#jqxgrid").jqxGrid('localizestrings', localizationobj); 
     }); 
+    
+    $("#jqxgrid").on("rowdoubleclick", function(event){
+        var row = $('#jqxgrid').jqxGrid('getrowdata', event.args.rowindex);
+        
+        if(row != null)
+        {
+            var data_post = {};
+            var param = [];
+            var item = {};
+            item['paramName'] = 'id';
+            item['paramValue'] = row.id_po;
+            param.push(item);        
+            data_post['id_po'] = row.id_po;
+            load_content_ajax(GetCurrentController(), 191 ,data_post, param);
+            
+        }
+       
+    });
      
 });  
 </script>
 <script>
 function CreateData()
 {
-    load_content_ajax(GetCurrentController(), 58, null, null);
+    load_content_ajax(GetCurrentController(), 'create_po', null, null);
 }
 
 function EditData()
@@ -85,7 +102,7 @@ function EditData()
         param.push(item);
 
         data_post['id_po'] = row.id_po;
-        load_content_ajax(GetCurrentController(), 59 ,data_post, param);
+        load_content_ajax(GetCurrentController(), 'edit_po' ,data_post, param);
     }
     else
     {

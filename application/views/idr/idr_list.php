@@ -6,8 +6,9 @@
                 datatype: "json",
                 datafields:
                 [
-                    { name: 'id_number'},
+                    { name: 'idr_number'},
                     { name: 'so'},
+                    { name: 'so_number'},
                     { name: 'date'},
                     { name: 'status'},
                     { name: 'id_internal_delivery_return'},
@@ -32,12 +33,31 @@
                 sortable: true,
                 autoshowfiltericon: true,
                 columns: [
-                    { text: 'Internal Delivery No.', dataField: 'id_number'},
-                    { text: 'Project List Number', dataField: 'project_list'},
+                    { text: 'Internal Delivery Return No.', dataField: 'idr_number'},
+                    { text: 'Sales Order', dataField: 'so_number'},
                     { text: 'Status', dataField: 'status', width: 100},
                                        
                 ]
             });
+            
+        $("#jqxgrid").on("rowdoubleclick", function(event){
+        var row = $('#jqxgrid').jqxGrid('getrowdata', event.args.rowindex);
+        
+        if(row != null)
+        {
+            var data_post = {};
+            var param = [];
+            var item = {};
+            item['paramName'] = 'id';
+            item['paramValue'] = row.id_internal_delivery_return;
+            param.push(item);        
+            data_post['id_internal_delivery_return'] = row.id_internal_delivery_return;
+            load_content_ajax(GetCurrentController(), 203 ,data_post, param);
+            
+        }
+       
+        });
+            
                         
         });  
 </script>
@@ -73,7 +93,7 @@ function DeleteData()
         
     if(row != null)
     {
-       if(confirm("Are you sure you want to delete menu : " + row.name))
+       if(confirm("Are you sure you want to void Final Assembling : " + row.idr_number))
         {
             var data_post = {};
             data_post['id_internal_delivery_return'] = row.id_internal_delivery_return;

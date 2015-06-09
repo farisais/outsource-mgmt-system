@@ -38,6 +38,25 @@
                                        
                 ]
             });
+            
+        $("#jqxgrid").on("rowdoubleclick", function(event){
+        var row = $('#jqxgrid').jqxGrid('getrowdata', event.args.rowindex);
+        
+        if(row != null)
+        {
+            var data_post = {};
+            var param = [];
+            var item = {};
+            item['paramName'] = 'id';
+            item['paramValue'] = row.id_internal_delivery;
+            param.push(item);        
+            data_post['id_internal_delivery'] = row.id_internal_delivery;
+            load_content_ajax(GetCurrentController(), 202 ,data_post, param);
+            
+        }
+       
+    });
+            
                         
         });  
 </script>
@@ -73,7 +92,7 @@ function DeleteData()
         
     if(row != null)
     {
-       if(confirm("Are you sure you want to delete menu : " + row.name))
+       if(confirm("Are you sure you want to void Internal Delivery : " + row.id_number))
         {
             var data_post = {};
             data_post['id_internal_delivery'] = row.id_internal_delivery;

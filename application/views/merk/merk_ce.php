@@ -94,7 +94,7 @@ select.field
                         Merk Name
                     </td>
                     <td class="column-input">
-                        <input class="field" type="text" id="name" name="name" value="<?php echo (isset($is_edit) ? $data_edit[0]['name'] : '') ?>"/>
+                        <input <?php if(isset($is_view)){ echo 'disabled="true"';} ?> class="field" type="text" id="name" name="name" value="<?php echo (isset($is_edit) ? $data_edit[0]['name'] : '') ?>"/>
                     </td>
                 </tr>
                 <tr>
@@ -102,7 +102,7 @@ select.field
                         Alias
                     </td>
                     <td class="column-input">
-                        <input maxlength="3" class="field" type="text" id="abbreviation" name="abbreviation" value="<?php echo (isset($is_edit) ? $data_edit[0]['abbreviation'] : '') ?>"/>
+                        <input <?php if(isset($is_view)){ echo 'disabled="true"';} ?> style="text-transform:uppercase" maxlength="4" class="field" type="text" id="abbreviation" name="abbreviation" value="<?php echo (isset($is_edit) ? $data_edit[0]['abbreviation'] : '') ?>"/>
                     </td>
                 </tr>
             </table>

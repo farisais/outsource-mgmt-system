@@ -409,20 +409,20 @@ class Payroll_periode_model extends CI_Model {
 		$payroll_type = $this->db->query($query)->result_array();
 
         $query_list_employee=$this->db->query("
-        SELECT COUNT(organisation_structure_id) as qty, so_assignment.*, os.structure_name, pd.product, p.product_name, um.name as unit_name
+        SELECT COUNT(organisation_structure_id) as qty, so_assignment.*, os.structure_name, pd.product, p.unit, p.id_product, p.product_name, um.name as unit_name
         ,employee.full_name,employee.position_level,employee.organisation_structure_id,employee.id_employee, employee.employee_number
         FROM so_assignment
         JOIN employee ON employee.id_employee=so_assignment.so_assignment_number
         JOIN organisation_structure AS os ON os.id_organisation_structure=employee.organisation_structure_id
         JOIN product_definition AS pd ON pd.organisation_structure=employee.organisation_structure_id
-        JOIN product AS p ON p.id_product=pd.product
+        JOIN product AS p ON p.id_product=pd.product 
         JOIN unit_measure AS um ON um.id_unit_measure=p.unit
         WHERE so_assignment.work_order_id=$id_work_order GROUP BY organisation_structure_id ORDER BY organisation_structure_id ASC
         ");
         $result_list_employee = $query_list_employee->result_array();
 
         $employee_invoice = array();
-
+		
         if(count($result_list_employee > 0)){
             foreach($result_list_employee as $key=>$value)
             {
@@ -431,7 +431,9 @@ class Payroll_periode_model extends CI_Model {
                 $overtime_hour = (count($overtime_hour) == 0 ? 0 : $overtime_hour[0]['total_overtime']);
                 $invoice_list = $this->calculate_invoice_each_employee($ce[0]['cost_element'], $overtime_hour, $payroll_type[0]['payroll_type']);
 
-                $result_list_employee[$key]['price'] = $invoice_list['total'];
+                $result_list_employee[$key]['price'] = $invoice_list['cogs'];
+				$result_list_employee[$key]['ppn'] = $invoice_list['element_category']['ppn'];
+				$result_list_employee[$key]['profit'] = $invoice_list['element_category']['profit'];
             }
         }
 

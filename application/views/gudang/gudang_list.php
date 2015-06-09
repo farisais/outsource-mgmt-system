@@ -1,6 +1,6 @@
 <script>
  $(document).ready(function () {
-        var url = "<?php echo base_url() ;?>gudang/get_gudang_list";
+        var url = "<?php echo base_url() ;?>gudang/get_gudang_not_virtual_list";
          var source =
             {
                 datatype: "json",
@@ -34,7 +34,6 @@
                 columns: [
                     { text: 'Name', dataField: 'name'},
                     { text: 'Address', dataField: 'address', width: 200},
-                    { text: 'Virtual Location', dataField: 'is_virtual', width: 200},
                     { text: 'Note', dataField: 'note', width: 100}
                    
                 ]

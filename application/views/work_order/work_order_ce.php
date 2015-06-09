@@ -369,7 +369,7 @@ $(document).ready(function(){
     //
     //=================================================================================
     
-    var urlProc = "<?php if (isset($is_edit)):?><?php echo base_url()?>work_order/get_work_order_proc_list?id=<?=$data_edit[0]['work_schedule']?><?php endif; ?>";
+    var urlProc = "<?php if (isset($is_edit)):?><?php echo base_url()?>work_order/get_work_order_mr?id=<?=$data_edit[0]['id_work_order']?><?php endif; ?>";
     var sourceProc =
     {
         datatype: "json",
@@ -379,9 +379,9 @@ $(document).ready(function(){
             { name: 'product_code'},
             { name: 'product_name'},
             { name: 'unit_name', value: 'unit', values: { source: unitAdapter.records, value: 'id_unit_measure', name: 'name' } },
-            { name: 'oum'},
-            { name: 'qty', type: 'number'},
-            { name: 'qty_deliver', type: 'number'},
+            { name: 'uom'},
+            { name: 'qty_request', type: 'number'},
+            { name: 'qty_require', type: 'number'},
             { name: 'remark', type: 'string'},
             { name: 'status'}
         ],
@@ -406,8 +406,8 @@ $(document).ready(function(){
             { text: 'Product Code', dataField: 'product_code'},
             { text: 'Product', dataField: 'product_name'},
             { text: 'Unit', dataField: 'unit', displayfield: 'unit_name'},
-            { text: 'Qty Request', dataField: 'qty', cellsformat: 'd2', width: 100}, 
-            { text: 'Qty Deliver', dataField: 'qty_deliver', cellsformat: 'd2', width: 100},
+            { text: 'Qty Request', dataField: 'qty_require', cellsformat: 'd2', width: 100}, 
+            { text: 'Qty Deliver', dataField: 'qty_request', cellsformat: 'd2', width: 100},
             { text: 'Remark', dataField: 'remark'},
             { text: 'Status', dataField: 'status'}
         ]
@@ -486,7 +486,7 @@ $(document).ready(function(){
     //
     //=================================================================================
     $("#select_structure_org_popup,#select_employee_popup").jqxWindow({
-        width: 500, height: 200, resizable: false,  isModal: true, autoOpen: false, cancelButton: $("#Cancel"), modalOpacity: 0.01           
+        width: 500, height: 800, resizable: false,  isModal: true, autoOpen: false, cancelButton: $("#Cancel"), modalOpacity: 0.01           
     });
      //Source Level
     var url_unit_level = "<?php echo base_url() ;?>work_order/get_level_list";

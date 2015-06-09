@@ -20,7 +20,7 @@ class Quotation extends MY_Controller
         {
             $pd = $this->quotation_model->get_product_definition_from_product($quote_product[$i]['id_product']);
             $qce = $this->quotation_model->get_ce_assignment_from_quote_str($this->input->get('id'), $pd[0]['organisation_structure']);
-            $calc = $this->cost_element_model->calculate_invoice('per_month', $qce[0]['cost_element']);
+            $calc = $this->cost_element_model->calculate_invoice('per_month', $qce[0]['cost_element'], null, 'both');
             $quote_product[$i]['price'] = $calc['total'];
         }
         echo "{\"data\" : " . json_encode($quote_product) . "}";
@@ -170,7 +170,7 @@ class Quotation extends MY_Controller
         $result = array();
         foreach($this->input->post('ce_assign') as $ce)
         {
-            $calc = $this->cost_element_model->calculate_invoice('per_month', $ce['cost_element']);
+            $calc = $this->cost_element_model->calculate_invoice('per_month', $ce['cost_element'], null, 'both');
             $pd = $this->quotation_model->get_product_definition_from_structure($ce['structure']);
             $calc['product'] = $pd[0]['product'];
             array_push($result, $calc);

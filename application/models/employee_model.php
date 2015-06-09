@@ -145,6 +145,11 @@ class Employee_model extends CI_Model
         $data_input["marital_status"]    =   ($data["marital_status"] == '' ? null : $data["marital_status"]);
         $data_input["marital_date"]      =   ($data["marital_date"] == '' ? null : $data['marital_date']);
         $data_input["native"]            =   $data["native"];
+		$data_input["npwp"]				 =	 $data["npwp"];
+		$data_input["bpjs"]				 =	 $data["bpjs"];
+		$data_input["jamsostek"]		 =	 $data["jamsostek"];
+		$data_input["rekening"]		     =	 $data["rekening"];
+		$data_input["bank"]				 =	 $data["bank"];
         
         //Save basic info
         if($data['is_edit'] != 'true')
@@ -415,7 +420,7 @@ class Employee_model extends CI_Model
         $data_input['position'] = ($data['position'] == '' ? null : $data['position']);
         $data_input['position_level'] = ($data['position_level'] == '' ? null : $data['position_level']);
         $data_input['employee_contract_type'] = ($data['employee_contract_type'] == '' ? null : $data['employee_contract_type']);
-        
+		
         if($data['is_edit'] == 'true')
         {
             $this->db->where('employee', $id);

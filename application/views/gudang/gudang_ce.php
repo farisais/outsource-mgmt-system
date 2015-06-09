@@ -20,7 +20,7 @@ function SaveData()
         data_post['is_virtual'] = 1;
     }
     
-    alert(JSON.stringify(data_post));
+    //alert(JSON.stringify(data_post));
     load_content_ajax(GetCurrentController(), 51, data_post);
     
 }

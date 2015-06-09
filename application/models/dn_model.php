@@ -8,9 +8,10 @@ class Dn_model extends CI_Model
 	
 	public function get_dn_all()
 	{
-		$this->db->select('dn.*, so.*, dn.status AS status_dn');
+		$this->db->select('dn.*, dn.status AS status_dn, mr.*, wo.work_order_number');
 		$this->db->from('dn');
-                $this->db->join('so', 'so.id_so=dn.so', 'LEFT');
+		$this->db->join('mr', 'mr.id_mr=dn.mr', 'LEFT');
+		$this->db->join('work_order as wo', 'wo.id_work_order=mr.work_order', 'LEFT');
                 
 		return $this->db->get()->result_array();
 	}
@@ -42,7 +43,7 @@ class Dn_model extends CI_Model
         $this->db->trans_start();
         
         $data_input = array(
-            "so" => ($data['so'] == '' ? null : $data['so']),
+            "mr" => ($data['mr'] == '' ? null : $data['mr']),
             "date" => $data['date'],
             "no_dn" => $this->generate_dn_number(),
             "note" => $data['note'],
@@ -67,7 +68,7 @@ class Dn_model extends CI_Model
         {
             $data_input = array();
             $data_input['dn'] = $id_dn;
-            $data_input['product'] = $p['id_product'];
+            $data_input['product'] = $p['product'];
             $data_input['qty'] = $p['qty'];
             $data_input['uom'] = $p['unit'];
             $data_input['source_location'] = $p['source_location'];
@@ -164,7 +165,7 @@ class Dn_model extends CI_Model
         $this->db->trans_start();
         
         $data_input = array(
-            "so" => $data['so'],
+            "mr" => $data['mr'],
             "date" => $data['date'],
             "note" => $data['note'],
             "status" => 'draft'
@@ -179,31 +180,12 @@ class Dn_model extends CI_Model
         $this->db->trans_complete();
     }
     
-    public function delete_dn($id)
-    {
-        $this->db->trans_start();
-        $this->delete_product_id($id);
-        $this->db->where('id_dn', $id);
-        
-        $this->db->delete('dn');
-        
-        $this->db->trans_complete();
-    }
-    
-        
-    public function delete_product_id($id)
-    {
-        $this->db->trans_start();
-        $this->db->where('dn', $id);
-        $this->db->delete('dn_product');
-    }
-    
     public function get_dn_by_id($id)
     {
-        $this->db->select('dn.*, so.*, customer.name AS customer_name, dn.status AS status_dn, so.status AS status_so');
-	$this->db->from('dn');
-        $this->db->join('so', 'so.id_so=dn.so', 'INNER');
-        $this->db->join('customer', 'customer.id_customer=so.customer','INNER');
+        $this->db->select('dn.*, dn.status AS status_dn, mr.*, wo.work_order_number');
+        $this->db->from('dn');
+		$this->db->join('mr', 'mr.id_mr=dn.mr', 'LEFT');
+		$this->db->join('work_order as wo', 'wo.id_work_order=mr.work_order', 'LEFT');
         $this->db->where('dn.id_dn', $id);
                 
 		return $this->db->get()->result_array();
@@ -211,7 +193,7 @@ class Dn_model extends CI_Model
     
     public function get_dn_product_by_id_dn($id)
     {
-        $this->db->select('dn_product.*, product.*, unit_measure.name AS unit_name, gudang.name AS warehouse_name , product_category.product_category AS category_name');
+        $this->db->select('dn_product.*, product.*, unit_measure.name AS unit_name, gudang.name AS warehouse_name , product_category.product_category AS category_name, dn_product.source_location as warehouse');
         $this->db->from('dn_product');
         $this->db->join('product', 'dn_product.product=product.id_product', 'INNER');
         $this->db->join('gudang', 'dn_product.source_location=gudang.id_warehouse', 'INNER');

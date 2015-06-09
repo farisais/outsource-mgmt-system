@@ -99,10 +99,12 @@ class Dn extends MY_Controller
         //$interfunction_param = array();
         //$interfunction_param[0] = array("paramKey" => "id", "paramValue" => $id);
         //return array('log_param' => $param, "interfunction_param" => $interfunction_param);
+		$this->load->model('mr_model');
         $data = $this->input->post();
         $dn = $this->dn_model->get_dn_by_id($id);
         $this->stock_transaction_model->automatic_stock_transaction_out($dn[0]['no_dn'], 'delivery_note', date('Y-m-d H:i:s'), $this->dn_model->get_virtual_location(), $data['products']);
         $this->dn_model->change_dn_status($id, 'open');
+		$this->mr_model->change_mr_status($data['mr'], 'deliver');
     }
     
     public function return_dn($id)

@@ -89,171 +89,82 @@
         <?php if(isset($is_edit)){?>
             $("#datetime-incident").val('<?php echo $data_edit[0]['incident_time'];?>');
             var url = "<?php echo base_url() ;?>incident_report/get_incident_report_thirdparty/<?=$data_edit[0]['id'];?>";
-            var source =
-                {
-                    datatype: "json",
-                    datafields:
-                        [
-                            { name: 'id'},
-                            { name: 'employee_id'},
-                            { name: 'employee_number'},
-                            { name: 'full_name'},
-                            { name: 'structure_name'}
-                        ],
-                    id: 'id',
-                    url: url,
-                    root: 'data'
-                };
-            var dataAdapter = new $.jqx.dataAdapter(source);
-            $("#jqxgrid").jqxGrid(
-                {
-                    theme: $("#theme").val(),
-                    width: '100%',
-                    height: 450,
-                    source: dataAdapter,
-                    groupable: true,
-                    columnsresize: true,
-                    autoshowloadelement: false,
-                    filterable: true,
-                    showfilterrow: true,
-                    sortable: true,
-                    autoshowfiltericon: true,
-                    columns: [
-                        { text: 'Employee Number', dataField: 'employee_number', width: 150},
-                        { text: 'Employee Name', dataField: 'full_name'},
-                        { text: 'Level', dataField: 'structure_name'}
-                    ]
-                });
-                
-            $('#select-employee-grid').on('rowdoubleclick', function (event){
-                var args = event.args;
-                var data = $('#select-employee-grid').jqxGrid('getrowdata', args.rowindex);
-                //console.log(data);
-                //return false;
-                var id_incident='<?=$data_edit[0]['id'];?>';
-                $.ajax({
-                    url:"<?=base_url();?>incident_report/save_incident_bottom",
-                    type:"post",
-                    datatype:"json",
-                    data: {id_employee:data.id_employee,id_incident:id_incident},
-                    success: function(e){
-                        console.log(e);
-                        $("#jqxgrid").jqxGrid('updatebounddata');                        
-                        $("#select-employee-popup").jqxWindow('close'); 
-                    },
-                    error: function(e){
-                        alert(e);
-                    }
-                });
-            });
-            
-            $("#delete_emloyee").click(function(){
-                var row = $('#jqxgrid').jqxGrid('getrowdata', parseInt($('#jqxgrid').jqxGrid('getselectedrowindexes')));
-                    if(row != null){
-                        if(confirm("Are you sure you want to delete recruitment : " + row.full_name)){
-                            $.ajax({
-                            url:"<?=base_url();?>incident_report/delete_incident_bottom",
-                            type:"post",
-                            datatype:"json",
-                            data: {id_employee:row.id},
-                            success: function(e){
-                                console.log(e);
-                                $("#jqxgrid").jqxGrid('updatebounddata');
-                            },
-                            error: function(e){
-                                alert(e);
-                            }
-                        });
-                        }
-                    }else{
-                        alert('Select recruitment you want to delete first');
-                    }         
-            });
-            
-        <?php }else{ ?>
-            var url = "<?php echo base_url() ;?>incident_report/get_incident_report_thirdparty_temp";
-            var source =
-                {
-                    datatype: "json",
-                    datafields:
-                        [
-                            { name: 'id'},
-                            { name: 'employee_id'},
-                            { name: 'employee_number'},
-                            { name: 'full_name'},
-                            { name: 'structure_name'}
-                        ],
-                    id: 'id',
-                    url: url,
-                    root: 'data'
-                };
-            var dataAdapter = new $.jqx.dataAdapter(source);
-            $("#jqxgrid").jqxGrid(
-                {
-                    theme: $("#theme").val(),
-                    width: '100%',
-                    height: 450,
-                    source: dataAdapter,
-                    groupable: true,
-                    columnsresize: true,
-                    autoshowloadelement: false,
-                    filterable: true,
-                    showfilterrow: true,
-                    sortable: true,
-                    autoshowfiltericon: true,
-                    columns: [
-                        { text: 'Employee Number', dataField: 'employee_number', width: 150},
-                        { text: 'Employee Name', dataField: 'full_name'},
-                        { text: 'Level', dataField: 'structure_name'}
-                    ]
-                });
-                
-            $('#select-employee-grid').on('rowdoubleclick', function (event){
-                var args = event.args;
-                var data = $('#select-employee-grid').jqxGrid('getrowdata', args.rowindex);
-                //console.log(data);
-                //return false;
-                $.ajax({
-                    url:"<?=base_url();?>incident_report/save_temp",
-                    type:"post",
-                    datatype:"json",
-                    data: {id_employee:data.id_employee},
-                    success: function(e){
-                        console.log(e);
-                        $("#jqxgrid").jqxGrid('updatebounddata');                        
-                        $("#select-employee-popup").jqxWindow('close'); 
-                    },
-                    error: function(e){
-                        alert(e);
-                    }
-                });
-            });
-            
-            $("#delete_emloyee").click(function(){
-                var row = $('#jqxgrid').jqxGrid('getrowdata', parseInt($('#jqxgrid').jqxGrid('getselectedrowindexes')));
-                    if(row != null){
-                        if(confirm("Are you sure you want to delete recruitment : " + row.full_name)){
-                            $.ajax({
-                            url:"<?=base_url();?>incident_report/delete_temp",
-                            type:"post",
-                            datatype:"json",
-                            data: {id_employee:row.id},
-                            success: function(e){
-                                console.log(e);
-                                $("#jqxgrid").jqxGrid('updatebounddata');
-                                $("#select-employee-popup").jqxWindow('close'); 
-                            },
-                            error: function(e){
-                                alert(e);
-                            }
-                        });
-                        }
-                    }else{
-                        alert('Select recruitment you want to delete first');
-                    }         
-            });                        
-                                                                
-        <?php } ?>
+        <?php 
+		}
+		else
+		{ 
+		?>
+            var url = "";
+		<?php 
+		} ?>
+		var source =
+			{
+				datatype: "json",
+				datafields:
+					[
+						{ name: 'id_employee'},
+						{ name: 'employee_number'},
+						{ name: 'full_name'},
+						{ name: 'name'}
+					],
+				id: 'id_employee',
+				url: url,
+				root: 'data'
+			};
+		var dataAdapter = new $.jqx.dataAdapter(source);
+		$("#jqxgrid").jqxGrid(
+			{
+				theme: $("#theme").val(),
+				width: '100%',
+				height: 450,
+				source: dataAdapter,
+				groupable: true,
+				columnsresize: true,
+				autoshowloadelement: false,
+				filterable: true,
+				showfilterrow: true,
+				sortable: true,
+				autoshowfiltericon: true,
+				columns: [
+					{ text: 'Employee Number', dataField: 'employee_number', width: 150},
+					{ text: 'Employee Name', dataField: 'full_name'},
+					{ text: 'Level', dataField: 'name'}
+				]
+			});
+			
+		$('#select-employee-grid').on('rowdoubleclick', function (event){
+			var args = event.args;
+			var data = $('#select-employee-grid').jqxGrid('getrowdata', args.rowindex);
+			data['structure_name'] = data['name'];
+			$("#jqxgrid").jqxGrid('addrow', null, data);
+			$("#select-employee-popup").jqxWindow('close');
+		});
+		
+		$("#delete_emloyee").click(function(){
+			var row = $('#jqxgrid').jqxGrid('getrowdata', parseInt($('#jqxgrid').jqxGrid('getselectedrowindexes')));
+				if(row != null){
+					if(confirm("Are you sure you want to delete recruitment : " + row.full_name)){
+						$.ajax({
+						url:"<?=base_url();?>incident_report/delete_temp",
+						type:"post",
+						datatype:"json",
+						data: {id_employee:row.id},
+						success: function(e){
+							console.log(e);
+							$("#jqxgrid").jqxGrid('updatebounddata');
+							$("#select-employee-popup").jqxWindow('close'); 
+						},
+						error: function(e){
+							alert(e);
+						}
+					});
+					}
+				}
+				else
+				{
+					alert('Select recruitment you want to delete first');
+				}         
+		});                        
     });
     
     function SaveData()
@@ -269,7 +180,8 @@
             data_post['efect_cause'] = $("#efect-cause").val();
             data_post['action_taken'] = $("#action-taken").val();
             data_post['recomendation'] = $("#recomendation").val();
-
+			data_post['third_party'] = $("#jqxgrid").jqxGrid('getrows');
+			alert(JSON.stringify(data_post));
         load_content_ajax(GetCurrentController(), 178, data_post);
 
 

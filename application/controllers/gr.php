@@ -55,8 +55,15 @@ class Gr extends MY_Controller
     
     public function delete_gr()
     {
-        $this->gr_model->delete_gr($this->input->post('id_gr'));
-        //$this->gr_product_model->delete_gr_product->('gr')
+        $dataGR = $this->gr_model->get_gr_by_id($id);
+        
+        $this->gr_model->change_gr_status($this->input->post('id_gr'), 'void');
+        if($dataRG[0]['status'] == 'transfered')
+        {
+            $gr = $this->gr_model->get_gr_by_id($id);
+            $data = $this->gr_model->get_gr_product_by_id($id);
+            $this->stock_transaction_model->automatic_stock_transaction_out('void ' + $gr[0]['gr_number'], 'good_receive', date('Y-m-d H:i:s'), $this->gr_model->get_virtual_location(), $data['product']);
+        }
     }
     
     public function init_edit_gr($id)
@@ -66,6 +73,19 @@ class Gr extends MY_Controller
             "gr" => $this->gr_model->get_gr_all(),
             "data_edit" => $this->gr_model->get_gr_by_id($id),
             "is_edit" => 'true'
+        );
+        
+        return $data;   
+    }
+    
+    public function view_gr_detail($id)
+    {
+        $data = array(
+            "po" => $this->po_model->get_po_all(),
+            "gr" => $this->gr_model->get_gr_all(),
+            "data_edit" => $this->gr_model->get_gr_by_id($id),
+            "is_edit" => 'true',
+            "is_view" => 'true'
         );
         
         return $data;   

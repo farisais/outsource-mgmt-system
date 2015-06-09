@@ -1,14 +1,19 @@
 <script type="text/javascript" src="<?php echo base_url() ?>jqwidgets/globalization/globalize.js"></script>
 <script>
 $(document).ready(function(){
-    $("#delivery-date").jqxDateTimeInput({width: '250px', height: '25px'}); 
+    $("#delivery-date").jqxDateTimeInput({width: '250px', height: '25px' <?php if(isset($is_view)){ echo ',disabled: true';} ?>}); 
     $("#select-product-popup").jqxWindow({
         width: 600, height: 500, resizable: false,  isModal: true, autoOpen: false, cancelButton: $("#Cancel"), modalOpacity: 0.01           
     });
-    
+    <?php 
+    if(!isset($is_view))
+    {?>
     $("#clear-delivery-date").click(function(){
         $("#delivery-date").val(null);
     });
+    <?php 
+    }
+    ?>
     
     <?php 
     if(isset($is_edit))
@@ -40,6 +45,7 @@ $(document).ready(function(){
     var unitAdapter = new $.jqx.dataAdapter(unitSource, {
         autoBind: true
     });
+    
     
     //=================================================================================
     //
@@ -101,6 +107,7 @@ $(document).ready(function(){
     $("#select-po-grid").jqxGrid(
     {
         theme: $("#theme").val(),
+        editable: <?php if(isset($is_view)){ echo 'false';}else{ echo 'true';} ?>,
         width: '100%',
         height: 400,
         selectionmode : 'singlerow',
@@ -119,7 +126,12 @@ $(document).ready(function(){
     });
     
     $("#po-select").click(function(){
+        <?php if(!isset($is_view))
+        {?>
         $("#select-po-popup").jqxWindow('open');
+        <?php    
+        }
+        ?>
     });
     
     $('#select-po-grid').on('rowdoubleclick', function (event) 
@@ -127,7 +139,7 @@ $(document).ready(function(){
         var args = event.args;
         var data = $('#select-po-grid').jqxGrid('getrowdata', args.rowindex);
         $('#po-no').jqxInput('val', {label: data.po_number, value: data.id_po});
-        var url = "<?php echo base_url()?>po/get_po_product_list?id=" + data.id_po;
+        var url = "<?php echo base_url()?>po/get_po_product_list_received?id=" + data.id_po;
         var source =
         {
             datatype: "json",
@@ -185,7 +197,30 @@ $(document).ready(function(){
     {?>
     
         $('#po-no').jqxInput('val', {label: '<?php echo $po[0]['po_number'] ?>', value: '<?php echo $po[0]['id_po'] ?>'});
-    
+		
+		var urlHistory = "<?php echo base_url()?>gr/get_gr_history_list?po=" + <?php echo $po[0]['id_po'] ?>;
+        
+        var sourceHistory =
+        {
+            datatype: "json",
+            datafields:
+            [
+                { name: 'id_gr'},
+                { name: 'gr_number'},
+                { name: 'product_code'},
+                { name: 'product_name'},
+                { name: 'gr_date', type: 'date'},
+                { name: 'qty_received', type: 'number'},
+                { name: 'warehouse'},
+                { name: 'name'},
+            ],
+            id: 'id_gr',
+            url: urlHistory ,
+            root: 'data'
+        };
+        var dataAdapterHistory = new $.jqx.dataAdapter(sourceHistory);
+        $("#gr-history-grid").jqxGrid({source: dataAdapterHistory});
+		
     <?php    
     }
     ?>
@@ -218,7 +253,7 @@ $(document).ready(function(){
     <?php 
     if(isset($from_po))
     {?>
-        url = "<?php echo base_url()?>po/get_po_product_list?id=<?php echo $po[0]['id_po']; ?>";
+        url = "<?php echo base_url()?>po/get_po_product_list_received?id=<?php echo $po[0]['id_po']; ?>";
     <?php    
     }
     ?>
@@ -251,11 +286,11 @@ $(document).ready(function(){
     $("#gr-product-grid").jqxGrid(
     {
         theme: $("#theme").val(),
+        editable: <?php if(isset($is_view)){ echo 'false';}else{ echo 'true';} ?>,
         width: '100%',
         height: 250,
         selectionmode : 'singlerow',
         source: dataAdapter,
-        editable: true,
         columnsresize: true,
         autoshowloadelement: false,                                                                                
         sortable: true,
@@ -418,7 +453,7 @@ $(document).ready(function(){
         var args = event.args;
         var data = $('#gr-product-grid').jqxGrid('getrowdata', args.rowindex);
 
-        alert(JSON.stringify(data));
+        //alert(JSON.stringify(data));
     });
     
     
@@ -499,17 +534,15 @@ $(document).ready(function(){
  */
     
     $("#transfer-goods").click(function(){
-        
         <?php
         if(isset($is_edit))
         {?>
 
             var data_input = {};
             //data_input['warehouse'] = $("#destination-select").val().value;
-            
+            var can_save = true;
             var products = [];
             var productGrid = $('#gr-product-grid').jqxGrid('getrows');
-            var can_save = true;
             var i=0;
             for(i=0;i<productGrid.length;i++)
             {
@@ -528,23 +561,23 @@ $(document).ready(function(){
                 }
             }
             
+            data_input['products'] = products;
+            //alert(JSON.stringify(data_input));
+            
             if(can_save == true)
             {
-                data_input['products'] = products;
-                //alert(JSON.stringify(data_input));
-                
                 var param = [];
                 var item = {};
                 item['paramName'] = 'id';
                 item['paramValue'] = <?php echo $data_edit[0]['id_gr'] ?>;
                 param.push(item);    
-                alert(JSON.stringify(data_input));    
-                load_content_ajax(GetCurrentController(), 126, data_input, param);     
+                //alert(JSON.stringify(data_input));    
+                load_content_ajax(GetCurrentController(), 'transfer_good_receive', data_input, param);   
             }
             else
             {
                 alert("Please select warehouse to transfer.");
-            }
+            }  
         <?php      
         }
         ?>
@@ -560,19 +593,25 @@ $(document).ready(function(){
 function SaveData()
 {
     var data_post = {};
-    
-    data_post['note'] = $("#notes").html();
-    data_post['date'] = $("#delivery-date").val('date').format('yyyy-mm-dd');
-    data_post['id_po'] = $("#po-no").val().value;
-    data_post['do'] = $("#do").val();
-    data_post['product_detail'] = $('#gr-product-grid').jqxGrid('getrows');
-    
-    data_post['is_edit'] = $("#is_edit").val(); 
-    data_post['id_gr'] = $("#id_gr").val(); 
-    
-    alert(JSON.stringify(data_post))
-    load_content_ajax(GetCurrentController(), 71, data_post);
-    
+    <?php 
+    if((isset($is_edit) && ($data_edit[0]['status'] != 'void' || $data_edit[0]['status'] == 'open' )) || !isset($is_edit) )
+    {?>
+        
+        data_post['note'] = $("#notes").html();
+        data_post['date'] = $("#delivery-date").val('date').format('yyyy-mm-dd');
+        data_post['id_po'] = $("#po-no").val().value;
+        data_post['do'] = $("#do").val();
+        data_post['product_detail'] = $('#gr-product-grid').jqxGrid('getrows');
+
+        data_post['is_edit'] = $("#is_edit").val(); 
+        data_post['id_gr'] = $("#id_gr").val(); 
+
+        //alert(JSON.stringify(data_post))
+        load_content_ajax(GetCurrentController(), 71, data_post);
+    <?php   
+        
+    }
+    ?>
 }
 
 function DiscardData()
@@ -592,17 +631,23 @@ $(document).ready(function(){
 <div class="document-action">
     <?php 
     if(isset($is_edit) && $data_edit[0]['status'] != 'transfer')
-    {?>
-    <button id="transfer-goods">Transfer</button>
-    <?php    
+    {
+        if($data_edit[0]['status'] != 'void')
+        {?>
+        <button id="transfer-goods">Transfer</button>
+        <?php    
+        }
     }
     ?>
     
     <?php 
     if(isset($is_edit) && $data_edit[0]['status'] == 'transfer')
-    {?>
-    <button id="cancel-transfer">Cancel Transfer</button>
-    <?php    
+    {
+        if($data_edit[0]['status'] != 'void')
+        {?>
+        <button id="cancel-transfer">Cancel Transfer</button>
+        <?php    
+        }
     }
     ?>
     
@@ -633,7 +678,7 @@ $(document).ready(function(){
                             PO No.
                         </div>
                         <div class="column-input" colspan="2">
-                            <input style="display:inline; width: 70%; font: -webkit-small-control; padding-left: 5px;" class="field" type="text" id="po-no" name="name" value="" disabled="true"/>
+                            <input <?php if(isset($is_view)){ echo 'disabled="true';} ?> style="display:inline; width: 70%; font: -webkit-small-control; padding-left: 5px;" class="field" type="text" id="po-no" name="name" value="" disabled="true"/>
                             <button id="po-select">...</button>
                         </div>
                     </td>
@@ -642,7 +687,7 @@ $(document).ready(function(){
                             Delivery No.
                         </div>
                         <div class="column-input" colspan="2">
-                            <input type="text" class="field" id="do" value="<?php echo (isset($is_edit) ? $data_edit[0]['do'] : '') ?>" />
+                            <input <?php if(isset($is_view)){ echo 'disabled="true';} ?> type="text" class="field" id="do" value="<?php echo (isset($is_edit) ? $data_edit[0]['do'] : '') ?>" />
                         </div>
                     </td>
                 </tr>
@@ -695,7 +740,7 @@ $(document).ready(function(){
                         <div class="label">
                             Notes
                         </div>
-                        <textarea class="field" cols="10" rows="20" style="height: 50px;"></textarea>
+                        <textarea <?php if(isset($is_view)){ echo 'disabled=disabled';} ?> class="field" cols="10" rows="20" style="height: 50px;"></textarea>
                     </td>
                 </tr>
             </table>

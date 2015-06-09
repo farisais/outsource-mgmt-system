@@ -120,8 +120,7 @@ class payment_receipt_model extends CI_Model
         
         for($i=0;$i<count($result);$i++)
         {
-            $po = $this->get_id_po_from_payment_receipt($id);
-            $po_product = $ci->po_model->get_po_product_by_id($po[0]['po']);
+            $po_product = $ci->po_model->get_po_product_by_id($this->get_id_po_from_payment_receipt($id)[0]['po']);
             
             for($j=0;$j<count($po_product);$j++)
             {
@@ -146,7 +145,7 @@ class payment_receipt_model extends CI_Model
     public function change_payment_receipt_status($id, $status)
     {
         $this->db->where('id_payment_receipt', $id);
-        $this->update('payment_receipt', array("status" => $status));
+        $this->db->update('payment_receipt', array("status" => $status));
         
         return null;
     }
@@ -225,10 +224,12 @@ class payment_receipt_model extends CI_Model
         if($this->get_payment_left($pr[0]['po']) == 0)
         {   
             //close PO
+			
             $ci =& get_instance();
             $ci->load->model('po_model');
         
             $po = $ci->po_model->get_po_by_id($pr[0]['po']);
+			
             if($po[0]['status'] == 'open')
             {
                 $ci->po_model->change_po_status($pr[0]['po'], 'payment_received');

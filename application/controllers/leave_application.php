@@ -20,7 +20,6 @@ class Leave_application extends MY_Controller
      public function init_edit_leave_application($id)
     {
         $data = array(
-            'leave_caculation' => $this->leave_application_model->get_leave_calculation($id),
             'leave_count' => $this->leave_application_model->get_leave_count($id),
             'data_edit' => $this->leave_application_model->get_leave_application_by_id($id),
             'data_employee' => $this->leave_application_model->get_employee_by_id($id),
@@ -72,7 +71,7 @@ class Leave_application extends MY_Controller
 	
 	function leave_validate(){
 		$id=$this->input->post('id');
-		$this->db->query("UPDATE leave_application set approval='1' where id='$id'");
+		$this->db->query("UPDATE leave_application set approval='approve' where id='$id'");
 		return true;
 	}
 

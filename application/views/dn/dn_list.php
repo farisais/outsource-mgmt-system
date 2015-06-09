@@ -7,11 +7,13 @@
                 datafields:
                 [
                     { name: 'id_dn'},
-                    { name: 'so'},
-                    { name: 'so_number'},
                     { name: 'no_dn'},
+					{ name: 'id_mr'},
+					{ name: 'mr_number'},
+					{ name: 'work_order'},
+					{ name: 'work_order_number'},
                     { name: 'note'},
-                    { name: 'date'},
+                    { name: 'date', type: 'date'},
                     { name: 'status_dn'},
                        
                 ],
@@ -35,13 +37,31 @@
                 autoshowfiltericon: true,
                 columns: [
                     { text: 'Delivery Note No.', dataField: 'no_dn', width: 200},
-                    { text: 'Sales Order No.', dataField: 'so_number'},
+                    { text: 'MR No.', dataField: 'mr_number'},
+					{ text: 'WO No.', dataField: 'work_order_number'},
+					{ text: 'Date Deliver', dataField: 'date',cellsformat: 'dd/MM/yyyy',filtertype: 'date'},
                     { text: 'Status', dataField: 'status_dn', width: 100},
                                        
                 ]
             });
             
+        $("#jqxgrid").on("rowdoubleclick", function(event){
+        var row = $('#jqxgrid').jqxGrid('getrowdata', event.args.rowindex);
         
+        if(row != null)
+        {
+            var data_post = {};
+            var param = [];
+            var item = {};
+            item['paramName'] = 'id';
+            item['paramValue'] = row.id_dn;
+            param.push(item);        
+            data_post['id_dn'] = row.id_dn;
+            load_content_ajax(GetCurrentController(), 'view_dn' ,data_post, param);
+            
+        }
+       
+        });
             
                         
         });  

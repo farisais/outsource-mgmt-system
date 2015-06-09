@@ -195,6 +195,13 @@ class Work_order extends MY_Controller
     {
         echo "{\"data\" : " . json_encode($this->work_order_model->get_structure_ws_from_wo($id)) . "}";
     }
+	
+	public function get_work_order_mr()
+	{
+		$this->load->model('mr_model');
+		$mr = $this->mr_model->get_mr_product_from_wo($this->input->get('id'));
+		echo "{\"data\" : " . json_encode($mr) . "}";
+	}
     
 }
 ?>

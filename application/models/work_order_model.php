@@ -309,6 +309,10 @@ class Work_order_model extends CI_Model
 
         $this->db->where('id_work_order', $data['id_work_order']);
         $this->db->update('work_order', $data_input);
+		
+		// update MR
+		$this->db->where('work_order', $data['id_work_order']);
+		$this->db->update('mr', array("status" => "open"));
 
         $this->db->trans_complete();
     }

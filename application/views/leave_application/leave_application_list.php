@@ -14,7 +14,7 @@
                     { name: 'total_day'},
                     { name: 'leave_type'},
                     { name: 'reason'},
-                    { name: 'validasi'}
+                    { name: 'approval'}
                 ],
             id: 'id',
             url: url,
@@ -41,7 +41,7 @@
                     { text: 'Type', dataField: 'leave_type', width: 100},
                     { text: 'Leave Day', dataField: 'total_day'},
                     { text: 'Reason', dataField: 'reason'},
-                    { text: 'Status', dataField: 'validasi', width: 100}
+                    { text: 'Status', dataField: 'approval', width: 100}
                 ]
             });
 
@@ -50,7 +50,7 @@
 <script>
     function CreateData()
     {
-        load_content_ajax(GetCurrentController(), 160, null, null);
+        load_content_ajax(GetCurrentController(), 'create_leave_application', null, null);
     }
     function EditData()
     {
@@ -64,7 +64,7 @@
             item['paramValue'] = row.id;
             param.push(item);        
             data_post['id'] = row.id;
-            load_content_ajax(GetCurrentController(), 161 ,data_post, param);
+            load_content_ajax(GetCurrentController(), 'edit_leave_application' ,data_post, param);
         }
         else
         {

@@ -8,7 +8,10 @@
         [
             { name: 'id_so_assignment'},
             { name: 'so_assignment_number'},
-            { name: 'work_schedule_number'},
+            { name: 'work_order_number'},
+			{ name: 'full_name'},
+			{ name: 'employee_number'},
+			{ name: 'work_order_number'},
             { name: 'status'}
         ],
         id: 'id_so_assignment',
@@ -30,8 +33,9 @@
         sortable: true,
         autoshowfiltericon: true,
         columns: [
-            { text: 'SO Assignment Number', dataField: 'so_assignment_number'},
-            { text: 'Work Schedule Number', dataField: 'work_schedule_number', width: 250},
+            { text: 'Employee ID', dataField: 'employee_number', width: 100},
+            { text: 'Name', dataField: 'full_name', width: 250},
+			{ text: 'WO', dataField: 'work_order_number'},
             { text: 'Status', dataField: 'status', width: 100}
         ]
     });               

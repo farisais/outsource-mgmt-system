@@ -72,7 +72,8 @@ class Leave_application_model extends CI_Model
             "from_date" => $data['leave_date_from'],
             "to_date"=>$data['leave_date_to'],
             "total_day"=>$data['leave_day'],
-            "reason"=>$data['notes']
+            "reason"=>$data['notes'],
+			"approval" => "waiting_approval"
         );
         
         $this->db->insert('leave_application', $data_input);
@@ -88,7 +89,8 @@ class Leave_application_model extends CI_Model
             "from_date" => $data['leave_date_from'],
             "to_date"=>$data['leave_date_to'],
             "total_day"=>$data['leave_day'],
-            "reason"=>$data['notes']
+            "reason"=>$data['notes'],
+			"approval" => "waiting_approval"
         );
         
         $this->db->where('id', $data['id']);

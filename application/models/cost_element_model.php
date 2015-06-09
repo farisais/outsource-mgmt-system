@@ -212,6 +212,9 @@ class Cost_element_model extends CI_Model {
 		}
         
         $return_val['total'] = $aggregate;
+		$return_val['net_total'] = $aggregate - (isset($element_category['ppn']) && $element_category['ppn'] != null ? $element_category['ppn'] : 0 );
+		$return_val['cogs'] = $return_val['net_total'] - (isset($element_category['profit']) && $element_category['profit'] != null ? $element_category['profit'] : 0 );
+		$return_val['element_category'] = $element_category;
         return $return_val;
     }
 
@@ -229,6 +232,8 @@ class Cost_element_model extends CI_Model {
         $element_category['thp'] = 0;
         $element_category['jamsostek'] = 0;
         $element_category['pph'] = 0;
+		
+		$data['overtime'] = $this->calculate_overtime_rule(1, $data['overtime']);
 
         //Start Calculating
         foreach($dce as $e)
@@ -361,5 +366,54 @@ class Cost_element_model extends CI_Model {
                 break;
         }
     }
+	
+	public function calculate_overtime_rule($or, $overtime_hour)
+	{
+		$query = "select dr.* from detail_overtime_rule as dr where dr.overtime_rule = " . $or;
+		$rule = $this->db->query($query)->result_array();
+		$temp_hour = $overtime_hour;
+		$multiply = 0;
+		foreach($rule as $r)
+		{
+			if($temp_hour > 0)
+			{
+				$r_array = explode(":", $r['hour_regex']);
+				if(count($r_array) == 1)
+				{
+					$multiply += $r['multiply'] * 1.0;
+					$temp_hour -= 1;
+				}
+				else
+				{
+					if($r_array[1] == 'M')
+					{
+						$multiply += ($r['multiply'] * 1.0 * $temp_hour);
+						break;
+					}
+					else
+					{
+						$interval = intval($r_array[1]) - intval($r_array[0]);
+						
+						if($temp_hour <= $interval)
+						{
+							$multiply += ($r['multiply'] * 1.0 * $temp_hour);
+							break;
+						}
+						else
+						{
+							$multiply += ($r['multiply'] * 1.0 * $interval);
+							$temp_hour -= $interval;
+						}
+					}
+				}
+			}
+			else
+			{
+				break;
+			}
+		}
+		
+		return $multiply;
+	}
 
 }

@@ -65,6 +65,7 @@ class Invoice_model extends CI_Model {
             "sub_total" => $data['sub-total'],
             "no_rekening" => $data['no_rekening'],
             "invoice_date" => $data['invoice_date'],
+			"customer_po" => $data['customer_po'],
             "email" => $data['email'],
             "invoice_number" => $invoice_number
         );
@@ -101,16 +102,16 @@ class Invoice_model extends CI_Model {
     }
 
     public function get_invoice_by_id($id) {
-        $this->db->where('id_invoice', $id);
-        $query = $this->db->get('invoice');
-        if ($query->num_rows() > 0) {
-            foreach ($query->result() as $row) {
-                $data = $row;
-            }
-            return $data;
-        } else {
-            return false;
-        }
+		$query = 'select i.*, wo.work_order_number, wo.id_work_order, wo.project_name, pp.periode_name, c.name as customer_name, ec.address from invoice as i inner join payroll_wo as pw on pw.id=i.payroll_wo_id 
+		inner join work_order as wo on wo.id_work_order = pw.work_order_id 
+		inner join ext_company as ec on ec.id_ext_company = wo.customer 
+		inner join payroll_periode as pp on pp.id_payroll_periode=pw.payroll_periode_id 
+		inner join ext_company as c on c.id_ext_company=wo.customer 
+		where i.id_invoice = ' . $id;
+		
+		$result = $this->db->query($query);
+        
+        return $result->result_array();
     }
 
     /*
@@ -128,28 +129,44 @@ class Invoice_model extends CI_Model {
 
     public function edit_invoice($data) {
         $this->db->trans_start();
-
-        $tglinvoice = explode("/", $data['invoice_date']);
-        $tglinvoice = $tglinvoice[2] . "-" . $tglinvoice[1] . "-" . $tglinvoice[0];
-
+		
         $data_input = array(
-            "sub_total" => $data['sub_total'],
-            "tax" => $data['tax'],
-            "total_price" => $data['total_price'],
-            "total_payment" => $data['total_payment'],
-            "status" => $data['status'],
-            "invoice_receipt_number" => $data['invoice_receipt_number'],
-            "invoice_date" => $tglinvoice,
-            "invoice_method" => $data['invoice_method'],
-            "so" => $data['so'],
-            "rekening" => $data['rekening'],
-            "work_order" => $data['work_order'],
+            "payroll_wo_id" => $data['payroll_wo_id'],
+            "total_invoice" => $data['total_invoice'],
+            "total_tax" => $data['total_tax'],
+            "sub_total" => $data['sub-total'],
+            "no_rekening" => $data['no_rekening'],
+            "invoice_date" => $data['invoice_date'],
+			"customer_po" => $data['customer_po'],
             "email" => $data['email']
         );
         $this->db->where('id_invoice', $data['id_invoice']);
         $this->db->update('invoice', $data_input);
+		$this->delete_detail_invoice($data['id_invoice']);
+		$this->save_detail_invoice($data['id_invoice'], $data['detail_invoice']);
+
+		
         $this->db->trans_complete();
     }
+	
+	public function validate_invoice($id)
+	{
+		$this->change_invoice_status($id, 'open');
+		$invoice = $this->get_invoice_by_id($id);
+		return $invoice[0];
+	}
+	
+	 public function close_invoice($id) {
+		$this->change_invoice_status($id, 'close');
+		$invoice = $this->get_invoice_by_id($id);
+		return $invoice[0];
+    }
+	
+	public function delete_detail_invoice($id)
+	{
+		$this->db->where('invoice_id', $id);
+		$this->db->delete('invoice_detail');
+	}
 
     /*
       public function edit_invoice($data) {
@@ -211,9 +228,7 @@ class Invoice_model extends CI_Model {
 
     public function change_invoice_status($id, $status) {
         $this->db->where('id_invoice', $id);
-        $this->update('invoice', array("status" => $status));
-
-        return null;
+        $this->db->update('invoice', array("status_invoice" => $status));
     }
 
     public function get_invoice_history($id_so, $exclude_id = null)
@@ -270,8 +285,10 @@ class Invoice_model extends CI_Model {
 
         return $so[0]['total_price'] - $total;
     }
+	
+	
 
-    public function validate_invoice($id_invoice)
+   /* public function validate_invoice($id_invoice)
     {
         $inv = $this->get_invoice_by_id($id_invoice);
         $this->db->trans_start();
@@ -293,34 +310,21 @@ class Invoice_model extends CI_Model {
         }
 
         $this->db->trans_complete();
-    }
+    }*/
 
-    public function cancel_invoice($id) {
-        $this->db->trans_start();
-        $this->db->where('id_invoice', $id);
-        $this->db->update('invoice', array("status" => "cancel"));
-        $this->db->trans_complete();
-
-        $inv = $this->get_invoice_by_id($id);
-        $ci = & get_instance();
-        $ci->load->model('so_model');
-
-        $so = $ci->so_model->get_so_by_id($inv[0]['so']);
-        if ($so[0]['status'] == 'close') {
-            $ci->so_model->change_so_status($inv[0]['so'], 'deliver');
-        }
-    }
+   
      public function save_detail_invoice($id, $data)
      {
          foreach ($data as $d) {
              if ($d['product_name'] != '') {
                  $data_input = array();
-                 $data_input['product'] = $d['product'];
+                 $data_input['product'] = $d['id_product'];
                  $data_input['unit'] = $d['unit'];
                  $data_input['description'] = $d['description'];
                  $data_input['quantity'] = $d['qty'];
                  $data_input['price'] = $d['price'];
                  $data_input['invoice_id'] = $id;
+				 $data_input['ppn'] = $d['ppn'];
                  $this->db->insert('invoice_detail', $data_input);
              }
          }
@@ -364,6 +368,19 @@ WHERE payroll_wo.id=$id_payroll_wo");
                 JOIN employee ON employee.id_employee=so_assignment.so_assignment_number
                 WHERE id_work_order=17");
     }
+	
+	public function get_detail_invoice($id)
+	{
+		$query = 'select di.*, di.quantity as qty, p.id_product, p.product_name, p.product_code, p.product_category, pc.product_category as cateogry_name ,um.name as unit_name, m.name as merk_name from invoice_detail as di 
+		inner join product as p on p.id_product = di.product 
+		inner join product_category as pc on pc.id_product_category = p.product_category 
+		left join merk as m on m.id_merk=p.merk 
+		inner join unit_measure as um on um.id_unit_measure=di.unit 
+		where invoice_id = ' . $id;
+		$result = $this->db->query($query);
+		
+		return $result->result_array();
+	}
     
 
 }

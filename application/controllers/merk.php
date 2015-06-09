@@ -41,5 +41,17 @@ class Merk extends MY_Controller
         
         return $data;
     }
+    
+    public function view_merk_detail($id)
+    {
+        $data = array(
+            'data_edit' => $this->product_model->get_merk_by_id($id),
+            'is_edit' => true,
+            'is_view' => true
+        );
+        
+        return $data;
+    }
+    
 }
 ?>

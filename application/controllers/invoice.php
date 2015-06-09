@@ -85,7 +85,6 @@ class Invoice extends MY_Controller {
             "data_edit" => $this->invoice_model->get_invoice_by_id($id),
             "is_edit" => 'true'
         );
-
         return $data;
     }
 
@@ -174,12 +173,36 @@ class Invoice extends MY_Controller {
         //die();       
         exec($cmd);
     }
+	
+	public function validate_invoice($id)
+	{
+		$param = null;
+        $param = $this->invoice_model->validate_invoice($id);
+        $interfunction_param = array();
+        $interfunction_param[0] = array("paramKey" => "id", "paramValue" => $id);
+        return array('log_param' => $param, "interfunction_param" => $interfunction_param);
+	}
+	
     function detail_invoice()
     {
         $id=$this->uri->segment(3);
 		$payroll_periode = $this->uri->segment(4);
         echo "{\"data\" : " . json_encode($this->payroll_periode_model->get_invoice_all_employee($id, $payroll_periode)) . "}";
-        //$this->invoice_model->invoice_detail($id);
     }
+	
+	public function get_detail_invoice()
+	{
+		echo "{\"data\" : " . json_encode($this->invoice_model->get_detail_invoice($this->input->get('id'))) . "}";
+	}
+	
+	public function close_invoice()
+	{
+		$id = $this->input->post('id_invoice');
+		$param = null;
+        $param = $this->invoice_model->close_invoice($id);
+        $interfunction_param = array();
+        $interfunction_param[0] = array("paramKey" => "id", "paramValue" => $id);
+        return array('log_param' => $param, "interfunction_param" => $interfunction_param);		
+	}
 
 }

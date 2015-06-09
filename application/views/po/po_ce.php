@@ -1,10 +1,10 @@
 <script type="text/javascript" src="<?php echo base_url() ?>jqwidgets/globalization/globalize.js"></script>
 <script>
 $(document).ready(function(){  
-    $("#po-date").jqxDateTimeInput({width: '250px', height: '25px'});
-    $("#delivery-date").jqxDateTimeInput({width: '250px', height: '25px', value: null}); 
+    $("#po-date").jqxDateTimeInput({width: '250px', height: '25px'<?php if(isset($is_view)){ echo ',disabled: true';} ?>});
+    $("#delivery-date").jqxDateTimeInput({width: '250px', height: '25px', value: null<?php if(isset($is_view)){ echo ',disabled: true';} ?>}); 
     $("#select-product-popup").jqxWindow({
-        width: 600, height: 500, resizable: false,  isModal: true, autoOpen: false, cancelButton: $("#Cancel"), modalOpacity: 0.01           
+        width: 600, height: 500, resizable: false,  isModal: true, autoOpen: false, cancelButton: $("#Cancel"), modalOpacity: 0.01<?php if(isset($is_view)){ echo ',disabled: true';} ?>           
     });
     
     <?php 
@@ -16,8 +16,95 @@ $(document).ready(function(){
     }
     ?>
     $("#clear-delivery-date").click(function(){
+        <?php 
+        if(!isset($is_view))
+        {?>
         $("#delivery-date").val(null);
+        <?php
+        }
+        ?>
     });
+    
+    
+    //=================================================================================
+    //
+    //   PO History Grid
+    //
+    //=================================================================================
+    var culture = {};
+    culture.currencysymbol = "Rp. ";
+    $("#po-history-grid").on("bindingcomplete", function(event){
+        $("#po-history-grid").jqxGrid('localizestrings', culture);
+    });
+    
+    var urlHistory = "";
+    <?php 
+    if(isset($is_edit))
+    {?>
+        urlHistory = "<?php echo base_url()?>po/get_po_history?id_mr=<?php echo $data_edit[0]['mr']; ?>" + "&id_po=<?php echo $data_edit[0]['id_po']; ?>";
+    <?php    
+    }
+    ?>
+    
+    <?php 
+    if(isset($from_mr))
+    {?>
+        urlHistory = "<?php echo base_url()?>po/get_po_history?id_mr=<?php echo $mr[0]['id_mr']; ?>";
+    <?php    
+    }
+    ?>
+    
+    var sourceHistory =
+    {
+        datatype: "json",
+        datafields:
+        [
+            { name: 'id_product'},
+            { name: 'id_po'},
+            { name: 'po_number'},
+            { name: 'supplier'},
+            { name: 'supplier_name'},
+            { name: 'date', type: 'date'},
+            { name: 'mr'},
+            { name: 'mr_number'},
+            { name: 'status'},
+            { name: 'product'},
+            { name: 'product_code'},
+            { name: 'product_name'},
+            { name: 'uom'},
+            { name: 'unit_name'},
+            { name: 'qty'}
+        ],
+        id: 'id_product',
+        url: urlHistory ,
+        root: 'data'
+    };
+    var dataAdapterHistory = new $.jqx.dataAdapter(sourceHistory);
+    $("#po-history-grid").jqxGrid(
+    {
+        theme: $("#theme").val(),
+        <?php if(isset($is_view)){ echo 'disabled: true,';} ?>
+        width: '100%',
+        height: 250,
+        selectionmode : 'singlerow',
+        source: dataAdapterHistory,
+        columnsresize: true,
+        autoshowloadelement: false,                                                                                
+        sortable: true,
+        autoshowfiltericon: true,
+        columns: [
+            { text: 'PO Number', dataField: 'po_number'},
+            { text: 'Date', dataField: 'date', cellsformat: 'dd/MM/yyyy'},
+            { text: 'Product Code', dataField: 'product_code'},
+            { text: 'Product Name', dataField: 'product_name'},
+            { text: 'Unit', dataField: 'unit_name'},
+            { text: 'Qty', dataField: 'qty',cellsformat: 'd2'},
+        ]
+    });
+    
+    
+    
+    $("#jqxExpander").jqxExpander({ width: '100%', expanded: false});
 
     //=================================================================================
     //
@@ -77,7 +164,12 @@ $(document).ready(function(){
     });
     
     $("#supplier-select").click(function(){
-        $("#select-supplier-popup").jqxWindow('open');
+        <?php if(!isset($is_view))
+        {?>
+            $("#select-supplier-popup").jqxWindow('open');
+        <?php
+        }
+        ?>
     });
     
     $('#select-supplier-grid').on('rowdoubleclick', function (event) 
@@ -102,8 +194,9 @@ $(document).ready(function(){
         datafields:
         [
             { name: 'id_mr'},
-            { name: 'project_list'},
-            { name: 'mr_date'},
+            { name: 'work_order'},
+            { name: 'work_order_number'},
+            { name: 'date', type: 'date'},
             { name: 'mr_number'},
             { name: 'status_mr'},
                     
@@ -115,7 +208,7 @@ $(document).ready(function(){
     var dataAdapterMr = new $.jqx.dataAdapter(sourceMr);
     
     
-    $("#mr").jqxInput({ source: dataAdapterMr, displayMember: "mr_number", valueMember: "id_mr", height: 23});
+    $("#mr").jqxInput({ source: dataAdapterMr, displayMember: "mr_number", valueMember: "id_mr", height: 23<?php if(isset($is_view)){ echo ',disabled: true';} ?>});
     
     
     $("#select-mr-popup").jqxWindow({
@@ -137,13 +230,18 @@ $(document).ready(function(){
         autoshowfiltericon: true,
         columns: [
             { text: 'MR Number', dataField: 'mr_number', width: 150},
-            { text: 'Project list', dataField: 'project_list'},
-            { text: 'Date', dataField: 'mr_date', width: 150}                                      
+            { text: 'WO Number', dataField: 'work_order_number'},
+            { text: 'Date', dataField: 'date', width: 150, cellsformat: 'dd/MM/yyyy'}                                      
         ]
     });
     
     $("#mr-select").click(function(){
-        $("#select-mr-popup").jqxWindow('open');
+        <?php if(!isset($is_view))
+        {?>
+           $("#select-mr-popup").jqxWindow('open');
+        <?php    
+        }?>
+        
     });
     
     $('#select-mr-grid').on('rowdoubleclick', function (event) 
@@ -183,7 +281,39 @@ $(document).ready(function(){
        
         
         $("#select-mr-popup").jqxWindow('close');
-        $('#mr').jqxInput('val', {label: data.mr_number, value: data.id_mr});
+        $('#mr').jqxInput('val', {label: data.mr_number, value: data.id_mr});        
+        
+        var urlHistory = "<?php echo base_url() ?>po/get_po_history?id_mr=" + data.id_mr ;
+        var sourceHistory =
+        {
+            datatype: "json",
+            datafields:
+            [
+                { name: 'id_product'},
+                { name: 'id_po'},
+                { name: 'po_number'},
+                { name: 'supplier'},
+                { name: 'supplier_name'},
+                { name: 'date', type: 'date'},
+                { name: 'mr'},
+                { name: 'mr_number'},
+                { name: 'status'},
+                { name: 'product'},
+                { name: 'product_code'},
+                { name: 'product_name'},
+                { name: 'uom'},
+                { name: 'unit_name'},
+                { name: 'qty'}
+            ],
+            id: 'id_product',
+            url: urlHistory ,
+            root: 'data'
+        };
+        var dataAdapterHistory = new $.jqx.dataAdapter(sourceHistory);
+        //alert(JSON.stringify(dataAdapterHistory.records));
+        $("#po-history-grid").jqxGrid({source: dataAdapterHistory});
+               
+        
         <?php    
         }
         ?>
@@ -228,33 +358,7 @@ $(document).ready(function(){
     //
     //=================================================================================
     $("#po-product-grid").on("bindingcomplete", function(event){
-        var culture = {};
-        culture.currencysymbol = "Rp. ";
-        $("#po-product-grid").jqxGrid('localizestrings', culture);
-        
-        var rows = $("#po-product-grid").jqxGrid('getrows');
-        var amount = 0;
-        for(var i=0;i<rows.length;i++)
-        {
-            amount += rows[i].unit_price * rows[i].qty;
-        }
-        var culture = {};
-        culture.currencysymbol = "Rp. ";
-        culture.currencysymbolposition = "before";
-        culture.decimalseparator = '.';
-        culture.thousandsseparator = ',';
-        $("#untaxed-amount").html(dataAdapter.formatNumber(amount, "c2", culture));
-        var tax = 0;
-        if($("#use-tax").is(":checked"))
-        {
-            tax = amount * 0.1;
-        }
-        $("#tax-amount").html(dataAdapter.formatNumber(tax, "c2", culture));
-        $("#total-amount").html(dataAdapter.formatNumber((tax + amount), "c2", culture));
-        
-        $("#subtotal-value").val(amount);
-        $("#tax-value").val(tax);
-        $("#total-value").val((tax + amount));
+        recalculateValue(dataAdapter);
     });
     
     var url = "";
@@ -296,24 +400,33 @@ $(document).ready(function(){
         height: 250,
         selectionmode : 'singlerow',
         source: dataAdapter,
-        editable: true,
+        editable: <?php if(isset($is_view)){ echo 'false';}else{ echo 'true';} ?>,
         columnsresize: true,
         autoshowloadelement: false,                                                                                
         sortable: true,
         autoshowfiltericon: true,
         rendertoolbar: function (toolbar) {
             $("#add-product").click(function(){
+                <?php if(!isset($is_view))
+                {?>
                 var offset = $("#remove-product").offset();
                 $("#select-product-popup").jqxWindow({ position: { x: parseInt(offset.left) + $("#remove-product").width() + 20, y: parseInt(offset.top)} });
                 $("#select-product-popup").jqxWindow('open');
+                <?php
+                }
+                ?>
             });
             $("#remove-product").click(function(){
+                <?php if(!isset($is_view))
+                {?>
                 var selectedrowindex = $("#po-product-grid").jqxGrid('getselectedrowindex');
                 if (selectedrowindex >= 0) {
                     var id = $("#po-product-grid").jqxGrid('getrowid', selectedrowindex);
                     var commit1 = $("#po-product-grid").jqxGrid('deleterow', id);
                 }
-                
+                <?php
+                }
+                ?>
             });
         },
         columns: [
@@ -325,6 +438,15 @@ $(document).ready(function(){
                 }},
             { text: 'Quantity', dataField: 'qty', cellsformat: 'd2'}, 
             { text: 'Unit Price', dataField: 'unit_price',cellsformat: 'c2',
+                cellsrenderer: function (index, datafield, value, defaultvalue, column, rowdata) {
+    
+                    var culture = {};
+                    culture.currencysymbol = "Rp. ";
+                    culture.currencysymbolposition = "before";
+                    culture.decimalseparator = '.';
+                    culture.thousandsseparator = ',';
+                    return "<div style='margin: 4px;' class='jqx-right-align'>" + dataAdapter.formatNumber(value, "c2", culture) + "</div>";
+                },
                 validation: function (cell, value) {
                     if (value < 0) {
                       return { result: false, message: "Price should be greate than 0" };
@@ -348,62 +470,17 @@ $(document).ready(function(){
     
     $("#po-product-grid").on('cellvaluechanged', function (event) 
     {
-        var rows = $("#po-product-grid").jqxGrid('getrows');
-        var amount = 0;
-        for(var i=0;i<rows.length;i++)
-        {
-            amount += rows[i].unit_price * rows[i].qty;
-        }
-        var culture = {};
-        culture.currencysymbol = "Rp. ";
-        culture.currencysymbolposition = "before";
-        culture.decimalseparator = '.';
-        culture.thousandsseparator = ',';
-        $("#untaxed-amount").html(dataAdapter.formatNumber(amount, "c2", culture));
-        var tax = 0;
-        if($("#use-tax").is(":checked"))
-        {
-            tax = amount * 0.1;
-        }
-        
-        
-        $("#tax-amount").html(dataAdapter.formatNumber(tax, "c2", culture));
-        $("#total-amount").html(dataAdapter.formatNumber((tax + amount), "c2", culture));
-        
-        $("#subtotal-value").val(amount);
-        $("#tax-value").val(tax);
-        $("#total-value").val((tax + amount));
+        recalculateValue(dataAdapter);
     });
     
     $("#use-tax").click(function(){
-        var rows = $("#po-product-grid").jqxGrid('getrows');
-        var amount = 0;
-        for(var i=0;i<rows.length;i++)
-        {
-            amount += rows[i].unit_price * rows[i].qty;
-        }
-        var culture = {};
-        culture.currencysymbol = "Rp. ";
-        culture.currencysymbolposition = "before";
-        culture.decimalseparator = '.';
-        culture.thousandsseparator = ',';
-        $("#untaxed-amount").html(dataAdapter.formatNumber(amount, "c2", culture));
-        var tax = 0;
-        if($("#use-tax").is(":checked"))
-        {
-            tax = amount * 0.1;
-        }
-        $("#tax-amount").html(dataAdapter.formatNumber(tax, "c2", culture));
-        $("#total-amount").html(dataAdapter.formatNumber((tax + amount), "c2", culture));
-        
-        $("#subtotal-value").val(amount);
-        $("#tax-value").val(tax);
-        $("#total-value").val((tax + amount));
+        recalculateValue(dataAdapter);
     });
 
     $("#po-product-grid").jqxGrid('setcolumnproperty', 'product_name', 'editable', false);
     $("#po-product-grid").jqxGrid('setcolumnproperty', 'product_code', 'editable', false);
     $("#po-product-grid").jqxGrid('setcolumnproperty', 'total_price', 'editable', false);
+
     
     //=================================================================================
     //
@@ -478,6 +555,66 @@ $(document).ready(function(){
     
     //=================================================================================
     //
+    //   discount
+    //
+    //=================================================================================
+    
+    var source = [
+                    {name: "Amount", value: "amount"},
+                    {name: "Percentage", value: "percentage"}
+		        ];
+                // Create a jqxDropDownList
+                $("#discount-select").jqxDropDownList({ source: source, valueMember: 'value', displayMember: 'name',selectedIndex: 0, width: '200px', height: '25px'<?php if(isset($is_view)){ echo ',disabled: true';} ?>});
+          
+                $("#discount-value").jqxNumberInput({ width: '150px', height: '25px'<?php if(isset($is_view)){ echo ',disabled: true';} ?>});
+                
+                <?php 
+                if(isset($is_edit))
+                {?>
+                    $("#discount-select").jqxDropDownList('val', '<?php echo $data_edit[0]['discount_type'] ?>');
+                    $("#discount-value").jqxNumberInput('val', <?php echo $data_edit[0]['discount_value'] ?>);
+                    recalculateValue(dataAdapter);
+                <?php    
+                }
+                ?>
+                
+                $("#discount-value").on('change', function(){
+                    recalculateValue(dataAdapter);
+                });
+                
+                $("#discount-select").on('change', function(){
+                    if($("#discount-select").val() == 'percentage')
+                    {
+                        $("#discount-value").jqxNumberInput({digits: 2});
+                    }
+                    else
+                    {
+                        $("#discount-value").jqxNumberInput({digits: 8});
+                    }
+                    $("#discount-value").val(0);
+                    recalculateValue(dataAdapter);
+                });
+                //$('#Events').jqxPanel({  height: '250px', width: '200px' });
+                //$('#Events').css('border', 'none');
+                // subscribe to 'unselect' and 'select' events.
+                /*$('#jqxDropDownList').on('select', function (event) {
+                    var args = event.args;
+                    var item = $('#jqxDropDownList').jqxDropDownList('getItem', args.index);
+                    if (item != null) {
+                        $('#discount').jqxPanel('prepend', '<div style="margin-top: 5px;">Selected: ' + item.label + '</div>');
+                    }
+                });
+                $('#jqxDropDownList').on('unselect', function (event) {
+                    var args = event.args;
+                    var item = $('#jqxDropDownList').jqxDropDownList('getItem', args.index);
+                    if (item != null) {
+                        $('#Discont').jqxPanel('prepend', '<div style="margin-top: 5px;">Unselected: ' + item.label + '</div>');
+                    }
+                });*/
+    
+    
+    //=================================================================================
+    //
     //   PO Validate
     //
     //=================================================================================
@@ -503,8 +640,10 @@ $(document).ready(function(){
         data_post['po_number'] = $("#po-number").val();
         data_post['delivery_date'] = $("#delivery-date").val('date').format('yyyy-mm-dd');
         data_post['supplier'] = $('#supplier-name').val().value;
-        data_post['mr'] = $("#mr").val();
+        data_post['mr'] = $("#mr").val().value;
         data_post['sub_total'] = $("#subtotal-value").val();
+        data_post['discount_type'] = $("#discount-select").val();
+        data_post['discount_value'] = $("#discount-value").val();
         data_post['total_price'] = $("#total-value").val();
         data_post['tax'] = $("#tax-value").val();
         data_post['product_detail'] = $('#po-product-grid').jqxGrid('getrows');
@@ -527,47 +666,110 @@ $(document).ready(function(){
     $("#receive-payment").click(function(){
         var data_post = {};
         data_post['id_po'] = $("#id_po").val();
-        load_content_ajax('warehouse', 247, data_post);
+        load_content_ajax('warehouse', 'create_payment_receipt', data_post);
     });
+
                 
    
 });
 
+function recalculateValue(dataAdapter)
+{
+    var rows = $("#po-product-grid").jqxGrid('getrows');
+    var amount = 0;
+    for(var i=0;i<rows.length;i++)
+    {
+        amount += rows[i].unit_price * rows[i].qty;
+    }
+    var culture = {};
+    culture.currencysymbol = "Rp. ";
+    culture.currencysymbolposition = "before";
+    culture.decimalseparator = '.';
+    culture.thousandsseparator = ',';
+    $("#untaxed-amount").html(dataAdapter.formatNumber(amount, "c2", culture));
+    if($("#discount-select").val() == 'amount')
+    {
+        //alert("amount");
+        amount = amount - $("#discount-value").val();
+    }
+    else
+    {
+         amount = amount * (1 - ($("#discount-value").val() / 100));
+    }
+    
+    var tax = 0;
+    if($("#use-tax").is(":checked"))
+    {
+        tax = amount * 0.1;
+    }
+    $("#tax-amount").html(dataAdapter.formatNumber(tax, "c2", culture));
+    $("#total-amount").html(dataAdapter.formatNumber((tax + amount), "c2", culture));
+    
+    $("#subtotal-value").val(amount);
+    
+    $("#tax-value").val(tax);
+    $("#total-value").val((tax + amount));
+}
+    
 function SaveData()
 {
     var data_post = {};
-    
     <?php 
-    if(isset($is_edit) && $data_edit[0]['status'] == 'draft')
-    {?>
+    if(isset($is_edit) && $data_edit[0]['status'] != 'void' || !isset($is_edit) )
+    {
+        if((isset($is_edit) && $data_edit[0]['status'] == 'draft' ) || !isset($is_edit) )
+            {?>
         data_post['date'] = $("#po-date").val('date').format('yyyy-mm-dd');
         data_post['note'] = $("#notes").html();
         data_post['po_number'] = $("#po-number").val();
         data_post['delivery_date'] = $("#delivery-date").val('date').format('yyyy-mm-dd');
         data_post['supplier'] = $('#supplier-name').val().value;
-        data_post['mr'] = $("#mr").val();
+        data_post['mr'] = $("#mr").val().value;
         data_post['sub_total'] = $("#subtotal-value").val();
         data_post['total_price'] = $("#total-value").val();
         data_post['tax'] = $("#tax-value").val();
+        data_post['use_tax'] = false;
+        if($("#use_tax").is(':checked'))
+        {
+        data_post['use_tax'] = true;
+        }
+        data_post['discount_type'] = $("#discount-select").val();
+        data_post['discount_value'] = $("#discount-value").val();
         data_post['product_detail'] = $('#po-product-grid').jqxGrid('getrows');
         
         data_post['is_edit'] = $("#is_edit").val(); 
         data_post['id_po'] = $("#id_po").val(); 
         //alert(JSON.stringify(data_post));
         load_content_ajax(GetCurrentController(), 61, data_post);
-    <?php
+        <?php
+           }
     }
-    else
-    {?>
-        load_content_ajax('administrator', 16 , null);
-    <?php   
-    }
+
     ?>
     
 }
 function DiscardData()
 {
     load_content_ajax('administrator', 16 , null);
+}
+
+function EditData()
+{
+    <?php 
+    if(isset($is_view))
+    {?>
+        var data_post = {};
+        var param = [];
+        var item = {};
+        item['paramName'] = 'id';
+        item['paramValue'] = <?php echo $data_edit[0]['id_po']?>;
+        param.push(item);        
+        data_post['id_po'] = <?php echo $data_edit[0]['id_po']?>;
+        load_content_ajax(GetCurrentController(), 59 ,data_post, param);
+   
+    <?php    
+    }
+    ?>
 }
 
 function printDocument()
@@ -593,7 +795,7 @@ function printDocument()
 <input type="hidden" id="id_po" value="<?php echo (isset($is_edit) ? $data_edit[0]['id_po'] : '') ?>" />
 <div class="document-action">
     <?php 
-    if(isset($is_edit) && $data_edit[0]['status'] == 'draft' || !isset($is_edit))
+    if(!isset($is_view) && isset($is_edit) && $data_edit[0]['status'] == 'draft' || !isset($is_edit))
     {?>
     <button style="margin-left: 20px;" id="po-validate">Validate</button>
     <?php    
@@ -601,16 +803,19 @@ function printDocument()
     ?>
     
     <?php 
-    if(isset($is_edit))
+    if(!isset($is_view) && isset($is_edit))
     {
         if($data_edit[0]['status'] != 'draft')
         {
             if($data_edit[0]['status'] != 'good_received')
             {
                 if($data_edit[0]['status'] != 'close')
-                {?>
-                    <button id="receive-goods">Receive Goods</button>
-                <?php    
+                {
+                    if($data_edit[0]['status'] != 'void')
+                    {?>
+                        <button id="receive-goods">Receive Goods</button>
+                    <?php    
+                    }
                 }
             }
         }
@@ -619,16 +824,19 @@ function printDocument()
     
     
     <?php 
-    if(isset($is_edit))
+    if(!isset($is_view) && isset($is_edit))
     {
         if($data_edit[0]['status'] != 'draft')
         {
             if($data_edit[0]['status'] != 'payment_received')
             {
                 if($data_edit[0]['status'] != 'close')
-                {?>
-                    <button id="receive-payment">Receive Payment</button>
-                <?php    
+                {
+                    if($data_edit[0]['status'] != 'void')
+                    {?>
+                        <button id="receive-payment">Payment Receipt</button>
+                    <?php    
+                    }
                 }
             }
         }
@@ -729,6 +937,19 @@ function printDocument()
                     </td>
                 </tr>
                 <tr>
+                    <td style="width: 80%" colspan="2">
+                        <div id='jqxExpander'>
+                            <div>
+                                Purchase Order History
+                            </div>
+                            <div>
+                                <div id="po-history-grid"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                 
+                <tr>
                     <td>
                     </td>
                     <td>
@@ -737,10 +958,15 @@ function printDocument()
                                 <td></td>
                                 <td>Untaxed Amount : </td>
                                 <td style="width: 150px;"><div id="untaxed-amount">Rp. 0</div><input type="hidden" id="subtotal-value" value="<?php echo (isset($is_edit) ? $data_edit[0]['sub_total'] : '0') ?>"/></td>
-                            </tr>
+                            </tr> 
                             <tr>
-                                <td style="padding-right: 10px;"><!--<div id="tax-select">--></div></td>
-                                <td><input type="checkbox" id="use-tax" style="display: inline-block;" <?php echo (isset($is_edit) && ($data_edit[0]['tax'] != null || $data_edit[0]['tax'] > 0) ? 'checked=true' : '') ?> />Taxes (10%) : </td>
+                                <td><div id="discount-select"></div></td>
+                                <td>Discount : </td>
+                                <td style="width: 150px;"><div id="discount-value"></div><input type="hidden" id="discount" value="<?php echo (isset($is_edit) ? $data_edit[0]['sub_total'] : '0') ?>"/></td>
+                            </tr>                   
+                            <tr>
+                                <td style="padding-right: 10px;"><!--<div id="tax-select">--></td>
+                                <td><input type="checkbox" id="use-tax" style="display: inline-block;" <?php echo (isset($is_edit) && ($data_edit[0]['tax'] != null || $data_edit[0]['tax'] > 0) ? 'checked=true' : '') ?> <?php if(isset($is_view)){ echo 'disabled=disabled';} ?>/>Taxes (10%) : </td>
                                 <td><div id="tax-amount">Rp. 0</div><input type="hidden" id="tax-value" value="<?php echo (isset($is_edit) ? $data_edit[0]['tax'] : '0') ?>"/></td>
                             </tr>
                             <tr>
@@ -756,7 +982,7 @@ function printDocument()
                         <div class="label">
                             Notes
                         </div>
-                        <textarea class="field" id="notes" cols="10" rows="20" style="height: 50px;"><?php echo (isset($is_edit) ? $data_edit[0]['note'] : '') ?></textarea>
+                        <textarea <?php if(isset($is_view)){ echo 'disabled=disabled';} ?> class="field" id="notes" cols="10" rows="20" style="height: 50px;"><?php echo (isset($is_edit) ? $data_edit[0]['note'] : '') ?></textarea>
                     </td>
                 </tr>
             </table>

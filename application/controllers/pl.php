@@ -28,6 +28,11 @@ class Pl extends MY_Controller
         echo "{\"data\" : " . json_encode($this->project_list_model->get_pl_product_list($this->input->get('id'))) . "}";
     }
     
+    public function get_pl_product_list_with_valuation()
+    {
+        echo "{\"data\" : " . json_encode($this->project_list_model->get_pl_product_list_with_valuation($this->input->get('id'))) . "}";
+    }
+    
     public function save_pl()
     {
         $id_project_list = null;
@@ -47,9 +52,7 @@ class Pl extends MY_Controller
     
     public function delete_pl()
     {
-        $this->project_list_model->delete_pl($this->input->post('id_project_list'));
-        
-        return null;
+        $this->project_list_model->change_pl_status($this->input->post('id_project_list'), 'void');
     }
     
     public function init_edit_pl($id)
@@ -57,6 +60,17 @@ class Pl extends MY_Controller
         $data = array(
             "data_edit" => $this->project_list_model->get_pl_by_id($id),
             "is_edit" => 'true'
+        );
+        
+        return $data;
+    }
+    
+    public function view_pl_detail($id)
+    {
+        $data = array(
+            "data_edit" => $this->project_list_model->get_pl_by_id($id),
+            "is_edit" => 'true',
+            "is_view" => 'true'
         );
         
         return $data;

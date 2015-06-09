@@ -8,11 +8,13 @@ class So_assignment_model extends CI_Model
 	
 	public function get_so_assignment_all()
 	{
-		$this->db->select('so_assignment.*, work_schedule.*');
-		$this->db->from('so_assignment');
-        $this->db->join('work_schedule', 'so_assignment.work_schedule=work_schedule.id_work_schedule', 'LEFT');
+		$query = 'select e.full_name, e.employee_number ,saj.so_assignment_number, wo.work_order_number, if(saj.status="assign", "assign", "unassign") as status from employee as e 
+		left join 
+		( select sa.* from so_assignment as sa where sa.status = \'assign\' ) as saj 
+		on saj.so_assignment_number = e.id_employee 
+		left join work_order as wo on wo.id_work_order=saj.work_order_id';
 
-		return $this->db->get()->result_array();
+		return $this->db->query($query)->result_array();
 	}
 	
 	

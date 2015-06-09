@@ -33,9 +33,12 @@ class Overtime extends MY_Controller {
     }
     
     public function save_overtime() {
-        if ($this->input->post('is_edit') == 'true') {
+        if ($this->input->post('is_edit') == 'true') 
+		{
             $this->overtime_model->edit_overtime($this->input->post());
-        } else {
+        } 
+		else 
+		{
             $this->overtime_model->save_overtime($this->input->post());
         }
 
@@ -71,4 +74,59 @@ class Overtime extends MY_Controller {
     {
         echo "{\"data\" : " . json_encode($this->overtime_model->get_timesheet_for_overtime($id)) . "}";
     }
+	
+	public function get_overtime_rule_all()
+	{
+		echo "{ \"data\" : ". json_encode($this->overtime_model->get_overtime_rule_all()) ." }";
+	}
+	
+	public function init_edit_overtime_rule($id)
+	{
+		$data = array();
+		$data['is_edit'] = true;
+		$data['data_edit'] = $this->overtime_model->get_overtime_rule_by_id($id);
+		
+		return $data;
+	}
+	
+	public function save_overtime_rule()
+	{
+		if ($this->input->post('is_edit') == 'true') 
+		{
+            $this->overtime_model->edit_overtime_rule($this->input->post());
+        } 
+		else 
+		{
+            $this->overtime_model->save_overtime_rule($this->input->post());
+        }
+		
+		return null;
+	}
+	
+	public function get_detail_overtime_rule()
+	{
+		echo "{ \"data\" : ". json_encode($this->overtime_model->get_overtime_rule_by_id($this->input->get('id'))) ." }";
+	}
+	
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

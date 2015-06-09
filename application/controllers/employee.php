@@ -10,6 +10,7 @@ class Employee extends MY_Controller
         $this->load->model('organisation_structure_model');
         $this->load->model('position_level_model');
         $this->load->model('employee_contract_type_model');
+		$this->load->model('bank_model');
     }   
     
     public function get_employee_list()
@@ -31,6 +32,7 @@ class Employee extends MY_Controller
         $data['position'] = $this->organisation_structure_model->get_organisation_structure_all();
         $data['position_level'] = $this->position_level_model->get_position_level_all();
         $data['contract_type'] = $this->employee_contract_type_model->get_employee_contract_type_all();
+		$data['bank'] = $this->bank_model->get_bank_all();
         return $data;
     }
     
@@ -79,6 +81,7 @@ class Employee extends MY_Controller
         $data['employee_marital'] = $this->employee_model->get_employee_marital_by_employee($id);
         $data['employee_contact'] = $this->employee_model->get_employee_emergency_contact_by_employee($id);
         $data['employee_transportation'] = $this->employee_model->get_employee_transportation_by_employee($id);
+		$data['bank'] = $this->bank_model->get_bank_all();
         $data['is_edit'] = true;
         
         return $data;

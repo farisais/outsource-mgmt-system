@@ -51,14 +51,6 @@ class Gr_model extends CI_Model
         return ("GR" . date('y') . $zeroCount . $countResult);
     }
     
-    public function delete_gr($id)
-    {
-        $this->db->trans_start();
-        $this->db->where('id_product', $id);
-        $this->db->delete('product');
-        $this->db->trans_complete();
-    }
-    
     public function get_gr_by_id($id)
     {
         $this->db->select('gr.*, po.po_number');
@@ -117,7 +109,7 @@ class Gr_model extends CI_Model
             //$ci->po_model->generate_barcode_number($id_po, $p['id_product']);
         }
         
-        if($po_complete == true)
+        if($ci->po_model->check_po_product_receive($id_po) == true)
         {
             $po = $ci->po_model->get_po_by_id($id_po);
             if($po[0]['status'] == 'open' )
@@ -266,15 +258,7 @@ class Gr_model extends CI_Model
         
         $this->db->trans_complete();
     }
-    
-    public function delete_product($id)
-    {
-        $this->db->trans_start();
-        $this->db->where('id_product', $id);
-        $this->db->delete('product');
-        $this->db->trans_complete();
-    }
-    
+        
     public function get_product_by_id($id)
     {
         $this->db->select('product.*, product_category.product_category AS category_name, merk.name, unit_measure.name as unit_name');

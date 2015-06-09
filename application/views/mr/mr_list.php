@@ -8,8 +8,9 @@
                 [   
                     { name: 'id_mr'},
                     { name: 'mr_number'},
-                    { name: 'project_list'},
-                    { name: 'date'},
+                    { name: 'work_order'},
+                    { name: 'work_order_number'},
+                    { name: 'date', type: 'date'},
                     { name: 'status'},
                        
                 ],
@@ -34,7 +35,7 @@
                 columns: [
                     { text: 'Material Rquest No.', dataField: 'mr_number', width: 300},
                     { text: 'Date', dataField: 'date'},
-                    { text: 'Project List No.', dataField: 'project_list'},
+                    { text: 'WO Number', dataField: 'work_order_number'},
                     { text: 'Status', dataField: 'status', width: 100},
                                        
                 ]

@@ -1,14 +1,21 @@
 <script type="text/javascript" src="<?php echo base_url() ?>jqwidgets/globalization/globalize.js"></script>
 <script>
 $(document).ready(function(){
-    $("#delivery-date").jqxDateTimeInput({width: '250px', height: '25px', value: null}); 
+    $("#delivery-date").jqxDateTimeInput({width: '250px', height: '25px' <?php if(isset($is_view)){ echo ',disabled: true';} ?>, value: null}); 
+    
     $("#select-product-popup").jqxWindow({
         width: 600, height: 500, resizable: false,  isModal: true, autoOpen: false, cancelButton: $("#Cancel"), modalOpacity: 0.01           
     });
     
+    <?php 
+    if(!isset($is_view))
+    {?>
     $("#clear-delivery-date").click(function(){
         $("#delivery-date").val(null);
     });
+    <?php   
+    }
+    ?>
     
     <?php
     if(isset($is_edit))
@@ -49,33 +56,34 @@ $(document).ready(function(){
     //
     //=================================================================================
     
-    var urlSupplier = "<?php echo base_url() ;?>pl/get_pl_list_submit";
+    var urlSupplier = "<?php echo base_url() ;?>work_order/get_work_order_list";
     var sourceSupplier =
     {
         datatype: "json",
         datafields:
         [
-                    { name: 'project_list_number'},
+                    { name: 'work_order_number'},
                     { name: 'so'},
                     { name: 'so_number'},
                     { name: 'status'},
-                    { name: 'note'},
-                    { name: 'id_project_list'},
+                    { name: 'notes'},
+                    { name: 'id_work_order'},
                     
         ],
-        id: 'id_project_list',
+        id: 'id_work_order',
         url: urlSupplier ,
         root: 'data'
     };
     var dataAdapterSupplier = new $.jqx.dataAdapter(sourceSupplier);
-    
-    
-    $("#pl-no").jqxInput({ source: dataAdapterSupplier, displayMember: "Project List Number", valueMember: "id_project_list", height: 23});
+     
+    $("#pl-no").jqxInput({ source: dataAdapterSupplier, displayMember: "Work Order Number", valueMember: "id_work_order", height: 23});
     $("#pl-no").jqxInput({disabled: true});
     
+      
     $("#select-pl-popup").jqxWindow({
         width: 600, height: 500, resizable: false,  isModal: true, autoOpen: false, cancelButton: $("#Cancel"), modalOpacity: 0.01           
     });
+    
     
     $("#select-pl-grid").jqxGrid(
     {
@@ -85,30 +93,37 @@ $(document).ready(function(){
         selectionmode : 'singlerow',
         source: dataAdapterSupplier,
         columnsresize: true,
-        autoshowloadelement: false,                                                                                
+        autoshowloadelement: false,   
         sortable: true,
         filterable: true,
         showfilterrow: true,
         autoshowfiltericon: true,
         columns: [
-            { text: 'Project List Number', dataField: 'project_list_number', width: 150},
+            { text: 'WO Number', dataField: 'work_order_number', width: 150},
             { text: 'Sales Order', dataField: 'so_number'},
             { text: 'note', dataField: 'note', width: 150}                                      
         ]
     });
     
-    $("#pl-select").click(function(){
+   $("#pl-select").click(function(){
+    <?php 
+    if(!isset($is_view))
+    {?>  
         $("#select-pl-popup").jqxWindow('open');
+    <?php   
+    }
+    ?>    
     });
     
     $('#select-pl-grid').on('rowdoubleclick', function (event) 
     {
+        $("#pl-product-grid").jqxGrid('clear');
         <?php 
         if(!isset($is_edit))
         {?>
         var args = event.args;
         var data = $('#select-pl-grid').jqxGrid('getrowdata', args.rowindex);
-        $('#pl-no').jqxInput('val', {label: data.project_list_number, value: data.id_project_list});
+        $('#pl-no').jqxInput('val', {label: data.work_order_number, value: data.id_work_order});
         var url = "<?php echo base_url()?>pl/get_pl_product_for_mr?id=" + data.id_project_list;
         var source =
         {
@@ -126,16 +141,54 @@ $(document).ready(function(){
                 { name: 'unit_name'}, 
                 { name: 'unit'},            
                 { name: 'category_name'},
+                { name: 'qty_request', type: 'number'},
                 { name: 'qty_require', type: 'number'},
+                { name: 'total_qty'},
 
             ],
             id: 'id_product',
             url: url ,
             root: 'data'
         };
+        source['qty_request'] = 0;
         var dataAdapter = new $.jqx.dataAdapter(source);
         $("#pl-product-grid").jqxGrid({source: dataAdapter});
+        
+        
+        
         $("#select-pl-popup").jqxWindow('close');
+        
+        //alert(JSON.stringify(dataAdapter));
+        
+//        var url = "<?php echo base_url()?>stock/get_stock_list?prod=" + source.product;
+//        var stock =
+//        {
+//            datatype: "json",
+//            datafields:
+//            [
+//                { name: 'id_product'},
+//                { name: 'total_qty'},
+//                { name: 'product'},
+//                { name: 'uom'},
+//                { name: 'product_category'},
+//                { name: 'merk'},
+//                { name: 'product_code'},
+//                { name: 'product_name'},
+//                { name: 'name'},
+//                { name: 'unit_name'}, 
+//                { name: 'unit'},            
+//                { name: 'category_name'},
+//                { name: 'qty_request', type: 'number'},
+//                { name: 'qty_require', type: 'number'},
+//                
+//            ],
+//            id: 'id_product',
+//            url: url ,
+//            root: 'data'
+//        };
+//        var dataStock = new $.jqx.dataAdapter(stock);
+//        $("#pl-product-grid").jqxGrid({source: dataStock});
+//        //alert(JSON.stringify(dataAdapter));
         <?php    
         }
         ?>
@@ -148,7 +201,7 @@ $(document).ready(function(){
     if(isset($from_pr) && $from_pr == 'true')
     {?>
     
-        $('#pl-no').jqxInput('val', {label: '<?php echo $pl[0]['project_list_number'] ?>', value: '<?php echo $pl[0]['id_project_list'] ?>'});
+        $('#pl-no').jqxInput('val', {label: '<?php echo $pl[0]['work_order_number'] ?>', value: '<?php echo $pl[0]['id_work_order'] ?>'});
             
     <?php    
     }
@@ -158,15 +211,14 @@ $(document).ready(function(){
     if(isset($is_edit))
     {?>
     
-        $('#pl-no').jqxInput('val', {label: '<?php echo $data_edit[0]['project_list_number'] ?>', value: '<?php echo $data_edit[0]['project_list'] ?>'});
+        $('#pl-no').jqxInput('val', {label: '<?php echo $data_edit[0]['work_order_number'] ?>', value: '<?php echo $data_edit[0]['id_work_order'] ?>'});
         
     
     <?php    
     }
     ?>
    
-    
-    
+        
     //=================================================================================
     //
     //   Project List Product Grid
@@ -174,19 +226,39 @@ $(document).ready(function(){
     //=================================================================================
     $("#pl-product-grid").on("bindingcomplete", function(event){
         
-    var rows = $("#pl-product-grid").jqxGrid('getrows');
+    //var rows = $("#pl-product-grid").jqxGrid('getrows');
+        var dataGrid = $(this).jqxGrid('getrows');
+        if(dataGrid.length > 0)
+        {
+            $.get('<?php echo base_url() ?>stock/get_stock_list?prod='+ source.product, function(data){
+                data = JSON.parse(data);
+                //alert(JSON.stringify(data));
+				var found = false;
+                for(i=0;i<dataGrid.length;i++)
+                {
+					found = false;
+                    for(j=0;j<data['data'].length;j++)
+                    {
+                        if(data['data'][j]['id_product'] == dataGrid[i]['id_product'])
+                        {
+							found = true;
+                            $("#pl-product-grid").jqxGrid('setcellvalue', i, "total_qty", data['data'][j]['total_qty']);
+                        }
+                    }
+					if(found == false)
+					{
+						 $("#pl-product-grid").jqxGrid('setcellvalue', i, "total_qty", 0);
+					}
+                }
+                
+                //$("#pl-product-grid").jqxGrid('update');
+            });
+        }
+        
 
     });
     
     var url = "";
-       
-    <?php 
-    if(isset($from_pl))
-    {?>
-        url = "<?php echo base_url()?>pl/get_pl_product_for_mr?id=<?php echo $pr[0]['id_project_list']; ?>";
-    <?php    
-    }
-    ?>
             
     <?php 
     if(isset($is_edit))
@@ -219,19 +291,33 @@ $(document).ready(function(){
         url: url ,
         root: 'data'
     };
+	var cellclass = function (row, columnfield, value, data) 
+    {
+        if (value < data.qty_require) {
+            return 'red';
+        }
+		else
+		{
+			return '';
+		}
+    }
     var dataAdapter = new $.jqx.dataAdapter(source);
     $("#pl-product-grid").jqxGrid(
     {
         theme: $("#theme").val(),
+        <?php if(isset($is_view)){ echo 'disabled: true,';} ?>
         width: '100%',
         height: 250,
         selectionmode : 'singlerow',
         source: dataAdapter,
-        editable: true,
+        editable: <?php if(isset($is_view)){ echo 'false';}else{ echo 'true';} ?>,
         columnsresize: true,
         autoshowloadelement: false,                                                                                
         sortable: true,
         autoshowfiltericon: true,
+        <?php 
+        if(!isset($is_view))
+        {?>
         rendertoolbar: function (toolbar) {
             $("#add-product").click(function(){
                 var offset = $("#remove-product").offset();
@@ -244,31 +330,25 @@ $(document).ready(function(){
                     var id = $("#pl-product-grid").jqxGrid('getrowid', selectedrowindex);
                     var commit1 = $("#pl-product-grid").jqxGrid('deleterow', id);
                 }
-                
             });
         },
+        <?php    
+        }
+        ?>
         columns: [
             { text: 'Product Code', dataField: 'product_code'},
             { text: 'Product', dataField: 'product_name'},
+            { text: 'Stock Warehouse', dataField: 'total_qty', cellclassname: cellclass},
             { text: 'Unit', dataField: 'unit', displayfield: 'unit_name', columntype: 'dropdownlist',
                 createeditor: function (row, value, editor) {
                     editor.jqxDropDownList({ source: unitAdapter, displayMember: 'name', valueMember: 'id_unit_measure' });
                 }},
             { text: 'Quantity Require', dataField: 'qty_require', cellsformat: 'd2'},
-            { text: 'Quantity Request', dataField: 'qty_request'}
+            { text: 'Quantity Request', dataField: 'qty_request', cellsformat: 'd2'}
         ]
     });
-    
-    $("#pl-product-grid").on('cellvaluechanged', function (event) 
-    {
-        
-    });
-    
-    var localizationobj = {};
-    localizationobj.currencysymbol = "Rp. ";
-    $("#pl-product-grid").jqxGrid('localizestrings', localizationobj);
-    
     $("#pl-product-grid").jqxGrid('setcolumnproperty', 'product_name', 'editable', false);
+    $("#pl-product-grid").jqxGrid('setcolumnproperty', 'total_qty', 'editable', false);
     $("#pl-product-grid").jqxGrid('setcolumnproperty', 'product_code', 'editable', false);
     $("#pl-product-grid").jqxGrid('setcolumnproperty', 'qty_require', 'editable', false);
        
@@ -366,7 +446,7 @@ $(document).ready(function(){
         else
         {?>
         data_post['date'] = $("#delivery-date").val('date').format('yyyy-mm-dd');
-        data_post['project_list'] = $("#pl-no").val().value;
+        data_post['work_order'] = $("#pl-no").val().value;
         data_post['product_detail'] = $('#pl-product-grid').jqxGrid('getrows');
         
         data_post['is_edit'] = $("#is_edit").val(); 
@@ -384,18 +464,23 @@ $(document).ready(function(){
 function SaveData()
 {
     var data_post = {};
+    <?php 
+    if(!isset($is_edit) || isset($is_edit) && $data_edit[0]['status'] != 'void' )
+    {?>
     
     data_post['date'] = $("#delivery-date").val('date').format('yyyy-mm-dd');
-    data_post['project_list'] = $("#pl-no").val().value;
+    data_post['work_order'] = $("#pl-no").val().value;
     data_post['product_detail'] = $('#pl-product-grid').jqxGrid('getrows');
     
-    alert(JSON.stringify(data_post));
-    load_content_ajax(GetCurrentController(), 81, data_post);
-    
+    //alert(JSON.stringify(data_post));
+    load_content_ajax(GetCurrentController(), 'save_edit_mr', data_post);
+    <?php   
+    }
+    ?>
 }
 function DiscardData()
 {
-    load_content_ajax('administrator', 77 , null);
+    load_content_ajax('administrator', 'view_mr' , null);
 }
 
 </script>
@@ -404,15 +489,29 @@ $(document).ready(function(){
      
 });
 </script>
+<style>
+.green {
+    color: green;
+}
+.red {
+    color: red;
+}
+.blue {
+    color: blue;
+}
+</style>
 <input type="hidden" id="prevent-interruption" value="true" />
 <input type="hidden" id="is_edit" value="<?php echo (isset($is_edit) ? 'true' : 'false') ?>" />
 <input type="hidden" id="id_mr" value="<?php echo (isset($is_edit) ? $role_edit[0]['id_mr'] : '') ?>" />
 <div class="document-action">
     <?php 
     if(isset($is_edit) && $data_edit[0]['status'] == 'draft')
-    {?>
-    <button style="margin-left: 20px;" id="mr-validate">Validate</button>
-    <?php    
+    {
+        if($data_edit[0]['status'] != 'void')
+        {?>
+        <button style="margin-left: 20px;" id="mr-validate">Validate</button>
+        <?php
+        }
     }
     ?>
  
@@ -445,10 +544,10 @@ $(document).ready(function(){
                 <tr>
                     <td>
                         <div class="label">
-                            Project List No.
+                            WO No.
                         </div>
                         <div class="column-input" colspan="2">
-                            <input style="display:inline; width: 70%; font: -webkit-small-control; padding-left: 5px;" class="field" type="text" id="pl-no" name="name" value=""/>
+                            <input <?php if(isset($is_view)){ echo 'disabled="true"';} ?> style="display:inline; width: 70%; font: -webkit-small-control; padding-left: 5px;" class="field" type="text" id="pl-no" name="name" value=""/>
                             <button id="pl-select">...</button>
                         </div>
                     </td>
@@ -493,7 +592,7 @@ $(document).ready(function(){
                         <div class="label">
                             Notes
                         </div>
-                        <textarea class="field" cols="10" rows="20" style="height: 50px;"></textarea>
+                        <textarea <?php if(isset($is_view)){ echo 'disabled=disabled';} ?> class="field" cols="10" rows="20" style="height: 50px;"></textarea>
                     </td>
                 </tr>
             </table>

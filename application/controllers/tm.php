@@ -32,7 +32,7 @@ class Tm extends MY_Controller
         return null;
     }
     
-    public function init_edit_merk($id)
+    public function init_edit_tm($id)
     {
         $data = array(
             'data_edit' => $this->product_model->get_tm_by_id($id),
@@ -41,5 +41,17 @@ class Tm extends MY_Controller
         
         return $data;
     }
+    
+    public function view_tm_detail($id)
+    {
+        $data = array(
+            'data_edit' => $this->product_model->get_tm_by_id($id),
+            'is_edit' => true,
+            'is_view' => true
+        );
+        
+        return $data;
+    }
+    
 }
 ?>

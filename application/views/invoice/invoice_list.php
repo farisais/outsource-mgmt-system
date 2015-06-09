@@ -65,11 +65,11 @@
                     columns: [
                         {text: 'Invoice', dataField: 'invoice_number', width: 100},
                         {text: 'Date', width: 100, dataField: 'invoice_date', cellsformat: 'dd/MM/yyyy', filtertype: 'date'},
-                        {text: 'Sub Total', dataField: 'sub_total', cellsalign: 'right',cellsformat: 'f'},
                         {text: 'Customer', dataField: 'name'},
                         {text: 'Project Name', dataField: 'project_name'},
-                        {text: 'Tax', dataField: 'total_tax', cellsalign: 'right',cellsformat: 'f'},
-                        {text: 'Total Payment', dataField: 'total_invoice', width: 200, cellsalign: 'right',cellsformat: 'f'},
+						{text: 'Sub Total', dataField: 'sub_total', cellsalign: 'right',cellsformat: 'c2'},
+                        {text: 'Tax', dataField: 'total_tax', cellsalign: 'right',cellsformat: 'c2'},
+                        {text: 'Total Payment', dataField: 'total_invoice', width: 200, cellsalign: 'right',cellsformat: 'c2'},
                         {text: 'Status', dataField: 'status_invoice', width: 100, cellclassname: cellclass},
                         {text: 'Invoice Document', width: 100, datafield: 'link_invoice_pdf', columntype: 'button', cellsrenderer: function () {
                                 return "PDF";
