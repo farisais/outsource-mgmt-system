@@ -61,10 +61,11 @@ class Invoice_model extends CI_Model {
         $data_input = array(
             "payroll_wo_id" => $data['payroll_wo_id'],
             "total_invoice" => $data['total_invoice'],
-            "total_tax" => $data['total_tax'],
+            "ppn" => $data['total_tax'],
             "sub_total" => $data['sub-total'],
-            "no_rekening" => $data['no_rekening'],
+            "payment_terms" => $data['payment_terms'],
             "invoice_date" => $data['invoice_date'],
+			"due_date" => date('Y-m-d', strtotime($data['invoice_date'] . ' + ' . $data['payment_terms'] . ' days')),
 			"customer_po" => $data['customer_po'],
             "email" => $data['email'],
             "invoice_number" => $invoice_number
@@ -114,29 +115,17 @@ class Invoice_model extends CI_Model {
         return $result->result_array();
     }
 
-    /*
-      public function get_invoice_by_id($id) {
-      $this->db->select('invoice.*, so.so_number, bank.bank_account, customer.name as customer_name, customer.adress as address');
-      $this->db->from('invoice');
-      $this->db->join('so', 'invoice.so=so.id_so', 'LEFT');
-      $this->db->join('customer', 'customer.id_customer=so.customer', 'LEFT');
-      $this->db->join('bank', 'invoice.rekening=bank.id_bank', 'LEFT');
-      $this->db->where('invoice.id_invoice', $id);
-
-      return $this->db->get()->result_array();
-      }
-     */
-
     public function edit_invoice($data) {
         $this->db->trans_start();
 		
         $data_input = array(
             "payroll_wo_id" => $data['payroll_wo_id'],
             "total_invoice" => $data['total_invoice'],
-            "total_tax" => $data['total_tax'],
+            "ppn" => $data['total_tax'],
             "sub_total" => $data['sub-total'],
-            "no_rekening" => $data['no_rekening'],
+            "payment_terms" => $data['payment_terms'],
             "invoice_date" => $data['invoice_date'],
+			"due_date" => date('Y-m-d', strtotime($data['invoice_date'] . ' + ' . $data['payment_terms'] . ' days')),
 			"customer_po" => $data['customer_po'],
             "email" => $data['email']
         );
@@ -167,56 +156,6 @@ class Invoice_model extends CI_Model {
 		$this->db->where('invoice_id', $id);
 		$this->db->delete('invoice_detail');
 	}
-
-    /*
-      public function edit_invoice($data) {
-      $this->db->trans_start();
-      $ci = & get_instance();
-      $ci->load->model('so_model');
-
-      $so = $ci->so_model->get_so_by_id($data['id_so']);
-
-      $data_input = array(
-      "so" => $data['id_so'],
-      "invoice_date" => $data['date'],
-      "sub_total" => $so[0]['sub_total'],
-      "tax" => $so[0]['tax'],
-      "total_price" => $so[0]['total_price'],
-      "total_payment" => $data['total_payment'],
-      "invoice_method" => $data['invoice_method'],
-      "rekening" => ($data['rekening'] == '' ? null : $data['rekening']),
-      "status" => 'open',
-      );
-      $this->db->where('id_invoice', $data['id_invoice']);
-      $this->db->update('invoice', $data_input);
-      $this->db->trans_complete();
-      }
-     */
-    /*
-      public function get_invoice_product_by_id($id) {
-      $ci = & get_instance();
-      $ci->load->model('so_model');
-
-      $this->db->select('invoice_product.*, invoice_product.qty AS qty_send, invoice_product.uom as unit, unit_measure.name as unit_name, product.*');
-      $this->db->from('invoice_product');
-      $this->db->join('product', 'product.id_product=invoice_product.product', 'INNER');
-      $this->db->join('unit_measure', 'unit_measure.id_unit_measure=invoice_product.uom', 'INNER');
-      $this->db->where('invoice_receipt', $id);
-
-      $result = $this->db->get()->result_array();
-
-      for ($i = 0; $i < count($result); $i++) {
-      $so_product = $ci->so_model->get_so_product_by_id($this->get_id_so_from_invoice($id)[0]['so']);
-
-      for ($j = 0; $j < count($so_product); $j++) {
-      if ($so_product[$j]['product'] == $result[$i]['product']) {
-      $result[$i]['qty_ordered'] = $so_product[$j]['qty'];
-      }
-      }
-      }
-      return $result;
-      }
-     */
 
     public function get_id_so_from_invoice($id_invoice) {
         $this->db->select('so');
@@ -285,33 +224,6 @@ class Invoice_model extends CI_Model {
 
         return $so[0]['total_price'] - $total;
     }
-	
-	
-
-   /* public function validate_invoice($id_invoice)
-    {
-        $inv = $this->get_invoice_by_id($id_invoice);
-        $this->db->trans_start();
-
-        $this->db->where('id_invoice', $id_invoice);
-        $this->db->update('invoice', array('status' => 'close'));
-
-
-
-        if ($this->get_invoice_left($inv[0]['so']) == 0) {
-            //close SO
-            $ci = & get_instance();
-            $ci->load->model('so_model');
-
-            $so = $ci->so_model->get_so_by_id($inv[0]['so']);
-            if ($so[0]['status'] == 'deliver') {
-                $ci->so_model->change_so_status($inv[0]['so'], 'close');
-            }
-        }
-
-        $this->db->trans_complete();
-    }*/
-
    
      public function save_detail_invoice($id, $data)
      {
@@ -324,7 +236,6 @@ class Invoice_model extends CI_Model {
                  $data_input['quantity'] = $d['qty'];
                  $data_input['price'] = $d['price'];
                  $data_input['invoice_id'] = $id;
-				 $data_input['ppn'] = $d['ppn'];
                  $this->db->insert('invoice_detail', $data_input);
              }
          }

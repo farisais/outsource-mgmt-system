@@ -33,7 +33,7 @@ class Cost_element_model extends CI_Model {
         $this->db->from('cost_element');
 
         $this->db->where('id_cost_element', $id);
-
+		
         return $this->db->get()->result_array();
     }
 
