@@ -121,7 +121,10 @@ class Cost_element_model extends CI_Model {
         $aggregate = 0;
 		$element_category = array();
         $element_category['profit'] = 0;
-        $element_category['ppn'] = 0;
+        $element_category['ppn'] = 0; 
+		 
+		 $data['overtime'] = $this->calculate_overtime_rule(1, $data['overtime']);  
+		      
 		foreach($dce as $e)
 		{
 

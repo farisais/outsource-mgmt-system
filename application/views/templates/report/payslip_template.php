@@ -178,28 +178,27 @@ $(document).ready(function(){
     <div class="report-sub-content">
         <div class="first-col-report">
             <div class="field1">
-                <?php echo $customer_name ?>
+                <?php echo $full_name ?>
             </div>
             <div class="field2">
-                <?php echo $customer_address ?>
+				<span>ID : </span>
+                <?php echo $employee_number ?>
+            </div>
+			<div class="field2">
+				<span>Posisi : </span>
+                <?php echo $structure_name ?>
             </div>
         </div>
         <div class="second-col-report">
-            <div class="report-document-name">
-                <?php echo $document_name ?>
-            </div>
-            <div>
-                <span>No: </span><span><?php echo $document_number ?></span>
-            </div>
-            <div>
-                <span>Date: </span><span><?php echo $document_date ?></span>
+			<div class="report-document-name">
+                PAYSLIP
             </div>
 			<div class="report-document-name">
-				Payment Due
-			</div>
-			<div>
-				<span><?php echo $payment_terms ?> days</span>
-			</div>
+                <?php echo $periode_name ?>
+            </div>
+            <div>
+                <span>Tanggal Payslip: </span><span><?php echo $date_finished ?></span>
+            </div>
         </div>
     </div>
     <div class="report-data">
@@ -208,66 +207,123 @@ $(document).ready(function(){
                 <thead>
                     <tr>
                         <th>
-                            Product Name
+                            Element
                         </th>
                         <th>
                             Unit
                         </th>
                         <th>
-                            Qty
+                            Multiply
                         </th>
                         <th>
-                            Unit Price
+                            Amount
                         </th>
                         <th style="width: 120px;">
-                            Total Price
+                            Total Amount
                         </th>
                     </tr>
                 </thead>
                 <tbody>
-                <?php
-                foreach($items as $it)
-                {?>
-                    <tr>
+					<tr>
                        <!-- <td>
                             <?php echo $it['product_code'] ?>
                         </td>-->
                         <td>
-                            <?php echo $it['product_name'] ?>
+                            THP
                         </td>
-                        <td>
-                            <?php echo $it['unit_name'] ?>
-                        </td>
-                        <td>
-                            <?php echo $it['qty'] ?>
-                        </td>
-                        <td>
-                            Rp. <?php echo number_format($it['price'], 2, ',', '.') ?>
-                        </td>
-                        <td>
-                            Rp. <?php echo number_format($it['price'] * $it['qty'], 2, ',', '.') ?>
-                        </td>
-                    </tr>
-                <?php     
-                }
-                ?>
-					<tr>
-                        <td>
-                            Management Fee
-                      </td>
                         <td>
                             
                         </td>
                         <td>
-							1
+                            
                         </td>
                         <td>
-                            Rp. <?php echo number_format($management_profit, 2, ',', '.') ?>
+                            Rp. <?php echo number_format($total_thp, 2, ',', '.') ?>
                         </td>
                         <td>
-                            Rp. <?php echo number_format($management_profit, 2, ',', '.') ?>
+                            Rp. <?php echo number_format($total_thp, 2, ',', '.') ?>
                         </td>
-					</tr>
+                    </tr>
+					<tr>
+                       <!-- <td>
+                            <?php echo $it['product_code'] ?>
+                        </td>-->
+                        <td>
+                            Overtime
+                        </td>
+                        <td>
+                            
+                        </td>
+                        <td>
+                            
+                        </td>
+                        <td>
+                            <?php echo $total_overtime ?>
+                        </td>
+                        <td>
+						
+                        </td>
+                    </tr>
+					<tr>
+                       <!-- <td>
+                            <?php echo $it['product_code'] ?>
+                        </td>-->
+                        <td>
+                            Allowance
+                        </td>
+                        <td>
+                            
+                        </td>
+                        <td>
+                            
+                        </td>
+                        <td>
+                            0
+                        </td>
+                        <td>
+                            0
+                        </td>
+                    </tr>
+					<tr>
+                       <!-- <td>
+                            <?php echo $it['product_code'] ?>
+                        </td>-->
+                        <td>
+                            Jamsostek
+                        </td>
+                        <td>
+                            
+                        </td>
+                        <td>
+                            
+                        </td>
+                        <td>
+                            Rp. <?php echo number_format($jamsostek, 2, ',', '.') ?>
+                        </td>
+                        <td>
+                            Rp. <?php echo number_format($jamsostek, 2, ',', '.') ?>
+                        </td>
+                    </tr>
+					<tr>
+                       <!-- <td>
+                            <?php echo $it['product_code'] ?>
+                        </td>-->
+                        <td>
+                            PPH 21
+                        </td>
+                        <td>
+                            
+                        </td>
+                        <td>
+                            
+                        </td>
+                        <td>
+                            Rp. <?php echo number_format($pph, 2, ',', '.') ?>
+                        </td>
+                        <td>
+                            Rp. <?php echo number_format($pph, 2, ',', '.') ?>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -275,37 +331,13 @@ $(document).ready(function(){
             <table>
                     <tr>
                         <td colspan="5" style="width: 120px;">
-                            <span class="bold-font">Sub Total</span>
+                            <span class="bold-font">Total Gross</span>
                         </td>
                         <td style="width: 120px;">
-                            Rp. <?php echo number_format($sub_total, 2, ',', '.') ?>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="5" class="break-line">
-                            <span class="bold-font">Tax</span>
-                        </td>
-                        <td class="break-line">
-                             Rp. <?php echo number_format($management_tax, 2, ',', '.') ?>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="5">
-                            <span class="bold-font">Total</span>
-                        </td>
-                        <td>
-                             Rp. <?php echo number_format($total, 2, ',', '.') ?>
+                            Rp. <?php echo number_format($total_gross, 2, ',', '.') ?>
                         </td>
                     </tr>
                 </table>
-        </div>
-    </div>
-    <div class="report-footer">
-        <div class="footer-label">
-            Notes
-        </div>
-        <div class="field4">
-            
         </div>
     </div>
 </div>

@@ -53,8 +53,34 @@ class Timesheet_model extends CI_Model
         $this->db->from('so_assignment');
         $this->db->join('employee','employee.id_employee=so_assignment.so_assignment_number');
         $this->db->where('so_assignment.work_order_id',$id);
+					
         return $this->db->get()->result_array();
     }
+	
+	public function get_employee_with_schedule($id, $date, $project_name)
+	{
+		$employees = null;
+		$this->db->select('employee.id_employee,employee.full_name');
+        $this->db->from('so_assignment');
+        $this->db->join('employee','employee.id_employee=so_assignment.so_assignment_number');
+        $this->db->where('so_assignment.work_order_id',$id);
+					
+        $employees = $this->db->get()->result_array();
+		
+		for($i=0;$i<count($mployees);$i++)
+		{
+			$shift_code = $this->get_shift_code(date('Y', $date), date('n', $date), date('d', $date), $project_name, $employees[$i]['id_employee']);
+			$ts = array( 0 => array("schedule_type" => "N/A"));
+			if($shift_code != null)
+			{
+				$ts = $this->get_time_schedule_shift($shift_code[0]['id']);
+			}
+			$employees[$i]['schedule_type'] = $ts[0]['schedule_type'];
+			
+		}
+		
+		return $employees;
+	}
     //==
     public function save_timesheet($data)
     {
@@ -62,11 +88,11 @@ class Timesheet_model extends CI_Model
         if($data['is_edit'] != 'true')
         {
             $data_input = array();
-            $data_input["date"]         =   $data["input-date"];
+            $data_input["date"] = $data["input-date"];
             $tg = $this->get_timesheet_group($data['input-date'], $data['project_name']);
             if(count($tg) > 0)
             {
-               exit("Timesheet date already exist");
+               return array("has_error" => true, "error_message" => "Timesheet date already exist");
             }
             else
             {
@@ -85,6 +111,7 @@ class Timesheet_model extends CI_Model
             $this->db->where('id', $timesheet_id);
             $this->db->update('timesheet_group', $data_input);
         }
+		
         if(isset($data['employee_detail']))
         {
             $this->save_employee_detail($timesheet_id, $data);
@@ -95,6 +122,8 @@ class Timesheet_model extends CI_Model
         }
 
         $this->db->trans_complete();
+		
+		return null;
     }
     
     public function delete_detail_timesheet($id, $table)
@@ -129,38 +158,46 @@ class Timesheet_model extends CI_Model
                     $data_input['employee_number'] = $d['id_employee'];
                     $data_input['in']= ($d['in'] == null || $d['in'] == '' ? null : $d['in']);
                     $data_input['out'] = ($d['out'] == null || $d['out'] == '' ? null : $d['out']);
-                    
-                    if($d['in'] != null && $d['in'] != '')
-                    {
-                        if($time_in != null)
-                        {
-                            $actual_time = strtotime($d['in']);
-                            if($time_in < $actual_time)
-                            {
-                                $data_input['late_in'] = ($actual_time - $time_in)/60;
-                            }
-                            else
-                            {
-                                $data_input['late_in'] = null;
-                            }
-                        }
-                    }
-                    
-                    if($d['out'] != null && $d['out'] != '')
-                    {
-                        if($time_out != null)
-                        {
-                            $actual_time = strtotime($d['out']);
-                            if($time_out > $actual_time)
-                            {
-                                $data_input['early_out'] = ($time_out - $actual_time)/60;
-                            }
-                            else
-                            {
-                                $data_input['early_out'] = null;
-                            }
-                        }
-                    }
+					
+					if($ts[0]['schedule_type'] == 'on')
+					{
+						$data_input['status_absen'] == 'in';
+						if($d['in'] != null && $d['in'] != '')
+						{
+							if($time_in != null)
+							{
+								$actual_time = strtotime($d['in']);
+								if($time_in < $actual_time)
+								{
+									$data_input['late_in'] = ($actual_time - $time_in)/60;
+								}
+								else
+								{
+									$data_input['late_in'] = null;
+								}
+							}
+						}
+						
+						if($d['out'] != null && $d['out'] != '')
+						{
+							if($time_out != null)
+							{
+								$actual_time = strtotime($d['out']);
+								if($time_out > $actual_time)
+								{
+									$data_input['early_out'] = ($time_out - $actual_time)/60;
+								}
+								else
+								{
+									$data_input['early_out'] = null;
+								}
+							}
+						}
+					}
+					else
+					{
+						$data_input['status_absen'] = 'off';
+					}
                     
                     $this->db->insert('timesheet', $data_input);
                 }

@@ -91,6 +91,22 @@ class Payslip_model extends CI_Model
 		inner join payroll_periode as pp on pp.id_payroll_periode = p.payroll_periode';
 		return $this->db->query($query)->result_array();
 	}
+	
+	public function get_detail_payslip($wo, $pp)
+	{
+		$query = "select * from payslip where work_order = " . $wo . " and payroll_periode = " . $pp;
+		return $this->db->query($query)->result_array();
+	}
+	
+	public function get_employee_payslip($e, $wo, $pp)
+	{
+		$query = "select ps.*, pp.periode_name ,e.employee_number, e.full_name, os.structure_name from payslip as ps 
+		inner join employee as e on e.id_employee = ps.employee 
+		inner join organisation_structure as os on os.id_organisation_structure = e.organisation_structure_id 
+		inner join payroll_periode as pp on pp.id_payroll_periode = ps.payroll_periode 
+		where ps.work_order = " . $wo . " and ps.payroll_periode = " . $pp;
+		return $this->db->query($query)->result_array();
+	}
 
 
 }

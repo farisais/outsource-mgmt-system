@@ -104,6 +104,12 @@ $(document).ready(function(){
         root: 'data'
     };
     var dataAdapter = new $.jqx.dataAdapter(source);
+	
+	var payroll_calc = [
+		{ label : "paid", value : "paid" },
+		{ label : "unpaid", value: "unpaid" }
+	];
+	
     $("#employee-so-grid").jqxGrid(
     {
         theme: $("#theme").val(),
@@ -123,6 +129,12 @@ $(document).ready(function(){
             { text: 'In', dataField: 'in', cellsformat: 't', width: 100}, 
             { text: 'Out', dataField: 'out',cellsformat: 't', width: 100},
             { text: 'Working Hour', dataField: 'working_hour', cellsformat: 'd2', width: 100},
+			{ text: 'Payroll Calc', dataField: 'payroll_calc', columntype: 'dropdownlist',
+                createeditor: function (row, value, editor) 
+                {
+                    editor.jqxDropDownList({ source: payroll_calc, displayMember: 'label', valueMember: 'value' });
+                }
+            },
             
         ]
     });
@@ -185,31 +197,7 @@ function SaveData()
     data_post['id_timesheet_group'] = $("#id_timesheet_group").val();
     data_post['is_edit'] = $("#is_edit").val();
     //alert(JSON.stringify(data_post));
-
-     <?php if(!isset($is_edit)){?>
-   
-    $.ajax({
-		url: 'timesheet/cek_master_timesheet',
-		type: "POST",
-		data: 'date='+data_post['input-date']+'&work_order='+data_post['project_name'],
-        dataType:'json',
-		success:function(result){
-               	if (result.success==true)
-                {
-            	    load_content_ajax(GetCurrentController(), 'save_edit_timesheet', data_post);
-                }
-                else
-                {
-                    $("#jqxNotification").jqxNotification('open');
-                    return false;
-                }
-		}
-   	});
-    
-     <?php 
-        }
-    ?>  
-    load_content_ajax(GetCurrentController(), 'save_edit_timesheet', data_post);
+	load_content_ajax(GetCurrentController(), 'save_edit_timesheet', data_post);
 }
 function DiscardData()
 {

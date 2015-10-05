@@ -1,5 +1,5 @@
 <?php
-class Invoice_receipt_model extends CI_Model
+class invoice_receipt_model extends CI_Model
 {
 	public function __construct()
 	{
@@ -8,9 +8,9 @@ class Invoice_receipt_model extends CI_Model
 	
 	public function get_invoice_receipt_all()
 	{
-		$this->db->select('invoice_receipt.*, po.po_number');
+		$this->db->select('invoice_receipt.*, invoice.invoice_number');
 		$this->db->from('invoice_receipt');
-        $this->db->join('po', 'po.id_po=invoice_receipt.po', 'LEFT');
+        $this->db->join('invoice', 'invoice.id_invoice=invoice_receipt.invoice', 'LEFT');
                 
 		return $this->db->get()->result_array();
 	}
@@ -19,16 +19,16 @@ class Invoice_receipt_model extends CI_Model
     {
         $this->db->trans_start();
         $ci =& get_instance();
-        $ci->load->model('po_model');
+        $ci->load->model('invoice_model');
         
-        $po = $ci->po_model->get_po_by_id($data['id_po']);
+        $po = $ci->invoice_model->get_invoice_by_id($data['id_invoice']);
         
         $data_input = array(
-            "po" => $data['id_po'],
+            "invoice" => $data['id_invoice'],
             "payment_date" => $data['date'],
             "sub_total" => $po[0]['sub_total'],
-            "tax" => $po[0]['tax'],
-            "total_price" => $po[0]['total_price'],
+            "tax" => $po[0]['ppn'],
+            "total_price" => $po[0]['total_invoice'],
             "total_payment" => $data['total_payment'],
             "invoice_receipt_number" => $this->generate_invoice_receipt_number(),
             "payment_method" => $data['payment_method'],
@@ -58,7 +58,7 @@ class Invoice_receipt_model extends CI_Model
             $zeroCount .= '0';
         }
         
-        return ("PR" . date('y') . $zeroCount . $countResult);
+        return ("IR" . date('y') . $zeroCount . $countResult);
     }
     
     public function delete_invoice_receipt($id)
@@ -71,9 +71,9 @@ class Invoice_receipt_model extends CI_Model
     
     public function get_invoice_receipt_by_id($id)
     {
-        $this->db->select('invoice_receipt.*, po.po_number');
+        $this->db->select('invoice_receipt.*, invoice.invoice_number');
 		$this->db->from('invoice_receipt');
-        $this->db->join('po', 'invoice_receipt.po=po.id_po', 'LEFT');
+        $this->db->join('invoice', 'invoice_receipt.invoice=invoice.id_invoice', 'LEFT');
         
         $this->db->where('invoice_receipt.id_invoice_receipt', $id);
                 
@@ -84,17 +84,17 @@ class Invoice_receipt_model extends CI_Model
     {
         $this->db->trans_start();
         $ci =& get_instance();
-        $ci->load->model('po_model');
+        $ci->load->model('invoice_model');
         
-        $po = $ci->po_model->get_po_by_id($data['id_po']);
+        $po = $ci->invoice_model->get_invoice_by_id($data['id_invoice']);
         
 
         $data_input = array(
-            "po" => $data['id_po'],
+            "invoice" => $data['id_invoice'],
             "payment_date" => $data['date'],
             "sub_total" => $po[0]['sub_total'],
-            "tax" => $po[0]['tax'],
-            "total_price" => $po[0]['total_price'],
+            "tax" => $po[0]['ppn'],
+            "total_price" => $po[0]['total_invoice'],
             "total_payment" => $data['total_payment'],
             "payment_method" => $data['payment_method'],
             "rekening" => $data['rekening'],
@@ -158,11 +158,11 @@ class Invoice_receipt_model extends CI_Model
             $pr = $this->get_invoice_receipt_by_id($exclude_id);
         }
         
-        $this->db->select('invoice_receipt.*, po.po_number');
+        $this->db->select('invoice_receipt.*, invoice.invoice_number');
 		$this->db->from('invoice_receipt');
-        $this->db->join('po', 'po.id_po=invoice_receipt.po', 'LEFT');
+        $this->db->join('invoice', 'invoice.id_invoice=invoice_receipt.invoice', 'LEFT');
         
-        $this->db->where('invoice_receipt.po', $id_po);
+        $this->db->where('invoice_receipt.invoice', $id_po);
         $this->db->where('invoice_receipt.status', 'close');
         if($exclude_id !=null)
         {
@@ -175,7 +175,7 @@ class Invoice_receipt_model extends CI_Model
 		return $this->db->get()->result_array();
     }
     
-    public function get_payment_left($id_po, $exclude_id = null)
+    public function get_invoice_left($id_po, $exclude_id = null)
     {
         $pr = null;
         if($exclude_id !=null)
@@ -183,17 +183,17 @@ class Invoice_receipt_model extends CI_Model
             $pr = $this->get_invoice_receipt_by_id($exclude_id);
         }
         
-        $this->db->select('invoice_receipt.*, po.po_number');
-		$this->db->from('invoice_receipt');
-        $this->db->join('po', 'po.id_po=invoice_receipt.po', 'LEFT');
+        $this->db->select('ir.*, i.invoice_number');
+		$this->db->from('invoice_receipt as ir');
+        $this->db->join('invoice as i', 'i.id_invoice=ir.invoice', 'LEFT');
         
-        $this->db->where('invoice_receipt.po', $id_po);
-        $this->db->where('invoice_receipt.status', 'close');
+        $this->db->where('ir.invoice', $id_po);
+        $this->db->where('ir.status', 'close');
         if($exclude_id!=null)
         {
-            $this->db->where('invoice_receipt.id_invoice_receipt !=', $exclude_id);
-            $this->db->where('DATE(invoice_receipt.payment_date) <= DATE(\''. $pr[0]['payment_date'] . '\')', null, false );
-            $this->db->where('invoice_receipt.id_invoice_receipt <', $pr[0]['id_invoice_receipt']);
+            $this->db->where('ir.id_invoice_receipt !=', $exclude_id);
+            $this->db->where('DATE(ir.payment_date) <= DATE(\''. $pr[0]['payment_date'] . '\')', null, false );
+            $this->db->where('ir.id_invoice_receipt <', $pr[0]['id_invoice_receipt']);
         }
                 
 		$pr = $this->db->get()->result_array();
@@ -204,11 +204,11 @@ class Invoice_receipt_model extends CI_Model
         }
         
         $ci =& get_instance();
-        $ci->load->model('po_model');
+        $ci->load->model('invoice_model');
         
-        $po = $ci->po_model->get_po_by_id($id_po);
+        $invoice = $ci->invoice_model->get_invoice_by_id($id_po);
         
-        return $po[0]['total_price'] - $total;
+        return $invoice[0]['total_invoice'] - $total;
     }
     
     public function validate_payment($id_payment)
@@ -220,23 +220,17 @@ class Invoice_receipt_model extends CI_Model
         $this->db->update('invoice_receipt', array('status' => 'close'));
          
         $this->db->trans_complete();
-        
-        if($this->get_payment_left($pr[0]['po']) == 0)
-        {   
+		
+        $ci =& get_instance();
+        $ci->load->model('invoice_model');
+        if($this->get_invoice_left($pr[0]['invoice']) <= 0)
+        {
             //close PO
+            $po = $ci->invoice_model->get_invoice_by_id($pr[0]['invoice']);
 			
-            $ci =& get_instance();
-            $ci->load->model('po_model');
-        
-            $po = $ci->po_model->get_po_by_id($pr[0]['po']);
-			
-            if($po[0]['status'] == 'open')
+            if($po[0]['status_invoice'] == 'open' || $po[0]['status_invoice'] == 'partial_paid')
             {
-                $ci->po_model->change_po_status($pr[0]['po'], 'payment_received');
-            }
-            else if($po[0]['status'] == 'good_received')
-            {
-                $ci->po_model->change_po_status($pr[0]['po'], 'close');
+                $ci->invoice_model->change_invoice_status($pr[0]['invoice'], 'close');
             }
         }
     }
@@ -250,16 +244,12 @@ class Invoice_receipt_model extends CI_Model
         
         $pr = $this->get_invoice_receipt_by_id($id);
         $ci =& get_instance();
-        $ci->load->model('po_model');
+        $ci->load->model('invoice_model');
 
-        $po = $ci->po_model->get_po_by_id($pr[0]['po']);
-        if($po[0]['status'] == 'close')
+        $po = $ci->invoice_model->get_invoice_by_id($pr[0]['invoice']);
+        if($po[0]['status_invoice'] == 'close')
         {
-            $ci->po_model->change_po_status($pr[0]['po'], 'good_received');
-        }
-        else if($po[0]['status'] == 'payment_received')
-        {
-            $ci->po_model->change_po_status($pr[0]['po'], 'open');
+            $ci->invoice_model->change_invoice_status($pr[0]['invoice'], 'open');
         }
     }
 }

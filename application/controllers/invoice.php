@@ -204,5 +204,10 @@ class Invoice extends MY_Controller {
         $interfunction_param[0] = array("paramKey" => "id", "paramValue" => $id);
         return array('log_param' => $param, "interfunction_param" => $interfunction_param);		
 	}
+	
+	public function get_invoice_open_list()
+	{
+		echo "{\"data\" : " . json_encode($this->invoice_model->get_invoice_open()) . "}";
+	}
 
 }

@@ -12,44 +12,8 @@ class Invoice_model extends CI_Model {
 		$this->db->join('ext_company', 'ext_company.id_ext_company=work_order.customer');
 		
         return $this->db->get()->result_array();
-        
        
-        //$this->db->from('invoice');
-       // $this->db->join('so', 'so.id_so=invoice.so', 'LEFT');
-        //$this->db->join('bank', 'bank.id_bank=invoice.rekening', 'LEFT');
-
-        //return $query->result_array();
     }
-
-    /*
-      public function save_invoice($data) {
-      $this->db->trans_start();
-      $ci = & get_instance();
-
-      $ci->load->model('so_model');
-
-      $so = $ci->so_model->get_so_by_id($data['id_so']);
-
-      $data_input = array(
-      "so" => $data['id_so'],
-      "invoice_date" => $data['date'],
-      "sub_total" => $so[0]['sub_total'],
-      "tax" => $so[0]['tax'],
-      "total_price" => $so[0]['total_price'],
-      "total_payment" => $data['total_payment'],
-      "invoice_receipt_number" => $this->generate_invoice_number(),
-      "invoice_method" => $data['invoice_method'],
-      "rekening" => ($data['rekening'] == '' ? null : $data['rekening']),
-      "status" => 'open',
-      );
-
-      $this->db->insert('invoice', $data_input);
-      $return_id = $this->db->insert_id();
-      $this->db->trans_complete();
-
-      return $return_id;
-      }
-     */
 
     public function save_invoice($data,$invoice_number) {
         $this->db->trans_start();
@@ -63,6 +27,7 @@ class Invoice_model extends CI_Model {
             "total_invoice" => $data['total_invoice'],
             "ppn" => $data['total_tax'],
             "sub_total" => $data['sub-total'],
+			"profit" => $data['profit'],
             "payment_terms" => $data['payment_terms'],
             "invoice_date" => $data['invoice_date'],
 			"due_date" => date('Y-m-d', strtotime($data['invoice_date'] . ' + ' . $data['payment_terms'] . ' days')),
@@ -123,6 +88,7 @@ class Invoice_model extends CI_Model {
             "total_invoice" => $data['total_invoice'],
             "ppn" => $data['total_tax'],
             "sub_total" => $data['sub-total'],
+			"profit" => $data['profit'],
             "payment_terms" => $data['payment_terms'],
             "invoice_date" => $data['invoice_date'],
 			"due_date" => date('Y-m-d', strtotime($data['invoice_date'] . ' + ' . $data['payment_terms'] . ' days')),
@@ -282,7 +248,7 @@ WHERE payroll_wo.id=$id_payroll_wo");
 	
 	public function get_detail_invoice($id)
 	{
-		$query = 'select di.*, di.quantity as qty, p.id_product, p.product_name, p.product_code, p.product_category, pc.product_category as cateogry_name ,um.name as unit_name, m.name as merk_name from invoice_detail as di 
+		$query = 'select di.*, di.quantity as qty, p.id_product, p.product_name, p.product_code, p.product_category, pc.product_category as cateogry_name ,um.name as unit_name, m.name as merk_name, di.price as unit_price, (di.price * di.quantity) as total_price from invoice_detail as di 
 		inner join product as p on p.id_product = di.product 
 		inner join product_category as pc on pc.id_product_category = p.product_category 
 		left join merk as m on m.id_merk=p.merk 
@@ -291,6 +257,13 @@ WHERE payroll_wo.id=$id_payroll_wo");
 		$result = $this->db->query($query);
 		
 		return $result->result_array();
+	}
+	
+	public function get_invoice_open()
+	{
+		$query = "select i.*, ec.name as customer_name, wo.customer as customer from invoice as i inner join payroll_wo as pw on pw.id = i.payroll_wo_id inner join work_order as wo on wo.id_work_order = pw.work_order_id inner join ext_company as ec on ec.id_ext_company = wo.customer where status_invoice = 'open' or status_invoice = 'partial_paid'";
+		
+		return $this->db->query($query)->result_array();
 	}
     
 

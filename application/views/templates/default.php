@@ -268,7 +268,6 @@ function jqUpdateSize(){
         $("#content").css('height', height - 40 - 40 - 30 - 111);
         $("#content").css('overflow', 'overlay');
     }
-    
 }   
 
 function selectNavMenu()

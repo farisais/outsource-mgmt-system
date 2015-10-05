@@ -171,9 +171,7 @@ class Payroll_periode_model extends CI_Model {
         JOIN payroll_wo ON payroll_wo.work_order_id=work_order.id_work_order
         JOIN payroll_periode ON payroll_periode.id_payroll_periode=payroll_wo.payroll_periode_id
         LEFT JOIN so ON so.id_so=work_order.so
-        JOIN ext_company ON ext_company.id_ext_company = work_order.customer
-        WHERE payroll_wo.status_po='approve'
-        ");
+        JOIN ext_company ON ext_company.id_ext_company = work_order.customer");
         $result_list_wo = $query_list_wo->result_array();
 
         if(count($result_list_wo > 0)){

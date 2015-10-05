@@ -12,9 +12,7 @@ function detail_grid_salary(organisation_structure_id,position_level,work_order_
         filterMode: 'advanced',
         columnsresize: true,
         rendertoolbar: function (toolbar) {
-            $("#print_slip").click(function(){
-
-            });
+            
         },
         columns: [
             { text: 'Name', dataField: 'name', width: 150},
@@ -122,7 +120,7 @@ $(document).ready(function () {
 
 
     var dataAdapter = new $.jqx.dataAdapter(source);
-    $("#jqxgrid").jqxGrid(
+    $("#datagrid").jqxGrid(
     {
         theme: $("#theme").val(),
         width: '100%',
@@ -146,9 +144,11 @@ $(document).ready(function () {
             { text: 'Detail', datafield: 'email', columntype: 'button', cellsrenderer: function () {
                         return "Detail";
                     }, buttonclick: function (row) {
-                        var datarow = $("#jqxgrid").jqxGrid('getrowdata', row);
+                        var datarow = $("#datagrid").jqxGrid('getrowdata', row);
+						$("#employee-selected").val(datarow.id_employee);
                         detail_grid_salary(datarow.organisation_structure_id,datarow.position_level,datarow.work_order_id,datarow.id_employee);
                         $("#select_employee_popup").jqxWindow('open');
+
                         return false;
                         $.ajax({
                             type: "post",
@@ -165,8 +165,8 @@ $(document).ready(function () {
 
         ]
     });
-    $("#jqxgrid").on("bindingcomplete", function (event) {
-        var rows = $("#jqxgrid").jqxGrid('getrows');
+    $("#datagrid").on("bindingcomplete", function (event) {
+        var rows = $("#datagrid").jqxGrid('getrows');
         //alert(rows);
         //console.log(rows);
         var amount = 0;
@@ -199,6 +199,22 @@ $(document).ready(function () {
         }
         ?>
     });
+	
+	$("#print_slip").click(function(){
+		
+		<?php 
+		if(isset($is_edit) && $data_edit[0]['status_po'] == 'generated')
+		{?>
+			window.location = "<?php echo base_url() ?>report/create_report?id=<?php echo $id_payroll_periode ?>&wo=<?php echo $id_work_order ?>&doc=payslip_single&doc_no=<?php echo $id_payroll_periode ?>_" + $("#employee-selected").val() + "&e="+ $("#employee-selected").val();
+		<?php
+		}
+		else
+		{?>
+			alert('Cannot print payslip of ungenerated document');
+		<?php  
+		}
+		?>	
+    });
                 
                     
 });
@@ -217,6 +233,22 @@ function back_data(){
 function DiscardData()
 {
 
+}
+
+function printDocument()
+{
+	<?php 
+	if(isset($is_edit) && $data_edit[0]['status_po'] == 'generated')
+	{?>
+		window.location = "<?php echo base_url() ?>report/create_report?id=<?php echo $id_payroll_periode ?>&doc=payslip&doc_no=<?php echo $id_payroll_periode ?>&wo=<?php echo $id_work_order ?>&date_start=<?php echo $date_start ?>&date_finished=<?php echo $date_finished ?>";
+	<?php
+	}
+	else
+	{?>
+		alert('Cannot print payslip of ungenerated document');
+	<?php  
+	}
+	?>	
 }
 </script>
 <div class="document-action">
@@ -255,13 +287,13 @@ function DiscardData()
             <tr>
                 <td colspan="3">
                     <div class="row-color" style="width: 100%; margin: 0px;">
-                        <button style="width: 70px;" id="add_po_approve">Approve</button>
+                       
                     </div>
                 </td>
             </tr>
             <tr>
                 <td colspan="3">
-                    <div id="jqxgrid"></div>
+                    <div id="datagrid"></div>
                 </td>
             </tr>
             <tr>
@@ -272,7 +304,7 @@ function DiscardData()
         </table>
     </div>
 </div>
-
+<input type="hidden" id="employee-selected" value="" />
 <div id="select_employee_popup">
     <div>Detail Salary Employee</div>
     <div>

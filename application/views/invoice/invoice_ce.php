@@ -37,12 +37,13 @@ function view_detail_invoice(id, payroll_periode){
 		$("#detail_invoice_grid").jqxGrid("refreshdata");
         $("#detail_invoice_grid").on('bindingcomplete', function() {
 			var records = dataAdapter_product.records;
+			alert(JSON.stringify(records));
 			var management_fee = 0;
 			var management_fee_tax = 0;
 			for(i=0;i<records.length;i++)
 			{
-				management_fee += records[i]['profit'];
-				management_fee_tax += records[i]['ppn'];
+				management_fee += records[i]['profit'] * records[i]['qty'];
+				management_fee_tax += records[i]['ppn'] * records[i]['qty'];
 			}
 			
 			var element_profit = {};
@@ -162,7 +163,8 @@ $(document).ready(function () {
 			{ name: 'qty', type: 'number'},
 			{ name: 'price', type: 'number'},
 			{ name: 'total_price', type: 'number'},
-			{ name: 'ppn', type: 'number' }
+			{ name: 'ppn', type: 'number' },
+			{ name: 'profit', type: 'number'},
 		],
 		id: 'id',
 		url: url,
@@ -447,7 +449,28 @@ $(document).ready(function () {
 		local.thousandsseparator = ',';
 		
 		$("#detail_invoice_grid").jqxGrid('localizestrings', local);
-		calculate_amount(dataAdapter_product);	 
+		<?php 
+		if(isset($is_edit))
+		{?>
+		var records = dataAdapter_product.records;
+		
+		
+		var element_profit = {};
+		element_profit['element'] = "Management Fee";
+		element_profit['value'] = <?php echo (isset($is_edit) && ($data_edit[0]['profit'] != null || $data_edit[0]['profit'] != '') ? $data_edit[0]['profit'] : 0) ?>;
+		$("#profit-grid").jqxGrid("clear");
+		$("#profit-grid").jqxGrid("addrow", null, element_profit);
+		
+		var element_tax = {};
+		element_tax['element'] = "PPN";
+		element_tax['value'] = <?php echo (isset($is_edit) && ($data_edit[0]['ppn'] != null || $data_edit[0]['ppn'] != '')? $data_edit[0]['ppn'] : 0) ?>;
+		$("#tax-grid").jqxGrid("clear");
+		$("#tax-grid").jqxGrid("addrow", null, element_tax);
+		
+		<?php
+		}
+		?>
+		calculate_amount(dataAdapter_product);
 	});
 	
 	//=================================================================================
@@ -467,7 +490,7 @@ $(document).ready(function () {
 		data_post['customer_po'] = $("#customer-po").val();
 		data_post['payment_terms'] = $("#payment-terms").val();
 		data_post['email'] = $("#email").val();
-		
+		data_post['profit'] = $("#total-profit").val();
 		data_post['detail_invoice'] = $("#detail_invoice_grid").jqxGrid('getrows');
 
 		data_post['is_edit'] = $("#is_edit").val();
@@ -499,11 +522,14 @@ function calculate_amount(dataAdapter)
 	
 	
 	rows = $("#profit-grid").jqxGrid("getrows");
+	var profit = 0;
 	for(var i=0;i<rows.length;i++)
 	{
-		amount += rows[i].value;
+		profit += rows[i].value;
 	}
 	
+	$("#total-profit").val(profit);
+	amount += profit;
 
 	var culture = {};
 	culture.currencysymbol = "Rp. ";
@@ -553,7 +579,7 @@ function SaveData() {
 	data_post['sub-total'] = $("#sub-total").val();
 	data_post['customer_po'] = $("#customer-po").val();
 	data_post['invoice_date'] = formatDate($("#invoice_date").val());
-
+	data_post['profit'] = $("#total-profit").val();
 	data_post['payment_terms'] = $("#payment-terms").val();
 	data_post['email'] = $("#email").val();
 	
@@ -804,6 +830,7 @@ function printDocument()
 					<input id="sub-total" type="hidden" />
 					<input id="total_tax" type="hidden" />'
 					<input id="total_invoice" type="hidden" />
+					<input id="total-profit" type="hidden" />
 				</td>
 			</tr>
         </table>

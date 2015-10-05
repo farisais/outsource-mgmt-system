@@ -13,16 +13,17 @@ class Timesheet extends MY_Controller
     
      public function save_timesheet()
     {
+		$return = null;
         if($this->input->post('is_edit') == 'true')
         {
             $this->timesheet_model->edit_timesheet($this->input->post());
         }
         else
         {
-            $this->timesheet_model->save_timesheet($this->input->post());
+            $return = $this->timesheet_model->save_timesheet($this->input->post());
         }
         
-        return null;
+        return $return;
     }
     
     public function delete_timesheet()
@@ -54,10 +55,17 @@ class Timesheet extends MY_Controller
         $id=$this->uri->segment(3);
         echo "{\"data\" : " . json_encode($this->timesheet_model->get_employee($id)) . "}";
     }
-    function success($msg){
-            $data['success'] = 'success';
-            $data['msg'] = "Data $msg saved";
-            echo json_encode($data);	
+	
+	public function get_employee_with_schedule()
+	{
+		echo "{\"data\" : " . json_encode($this->timesheet_model->get_employee_with_schedule($this->input->get('id'), $this->input->get('date'), $this->input->get('project_name'))) . "}";
+	}
+	
+    function success($msg)
+	{
+		$data['success'] = 'success';
+		$data['msg'] = "Data $msg saved";
+		echo json_encode($data);	
     }	
 
     function error($msg){

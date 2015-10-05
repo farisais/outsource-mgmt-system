@@ -11,10 +11,11 @@
                                 {name: 'id_invoice'},
                                 {name: 'invoice_number'},
                                 {name: 'sub_total', type: 'number'},
-                                {name: 'total_tax',type:'number'},
+                                {name: 'ppn',type:'number'},
                                 {name: 'total_invoice',type:'number'},
-                                {name: 'no_rekening'},
+                                {name: 'payment_terms'},
                                 {name: 'invoice_date',type:'date'},
+								{name: 'due_date',type:'date'},
                                 {name: 'status_invoice'},
                                 {name: 'payroll_wo_id'},
                                 {name: 'link_invoice_pdf'},
@@ -65,38 +66,36 @@
                     columns: [
                         {text: 'Invoice', dataField: 'invoice_number', width: 100},
                         {text: 'Date', width: 100, dataField: 'invoice_date', cellsformat: 'dd/MM/yyyy', filtertype: 'date'},
+						{text: 'Due Date', width: 100, dataField: 'due_date', cellsformat: 'dd/MM/yyyy', filtertype: 'date'},
                         {text: 'Customer', dataField: 'name'},
                         {text: 'Project Name', dataField: 'project_name'},
+						{text: 'Terms', dataField: 'payment_terms'},
 						{text: 'Sub Total', dataField: 'sub_total', cellsalign: 'right',cellsformat: 'c2'},
-                        {text: 'Tax', dataField: 'total_tax', cellsalign: 'right',cellsformat: 'c2'},
-                        {text: 'Total Payment', dataField: 'total_invoice', width: 200, cellsalign: 'right',cellsformat: 'c2'},
+                        {text: 'Tax', dataField: 'ppn', cellsalign: 'right',cellsformat: 'c2', width: 120},
+                        {text: 'Total Payment', dataField: 'total_invoice', width: 150, cellsalign: 'right',cellsformat: 'c2'},
                         {text: 'Status', dataField: 'status_invoice', width: 100, cellclassname: cellclass},
-                        {text: 'Invoice Document', width: 100, datafield: 'link_invoice_pdf', columntype: 'button', cellsrenderer: function () {
-                                return "PDF";
-                            }, buttonclick: function (row) {
-                                var datarow = $("#jqxgrid").jqxGrid('getrowdata', row);
-                                var dt = datarow.invoice_number;
-                                window.open('images/upload/' + dt + '.pdf');
-                            }},
-                            {text: 'Email', datafield: 'email', columntype: 'button', cellsrenderer: function () {
-                                return "Email";
-                            }, buttonclick: function (row) {
-                                var datarow = $("#jqxgrid").jqxGrid('getrowdata', row);
-                                var noInv = datarow.invoice_number;
-                                var dt = {id: datarow.id_invoice, email: datarow.email, invNo: noInv};
-                                $.ajax({
-                                    type: "post",
-                                    url: "invoice/kirim_invoice_email",
-                                    data: dt,
-                                    dataType: "json",
-                                    success: function (hsl) {
-                                        if (hsl.success == true) {
-                                            alert("Successed send Email !");
-                                        }
-                                    }
-                                })
-                            }}
-
+						{text: 'Email', datafield: 'email', columntype: 'button', 
+							cellsrenderer: function () {
+							return "Email";
+							}, 
+							buttonclick: function (row) 
+							{
+								var datarow = $("#jqxgrid").jqxGrid('getrowdata', row);
+								var noInv = datarow.invoice_number;
+								var dt = {id: datarow.id_invoice, email: datarow.email, invNo: noInv};
+								$.ajax({
+									type: "post",
+									url: "invoice/kirim_invoice_email",
+									data: dt,
+									dataType: "json",
+									success: function (hsl) {
+										if (hsl.success == true) {
+											alert("Successed send Email !");
+										}
+									}
+								});
+							}	
+						}
                     ]
                 });
 
